@@ -26,8 +26,8 @@ const uint8_t SD_CS_PIN = 5;
 // Configuração de buffer (buffers circulares por linha: se o SD ficar
 // indisponível e o buffer encher, as linhas mais antigas são descartadas
 // para abrir espaço às mais recentes)
-#define LOG_BUFFER_MAX    60     // Linhas de log GPS acumuladas antes de flush
-#define WIFI_BUFFER_MAX   60     // Linhas de log WiFi acumuladas antes de flush
+#define LOG_BUFFER_MAX    150    // Linhas de log GPS acumuladas antes de flush
+#define WIFI_BUFFER_MAX   100    // Linhas de log WiFi acumuladas antes de flush
 #define SSID_CACHE_MAX    64     // Máx SSIDs rastreadas para deduplicação
 
 // Watchdog: se o loop() não "alimentar" o watchdog nesse tempo, o ESP32
@@ -37,6 +37,12 @@ const uint8_t SD_CS_PIN = 5;
 // Se o remount do SD falhar essa quantidade de vezes seguidas, reinicia
 // o ESP32 inteiro (na esperança de que um boot limpo destrave o hardware).
 #define SD_REMOUNT_MAX_FALHAS 10
+
+// Sono do WiFi: parado (abaixo desse km/h) e sem SSID novo -> desliga o
+// rádio WiFi por WIFI_SLEEP_MS pra evitar scan (pico de corrente) coincidindo
+// com escrita no SD, que já causou brownout/travamento em campo.
+#define WIFI_SLEEP_KMH_THRESHOLD 2.0
+#define WIFI_SLEEP_MS            (5UL * 60UL * 1000UL)
 
 TinyGPS gps;
 DHT dht(DHTPIN, DHTTYPE);
@@ -77,10 +83,26 @@ char wifiBuffer[WIFI_BUFFER_MAX][256];
 int  wifiBufferHead  = 0;              // Índice da linha mais antiga
 int  wifiBufferCount = 0;              // Linhas acumuladas
 
-// Cache de SSIDs para deduplicação
-// Armazena SSIDs vistas desde o último flush — reset a cada flush
+// Cache de SSIDs já gravadas — nunca reseta (nem no flush, nem quando o
+// WiFi acorda do sono). Uma rede só é gravada em wifi.txt 1 vez até
+// SSID_CACHE_MAX encher ou o ESP32 reiniciar; evita duplicar nome de rede
+// no log mesmo depois de vários ciclos de sono/flush.
 char ssidCache[SSID_CACHE_MAX][33];    // 32 chars max SSID + null
 int  ssidCacheCount = 0;
+
+// Estado do sono do WiFi (ver WIFI_SLEEP_KMH_THRESHOLD / WIFI_SLEEP_MS)
+bool wifiDormindo = false;
+unsigned long wifiSleepStart = 0;
+
+// Timer próprio do log.txt (desacoplado do timer do WiFi acima, pra não
+// interferir na lógica de despertar dele) — enquanto parado, log.txt só
+// grava em rajada a cada WIFI_SLEEP_MS; 0 = não está no modo "parado".
+unsigned long logParadoStart = 0;
+
+// true enquanto um WiFi.scanNetworks() assíncrono está em andamento —
+// global (não static local) pra flushBuffers() poder checar antes de gravar
+// no SD e evitar coincidir escrita física com o pico de corrente do scan.
+bool scanEmAndamento = false;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Verifica se uma SSID já está no cache
@@ -146,22 +168,33 @@ bool remontarSD() {
   return ok;
 }
 
-// Concatena as linhas de um buffer circular num único bloco de texto,
-// na ordem cronológica (mais antiga primeiro), para gravar em 1 escrita.
+// Grava as linhas de um buffer circular direto no arquivo (1 open/close),
+// na ordem cronológica (mais antiga primeiro), sem montar uma cópia do
+// bloco inteiro em RAM antes — economiza rows*lineLen bytes de RAM estática
+// por buffer (relevante com LOG_BUFFER_MAX/WIFI_BUFFER_MAX grandes).
 // Recebe o buffer como ponteiro plano (base + stride) em vez de template
 // com referência a array — o pré-processador do Arduino IDE (ctags) não
 // gera corretamente o protótipo automático para esse tipo de assinatura.
-size_t montarBloco(char* buf, int rows, int lineLen, int head, int count, char* out, size_t outSize) {
-  size_t pos = 0;
-  for (int i = 0; i < count; i++) {
-    const char* linha = buf + ((size_t)((head + i) % rows) * lineLen);
-    size_t len = strlen(linha);
-    if (pos + len >= outSize) break; // segurança, não deve acontecer
-    memcpy(out + pos, linha, len);
-    pos += len;
+bool appendLinhasCirculares(const char* path, char* buf, int rows, int lineLen, int head, int count) {
+  FsFile file = sd.open(path, O_WRONLY | O_CREAT | O_APPEND);
+  if (!file) {
+    Serial.print("Aviso: ");
+    Serial.print(path);
+    Serial.println(" nao disponivel para escrita.");
+    return false;
   }
-  out[pos] = '\0';
-  return pos;
+
+  bool ok = true;
+  for (int i = 0; i < count && ok; i++) {
+    const char* linha = buf + ((size_t)((head + i) % rows) * lineLen);
+    ok = file.print(linha) > 0;
+  }
+  if (!ok) {
+    Serial.print("Erro ao gravar em: ");
+    Serial.println(path);
+  }
+  file.close();
+  return ok;
 }
 
 // Adiciona uma linha a um buffer circular: se cheio, descarta a mais antiga
@@ -185,15 +218,21 @@ void adicionarLinhaCircular(char* buf, int rows, int lineLen, int &head, int &co
 // caso de falha, os dados ficam retidos no buffer circular e o SD é
 // remontado, para o próximo ciclo tentar gravar de novo sem perder nada.
 void flushBuffers() {
+  // Não grava no SD com scan WiFi em andamento: os dois picos de corrente
+  // juntos (rádio + escrita física) já causaram brownout/travamento em
+  // campo. Adia pro próximo ciclo — buffer circular tolera o atraso.
+  if (scanEmAndamento) {
+    Serial.println(F("Flush adiado: scan WiFi em andamento."));
+    return;
+  }
+
   Serial.println(F(">> GRAVANDO SD... NAO DESLIGAR! <<"));
   bool falhaAlgum = false;
 
   // Flush buffer de log GPS
   if (logBufferCount > 0) {
-    static char blocoLog[LOG_BUFFER_MAX * 160];
-    size_t bytes = montarBloco(&logBuffer[0][0], LOG_BUFFER_MAX, 160, logBufferHead, logBufferCount, blocoLog, sizeof(blocoLog));
-    Serial.printf("  log.txt: %d linhas (%u bytes)... ", logBufferCount, (unsigned)bytes);
-    if (appendFile(logFileName, blocoLog)) {
+    Serial.printf("  log.txt: %d linhas... ", logBufferCount);
+    if (appendLinhasCirculares(logFileName, &logBuffer[0][0], LOG_BUFFER_MAX, 160, logBufferHead, logBufferCount)) {
       Serial.println("OK");
       logBufferHead  = 0;
       logBufferCount = 0;
@@ -205,10 +244,8 @@ void flushBuffers() {
 
   // Flush buffer WiFi
   if (wifiBufferCount > 0) {
-    static char blocoWifi[WIFI_BUFFER_MAX * 256];
-    size_t bytes = montarBloco(&wifiBuffer[0][0], WIFI_BUFFER_MAX, 256, wifiBufferHead, wifiBufferCount, blocoWifi, sizeof(blocoWifi));
-    Serial.printf("  wifi.txt: %d linhas (%u bytes)... ", wifiBufferCount, (unsigned)bytes);
-    if (appendFile(wifiFileName, blocoWifi)) {
+    Serial.printf("  wifi.txt: %d linhas... ", wifiBufferCount);
+    if (appendLinhasCirculares(wifiFileName, &wifiBuffer[0][0], WIFI_BUFFER_MAX, 256, wifiBufferHead, wifiBufferCount)) {
       Serial.println("OK");
       wifiBufferHead  = 0;
       wifiBufferCount = 0;
@@ -223,26 +260,7 @@ void flushBuffers() {
     return;
   }
 
-  // Reset cache de SSIDs — novas redes serão gravadas no próximo ciclo
-  ssidCacheCount = 0;
-
   Serial.println(F(">> GRAVACAO CONCLUIDA. SEGURO DESLIGAR. <<"));
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Função para contar linhas no arquivo
-int contarLinhas(const char *path) {
-  FsFile file = sd.open(path, O_RDONLY);
-  if (!file) return 0;
-
-  int linhas = 0;
-  while (file.available()) {
-    if (file.read() == '\n') {
-      linhas++;
-    }
-  }
-  file.close();
-  return linhas;
 }
 
 // Escreve cabeçalho CSV em log.txt caso o arquivo ainda não exista
@@ -323,6 +341,24 @@ void exibirDashboard(const char* timeStamp, long lat, long lon,
     Serial.println(F("  WiFi  --- (sem fix GPS) ---"));
   }
 
+  // Linha estado do sono do WiFi (ON/OFF + contagem regressiva)
+  if (wifiDormindo) {
+    long remSeg = (long)(WIFI_SLEEP_MS - (millis() - wifiSleepStart)) / 1000;
+    if (remSeg < 0) remSeg = 0;
+    Serial.printf("  RF    WiFi:OFF (dormindo)  acorda em %lds ou ao mover\n", remSeg);
+  } else {
+    Serial.println(F("  RF    WiFi:ON"));
+  }
+
+  // Linha estado do log.txt parado (rajada a cada WIFI_SLEEP_MS)
+  if (logParadoStart != 0) {
+    long remSeg = (long)(WIFI_SLEEP_MS - (millis() - logParadoStart)) / 1000;
+    if (remSeg < 0) remSeg = 0;
+    Serial.printf("  LOG   Parado: gravacao em rajada em %lds\n", remSeg);
+  } else {
+    Serial.println(F("  LOG   Em movimento: gravacao normal (por buffer)"));
+  }
+
   // Linha Buffer/SD
   Serial.printf("  SD    [%s] %d/%d\n", barra, logBufferCount, LOG_BUFFER_MAX);
 
@@ -332,9 +368,27 @@ void exibirDashboard(const char* timeStamp, long lat, long lon,
 // ─────────────────────────────────────────────────────────────────────────────
 // Faz scan de redes WiFi de forma assíncrona (não-bloqueante)
 // Retorna as estatísticas do scan anterior se um novo estiver em andamento.
-WifiStats varrerWiFi(const char* timeStamp, long lat, long lon) {
+WifiStats varrerWiFi(const char* timeStamp, long lat, long lon, float kmh) {
   static WifiStats lastStats = {0, 0, 0};
-  static bool scanEmAndamento = false;
+
+  // Sono: WiFi desligado enquanto o veículo está parado e sem redes novas.
+  // Acorda se voltar a se mover ou se o tempo de sono estourar.
+  if (wifiDormindo) {
+    bool voltouAMover = kmh >= WIFI_SLEEP_KMH_THRESHOLD;
+    bool tempoEsgotado = millis() - wifiSleepStart >= WIFI_SLEEP_MS;
+    if (voltouAMover || tempoEsgotado) {
+      WiFi.mode(WIFI_STA);
+      WiFi.disconnect();
+      wifiDormindo = false;
+      // ssidCache NÃO reseta aqui de propósito: se o scan ao acordar não
+      // achar rede nova, nada é gravado e ele volta a dormir (sem duplicar
+      // nome de rede já visto antes do sono).
+      Serial.println(voltouAMover ? "WiFi acordado: veiculo em movimento."
+                                   : "WiFi acordado: tempo de sono esgotado.");
+    } else {
+      return lastStats; // continua dormindo
+    }
+  }
 
   // Se não há scan rodando, inicia um novo de forma assíncrona (true, true para show_hidden e passive)
   if (!scanEmAndamento) {
@@ -349,7 +403,7 @@ WifiStats varrerWiFi(const char* timeStamp, long lat, long lon) {
     scanEmAndamento = false; // Falhou, permite tentar de novo
     return lastStats;
   }
-  
+
   if (n == WIFI_SCAN_RUNNING) {
     return lastStats; // Ainda processando
   }
@@ -360,7 +414,7 @@ WifiStats varrerWiFi(const char* timeStamp, long lat, long lon) {
   for (int i = 0; i < n; ++i) {
     const char* ssid = WiFi.SSID(i).c_str();
 
-    // Deduplicação: ignora SSIDs já vistas neste ciclo de buffer
+    // Deduplicação: ignora SSIDs já gravadas (cache nunca reseta)
     if (ssidJaVista(ssid)) {
       stats.dup++;
       continue;
@@ -381,6 +435,15 @@ WifiStats varrerWiFi(const char* timeStamp, long lat, long lon) {
   WiFi.scanDelete();
   scanEmAndamento = false; // Pronto para o próximo ciclo
   lastStats = stats;
+
+  // Parado e nenhuma rede nova nesta varredura -> dorme
+  if (kmh < WIFI_SLEEP_KMH_THRESHOLD && stats.novas == 0) {
+    WiFi.mode(WIFI_OFF);
+    wifiDormindo = true;
+    wifiSleepStart = millis();
+    Serial.println("WiFi dormindo: veiculo parado, sem redes novas.");
+  }
+
   return stats;
 }
 
@@ -458,16 +521,29 @@ void processarDadosGPS(DadosMPU mediaMPU) {
   // Acumula no buffer circular de log (descarta a linha mais antiga se cheio)
   adicionarLinhaCircular(&logBuffer[0][0], LOG_BUFFER_MAX, 160, logBufferHead, logBufferCount, logData);
 
-  // Scan WiFi acumula no wifiBuffer
-  WifiStats wifiStats = varrerWiFi(timeStamp, lat, lon);
+  // Scan WiFi acumula no wifiBuffer (dorme sozinho se parado e sem redes novas)
+  WifiStats wifiStats = varrerWiFi(timeStamp, lat, lon, kmh);
 
   // Exibe dashboard no Serial Monitor
   exibirDashboard(timeStamp, lat, lon, sat, hdop, kmh, direcao,
                   umidade, tempDHT, mediaMPU, wifiStats, true);
 
-  // Flush quando atingir LOG_BUFFER_MAX linhas
-  if (logBufferCount >= LOG_BUFFER_MAX) {
-    flushBuffers();
+  // Flush do log.txt: cadência normal (por contagem) em movimento; parado,
+  // vira rajada única a cada WIFI_SLEEP_MS (mesma regra do sono do WiFi,
+  // timer próprio pra não interferir no wifiSleepStart).
+  if (kmh > WIFI_SLEEP_KMH_THRESHOLD) {
+    logParadoStart = 0;
+    if (logBufferCount >= LOG_BUFFER_MAX) {
+      flushBuffers();
+    }
+  } else {
+    if (logParadoStart == 0) {
+      logParadoStart = millis(); // acabou de parar, começa a espera
+    } else if (millis() - logParadoStart >= WIFI_SLEEP_MS) {
+      flushBuffers();
+      logParadoStart = millis(); // reinicia o ciclo de 5 min
+    }
+    // senão: parado e ainda dentro da janela de 5 min, não grava
   }
 }
 
@@ -524,26 +600,11 @@ void setup() {
   // Cria cabeçalho CSV se o arquivo ainda não existir
   inicializarArquivoLog();
 
-  // Verificação do arquivo de log
-  if (sd.exists(logFileName)) {
-    FsFile file = sd.open(logFileName, O_RDONLY);
-    Serial.printf("Arquivo %s encontrado.\n", logFileName);
-    Serial.printf("Tamanho: %u bytes\n", (unsigned)file.size());
-    file.close();
-
-    int linhas = contarLinhas(logFileName);
-    Serial.printf("Quantidade de linhas: %d\n", linhas);
-  }
-
-  // Verificação do arquivo de wifi
-  if (sd.exists(wifiFileName)) {
-    FsFile file = sd.open(wifiFileName, O_RDONLY);
-    Serial.printf("Arquivo %s encontrado.\n", wifiFileName);
-    Serial.printf("Tamanho: %u bytes\n", (unsigned)file.size());
-    file.close();
-  } else {
-    Serial.printf("Arquivo %s nao existe. Sera criado na primeira gravacao.\n", wifiFileName);
-  }
+  // Verificação dos arquivos de log — só existência, sem abrir/ler (poupa
+  // ciclos de leitura do cartão; vida útil do SD importa mais que a
+  // contagem de linhas no boot, que era só curiosidade no Serial).
+  Serial.printf("Arquivo %s: %s\n", logFileName, sd.exists(logFileName) ? "encontrado" : "sera criado na primeira gravacao");
+  Serial.printf("Arquivo %s: %s\n", wifiFileName, sd.exists(wifiFileName) ? "encontrado" : "sera criado na primeira gravacao");
 
   // Watchdog: se loop() travar por mais de WDT_TIMEOUT_S sem "alimentar"
   // o watchdog, o ESP32 reseta sozinho. Cobre travamentos de qualquer

@@ -94,7 +94,7 @@ data_hora, lat, lon, sat, hdop, kmh, direcao, umidade, temp_dht, ac_x, ac_y, ac_
 25/12/2024 18:30:45, -23550123, -46633456, 8, 1.20, 15.50, S, 65.0, 28.5, , , , , ,
 ```
 
-> As linhas são acumuladas em um buffer em RAM (`LOG_BUFFER_MAX`) e gravadas no SD em lote, para reduzir desgaste do cartão.
+> As linhas são acumuladas em um buffer em RAM (`LOG_BUFFER_MAX`) e gravadas no SD em lote, para reduzir desgaste do cartão. Com o veículo parado (ver [Gerenciamento de energia e vida útil do SD](#-gerenciamento-de-energia-e-vida-útil-do-sd)), a gravação vira rajada a cada 5 minutos em vez de a cada ~150 linhas.
 
 ### wifi.txt
 Contém os dados do scan de redes WiFi no formato:
@@ -107,7 +107,7 @@ DD/MM/AAAA HH:MM:SS, latitude, longitude, SSID, RSSI, canal, criptografia
 25/12/2024 18:30:45, -23550123, -46633456, MinhaRede, -65, 6, WPA2
 ```
 
-> O scan de WiFi é assíncrono (não bloqueia o loop) e faz deduplicação de SSIDs já vistas desde o último flush do buffer, evitando linhas repetidas em curto intervalo.
+> O scan de WiFi é assíncrono (não bloqueia o loop) e faz deduplicação de SSIDs por um cache único que **nunca reseta** (nem no flush, nem quando o WiFi acorda do sono) — cada rede só é gravada 1 vez em wifi.txt até `SSID_CACHE_MAX` (64) encher ou o ESP32 reiniciar. Com o veículo parado e sem redes novas, o rádio WiFi desliga sozinho (ver [Gerenciamento de energia e vida útil do SD](#-gerenciamento-de-energia-e-vida-útil-do-sd)) e o wifi.txt para de crescer até o WiFi acordar.
 
 > **Nota:** O fuso horário está configurado para UTC-3 (Brasília).
 
@@ -135,12 +135,15 @@ As principais configurações podem ser ajustadas no início do arquivo `esp32gp
 #define DHTPIN 32          // Pino do DHT22
 #define DHTTYPE DHT22      // Tipo do sensor DHT
 
-#define LOG_BUFFER_MAX    60     // Linhas de log GPS acumuladas em RAM antes de gravar no SD
-#define WIFI_BUFFER_MAX   60     // Linhas de log WiFi acumuladas em RAM antes de gravar no SD
+#define LOG_BUFFER_MAX    150    // Linhas de log GPS acumuladas em RAM antes de gravar no SD
+#define WIFI_BUFFER_MAX   100    // Linhas de log WiFi acumuladas em RAM antes de gravar no SD
 #define SSID_CACHE_MAX    64     // Máx. SSIDs rastreadas para deduplicação por ciclo
 
 #define WDT_TIMEOUT_S     15     // Timeout (s) do watchdog: reseta o ESP32 se o loop travar
 #define SD_REMOUNT_MAX_FALHAS 10 // Falhas consecutivas de remount do SD antes de reiniciar o ESP32
+
+#define WIFI_SLEEP_KMH_THRESHOLD 2.0   // Abaixo desse km/h o veículo é considerado "parado"
+#define WIFI_SLEEP_MS   (5UL*60UL*1000UL) // Duração do sono do WiFi / intervalo de rajada do log parado (5 min)
 
 const uint8_t SD_CS_PIN = 5;              // Pino CS do cartão SD
 #define SPI_CLOCK SD_SCK_MHZ(16)          // Clock SPI do SD (reduza p/ SD_SCK_MHZ(10) ou (4) se houver falhas de leitura/escrita)
@@ -151,6 +154,30 @@ O MPU6050 usa o barramento I2C padrão do ESP32 (GPIO 21/22) e é inicializado a
 ### Acesso ao cartão SD (SdFat)
 
 O projeto usa a biblioteca **SdFat** (não a `SD.h` do core ESP32) para acesso ao cartão, via volume `SdFs` (auto-detecta FAT16/FAT32/exFAT). A instância global `sd` (tipo `SdFs`) substitui o antigo objeto `SD`. Configuração SPI em `SD_CONFIG` (CS + clock, acima).
+
+Cada gravação (`appendLinhasCirculares()`, usada tanto pra log.txt quanto wifi.txt) abre o arquivo **1 única vez**, grava todas as linhas do buffer circular em sequência, e fecha — sem montar uma cópia intermediária do bloco inteiro em RAM (economiza `rows × lineLen` bytes por buffer). No boot, a verificação dos arquivos existentes usa só `sd.exists()` (sem abrir/ler o conteúdo nem contar linhas), pra minimizar ciclos de acesso ao cartão.
+
+## 🔋 Gerenciamento de energia e vida útil do SD
+
+A combinação de scan WiFi + escrita no SD com o GPS ativo já causou brownout/travamento em campo (picos de corrente coincidindo). Duas mitigações via software, ambas usando os mesmos parâmetros `WIFI_SLEEP_KMH_THRESHOLD` (2.0 km/h) e `WIFI_SLEEP_MS` (5 min):
+
+### 1. Sono do WiFi (rádio desligado quando parado)
+- Veículo parado (`kmh < WIFI_SLEEP_KMH_THRESHOLD`) **e** nenhuma rede nova encontrada na última varredura → `WiFi.mode(WIFI_OFF)`, rádio desligado.
+- Acorda (`WiFi.mode(WIFI_STA)`) se o veículo voltar a se mover (`kmh >= WIFI_SLEEP_KMH_THRESHOLD`) **ou** se `WIFI_SLEEP_MS` (5 min) se esgotarem — o que ocorrer primeiro.
+- O cache de SSIDs (`ssidCache`, `SSID_CACHE_MAX`=64) **não reseta ao acordar**: o scan pós-sono é comparado contra tudo que já foi visto antes de dormir. Se não achar rede nova, nada é gravado em wifi.txt e ele volta a dormir imediatamente — evita duplicar nome de rede já registrado em ciclos anteriores de sono.
+
+### 2. Gate de escrita no SD durante scan WiFi
+- `flushBuffers()` nunca grava no SD enquanto um `WiFi.scanNetworks()` assíncrono está em andamento (`scanEmAndamento`) — adia a escrita pro próximo ciclo (o buffer circular tolera o atraso). Evita o pico de corrente do rádio coincidir com o pico de escrita física no SD, tanto parado quanto em movimento.
+
+### 3. Rajada de log.txt quando parado
+- Em movimento, log.txt grava normalmente por contagem (flush a cada `LOG_BUFFER_MAX` linhas, ~150 linhas ≈ 2,5 min a 1 leitura/s).
+- Parado (`kmh < WIFI_SLEEP_KMH_THRESHOLD`), a gravação por contagem é suspensa: o `logBuffer` continua acumulando 1 linha/ciclo (circular — preserva só o último ~1 min de leituras), mas só é gravado no SD em rajada única a cada `WIFI_SLEEP_MS` (5 min), usando um timer próprio (`logParadoStart`), desacoplado do timer do sono do WiFi.
+- Diferente do WiFi (que fica sem dado novo útil quando parado), o log sempre tem dados relevantes (temperatura/umidade/IMU), então continua sendo gravado — só com cadência mais espaçada.
+
+### Status no Monitor Serial
+O dashboard ASCII (a cada ciclo, com ou sem fix de GPS) mostra:
+- **RF**: `WiFi:ON` ou `WiFi:OFF (dormindo)` com contagem regressiva até acordar.
+- **LOG**: `Em movimento: gravacao normal (por buffer)` ou `Parado: gravacao em rajada em Xs` com contagem até a próxima rajada.
 
 ## 🚀 Como Usar
 
@@ -167,9 +194,10 @@ O projeto usa a biblioteca **SdFat** (não a `SD.h` do core ESP32) para acesso a
 O projeto exibe informações como:
 - Status de inicialização do cartão SD
 - Tipo e tamanho do cartão SD
-- Status dos arquivos de log
+- Existência dos arquivos de log (log.txt/wifi.txt), verificada só por `sd.exists()` no boot
 - Dados lidos do GPS em tempo real
 - Status do scan de WiFi
+- Estado do sono do WiFi (ON/OFF + contagem regressiva) e da rajada de log.txt quando parado
 
 ## 🔧 Funcionalidades
 
@@ -178,18 +206,20 @@ O projeto exibe informações como:
 - ✅ Leitura de temperatura e umidade
 - ✅ Leitura de aceleração e giroscópio (MPU6050, opcional, com média por ciclo)
 - ✅ Scan assíncrono e periódico de redes WiFi próximas, com deduplicação de SSID
+- ✅ Sono automático do WiFi quando parado e sem redes novas (`WIFI_SLEEP_KMH_THRESHOLD`/`WIFI_SLEEP_MS`)
+- ✅ Rajada de gravação do log.txt a cada 5 min quando parado (em vez de por contagem de linhas)
+- ✅ Gate: nunca grava no SD com scan WiFi em andamento (evita coincidir picos de corrente)
 - ✅ Buffer em RAM para log GPS e WiFi, com flush em lote no SD (reduz desgaste do cartão)
-- ✅ Gravação em arquivos separados (log.txt e wifi.txt)
+- ✅ Gravação em arquivos separados (log.txt e wifi.txt), 1 open/close por lote (sem cópia intermediária em RAM)
 - ✅ Cabeçalho CSV automático em log.txt
-- ✅ Contagem de linhas no arquivo de log
 - ✅ Tratamento de erros para cartão SD e sensores ausentes
-- ✅ Dashboard em ASCII no Monitor Serial
+- ✅ Dashboard em ASCII no Monitor Serial (inclui estado do sono do WiFi e da rajada de log)
 - ✅ Watchdog (esp_task_wdt): reseta o ESP32 automaticamente se o loop travar
 - ✅ Reinício automático do ESP32 após falhas consecutivas de remount do SD (`SD_REMOUNT_MAX_FALHAS`)
 
 ## 📌 Observações
 
-- O scan de WiFi é realizado a cada atualização válida dos dados do GPS
+- O scan de WiFi é realizado a cada atualização válida dos dados do GPS, exceto quando o WiFi está dormindo (veículo parado, ver [Gerenciamento de energia e vida útil do SD](#-gerenciamento-de-energia-e-vida-útil-do-sd))
 - O cartão SD deve estar formatado em FAT32
 - Para melhor precisão do GPS, utilize o módulo em área aberta
 - O sensor DHT22 tem tempo de leitura de ~2 segundos entre medições
