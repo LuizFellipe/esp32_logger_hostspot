@@ -28,7 +28,7 @@ const uint8_t SD_CS_PIN = 5;
 // para abrir espaço às mais recentes)
 #define LOG_BUFFER_MAX    150    // Linhas de log GPS acumuladas antes de flush
 #define WIFI_BUFFER_MAX   100    // Linhas de log WiFi acumuladas antes de flush
-#define SSID_CACHE_MAX    64     // Máx SSIDs rastreadas para deduplicação
+#define SSID_CACHE_MAX    500    // Máx SSIDs rastreadas para deduplicação (guarda hash, não string)
 
 // Watchdog: se o loop() não "alimentar" o watchdog nesse tempo, o ESP32
 // assume que travou (SD/I2C pendurado etc.) e reseta sozinho.
@@ -87,8 +87,11 @@ int  wifiBufferCount = 0;              // Linhas acumuladas
 // WiFi acorda do sono). Uma rede só é gravada em wifi.txt 1 vez até
 // SSID_CACHE_MAX encher ou o ESP32 reiniciar; evita duplicar nome de rede
 // no log mesmo depois de vários ciclos de sono/flush.
-char ssidCache[SSID_CACHE_MAX][33];    // 32 chars max SSID + null
+// Guarda hash de 32 bits (FNV-1a) em vez da string: 4 bytes/slot em vez de
+// 33, permitindo SSID_CACHE_MAX bem maior com a mesma RAM.
+uint32_t ssidCacheHash[SSID_CACHE_MAX];
 int  ssidCacheCount = 0;
+bool ssidCacheCheioAvisado = false;    // evita spam do aviso de cache cheio
 
 // Estado do sono do WiFi (ver WIFI_SLEEP_KMH_THRESHOLD / WIFI_SLEEP_MS)
 bool wifiDormindo = false;
@@ -105,11 +108,23 @@ unsigned long logParadoStart = 0;
 bool scanEmAndamento = false;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Hash FNV-1a de 32 bits — usado pra guardar SSIDs no cache em 4 bytes
+// em vez da string inteira (33 bytes), permitindo SSID_CACHE_MAX bem maior.
+uint32_t hashSSID(const char* ssid) {
+  uint32_t hash = 2166136261u;
+  for (const char* p = ssid; *p; p++) {
+    hash ^= (uint8_t)*p;
+    hash *= 16777619u;
+  }
+  return hash;
+}
+
 // Verifica se uma SSID já está no cache
 // Retorna true se já foi vista (duplicata)
 bool ssidJaVista(const char* ssid) {
+  uint32_t h = hashSSID(ssid);
   for (int i = 0; i < ssidCacheCount; i++) {
-    if (strcmp(ssidCache[i], ssid) == 0) {
+    if (ssidCacheHash[i] == h) {
       return true;
     }
   }
@@ -119,11 +134,12 @@ bool ssidJaVista(const char* ssid) {
 // Adiciona SSID ao cache (se couber)
 void adicionarSSIDCache(const char* ssid) {
   if (ssidCacheCount < SSID_CACHE_MAX) {
-    strncpy(ssidCache[ssidCacheCount], ssid, 32);
-    ssidCache[ssidCacheCount][32] = '\0';
+    ssidCacheHash[ssidCacheCount] = hashSSID(ssid);
     ssidCacheCount++;
+  } else if (!ssidCacheCheioAvisado) {
+    Serial.println("Aviso: cache de SSID cheio (SSID_CACHE_MAX). Deduplicacao desativada a partir daqui.");
+    ssidCacheCheioAvisado = true;
   }
-  // Cache cheio → ignora silenciosamente (redes novas passam direto)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -361,6 +377,12 @@ void exibirDashboard(const char* timeStamp, long lat, long lon,
 
   // Linha Buffer/SD
   Serial.printf("  SD    [%s] %d/%d\n", barra, logBufferCount, LOG_BUFFER_MAX);
+
+  // Linha buffer WiFi + cache de SSID
+  Serial.printf("  BUF   log:%d/%d  wifi:%d/%d  ssidCache:%d/%d\n",
+                logBufferCount, LOG_BUFFER_MAX,
+                wifiBufferCount, WIFI_BUFFER_MAX,
+                ssidCacheCount, SSID_CACHE_MAX);
 
   Serial.println(F("================================================"));
 }
