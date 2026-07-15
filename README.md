@@ -119,8 +119,9 @@ Instale as seguintes bibliotecas no Arduino IDE:
 - **DHT sensor library** (Adafruit) - Para leitura do sensor DHT22
 - **Adafruit MPU6050** - Para leitura do sensor IMU (opcional)
 - **Adafruit Unified Sensor** - Dependência da lib acima
+- **SdFat** (Bill Greiman) - Para acesso ao cartão SD
 
-As bibliotecas `FS`, `SD`, `SPI`, `WiFi` e `Wire` já fazem parte do framework ESP32.
+As bibliotecas `SPI`, `WiFi` e `Wire` já fazem parte do framework ESP32.
 
 ## ⚙️ Configuração
 
@@ -140,9 +141,16 @@ As principais configurações podem ser ajustadas no início do arquivo `esp32gp
 
 #define WDT_TIMEOUT_S     15     // Timeout (s) do watchdog: reseta o ESP32 se o loop travar
 #define SD_REMOUNT_MAX_FALHAS 10 // Falhas consecutivas de remount do SD antes de reiniciar o ESP32
+
+const uint8_t SD_CS_PIN = 5;              // Pino CS do cartão SD
+#define SPI_CLOCK SD_SCK_MHZ(16)          // Clock SPI do SD (reduza p/ SD_SCK_MHZ(10) ou (4) se houver falhas de leitura/escrita)
 ```
 
 O MPU6050 usa o barramento I2C padrão do ESP32 (GPIO 21/22) e é inicializado automaticamente — se não for detectado, o programa continua normalmente sem os dados de IMU.
+
+### Acesso ao cartão SD (SdFat)
+
+O projeto usa a biblioteca **SdFat** (não a `SD.h` do core ESP32) para acesso ao cartão, via volume `SdFs` (auto-detecta FAT16/FAT32/exFAT). A instância global `sd` (tipo `SdFs`) substitui o antigo objeto `SD`. Configuração SPI em `SD_CONFIG` (CS + clock, acima).
 
 ## 🚀 Como Usar
 

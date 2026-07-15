@@ -1,6 +1,6 @@
 #include <TinyGPS.h>
-#include "FS.h"
-#include "SD.h"
+#define DISABLE_FS_H_WARNING
+#include "SdFat.h"
 #include "SPI.h"
 #include "DHT.h"
 #include "WiFi.h"
@@ -8,6 +8,11 @@
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 #include "esp_task_wdt.h"
+
+// Configuração SdFat
+const uint8_t SD_CS_PIN = 5;
+#define SPI_CLOCK SD_SCK_MHZ(16)
+#define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SPI_CLOCK)
 
 // Configuração do GPS
 #define GPS_RX 17
@@ -36,6 +41,7 @@
 TinyGPS gps;
 DHT dht(DHTPIN, DHTTYPE);
 Adafruit_MPU6050 mpu;
+SdFs sd;
 
 bool mpuDisponivel = false;
 int  falhasRemountSD = 0;  // Falhas consecutivas de remount do SD
@@ -101,8 +107,8 @@ void adicionarSSIDCache(const char* ssid) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Grava bloco de dados no final de um arquivo no cartão SD (1 open/close)
 // Retorna true só se abertura E escrita tiverem sucesso.
-bool appendFile(fs::FS &fs, const char *path, const char *message) {
-  File file = fs.open(path, FILE_APPEND);
+bool appendFile(const char *path, const char *message) {
+  FsFile file = sd.open(path, O_WRONLY | O_CREAT | O_APPEND);
   if (!file) {
     Serial.print("Aviso: ");
     Serial.print(path);
@@ -110,7 +116,7 @@ bool appendFile(fs::FS &fs, const char *path, const char *message) {
     return false;
   }
 
-  bool ok = file.print(message);
+  bool ok = file.print(message) > 0;
   if (!ok) {
     Serial.print("Erro ao gravar em: ");
     Serial.println(path);
@@ -119,13 +125,13 @@ bool appendFile(fs::FS &fs, const char *path, const char *message) {
   return ok;
 }
 
-// Tenta remontar o cartão SD (SD.end() + SD.begin()). Usado quando uma
+// Tenta remontar o cartão SD (sd.end() + sd.begin()). Usado quando uma
 // escrita falha, pra recuperar de mau contato/instabilidade sem resetar
 // o ESP32 inteiro.
 bool remontarSD() {
-  SD.end();
+  sd.end();
   delay(50);
-  bool ok = SD.begin();
+  bool ok = sd.begin(SD_CONFIG);
 
   if (ok) {
     falhasRemountSD = 0;
@@ -179,12 +185,6 @@ void adicionarLinhaCircular(char* buf, int rows, int lineLen, int &head, int &co
 // caso de falha, os dados ficam retidos no buffer circular e o SD é
 // remontado, para o próximo ciclo tentar gravar de novo sem perder nada.
 void flushBuffers() {
-  if (SD.cardType() == CARD_NONE) {
-    Serial.println("Erro: Cartao SD nao disponivel. Tentando remontar...");
-    remontarSD();
-    return;
-  }
-
   Serial.println(F(">> GRAVANDO SD... NAO DESLIGAR! <<"));
   bool falhaAlgum = false;
 
@@ -193,7 +193,7 @@ void flushBuffers() {
     static char blocoLog[LOG_BUFFER_MAX * 160];
     size_t bytes = montarBloco(&logBuffer[0][0], LOG_BUFFER_MAX, 160, logBufferHead, logBufferCount, blocoLog, sizeof(blocoLog));
     Serial.printf("  log.txt: %d linhas (%u bytes)... ", logBufferCount, (unsigned)bytes);
-    if (appendFile(SD, logFileName, blocoLog)) {
+    if (appendFile(logFileName, blocoLog)) {
       Serial.println("OK");
       logBufferHead  = 0;
       logBufferCount = 0;
@@ -208,7 +208,7 @@ void flushBuffers() {
     static char blocoWifi[WIFI_BUFFER_MAX * 256];
     size_t bytes = montarBloco(&wifiBuffer[0][0], WIFI_BUFFER_MAX, 256, wifiBufferHead, wifiBufferCount, blocoWifi, sizeof(blocoWifi));
     Serial.printf("  wifi.txt: %d linhas (%u bytes)... ", wifiBufferCount, (unsigned)bytes);
-    if (appendFile(SD, wifiFileName, blocoWifi)) {
+    if (appendFile(wifiFileName, blocoWifi)) {
       Serial.println("OK");
       wifiBufferHead  = 0;
       wifiBufferCount = 0;
@@ -231,8 +231,8 @@ void flushBuffers() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Função para contar linhas no arquivo
-int contarLinhas(fs::FS &fs, const char *path) {
-  File file = fs.open(path);
+int contarLinhas(const char *path) {
+  FsFile file = sd.open(path, O_RDONLY);
   if (!file) return 0;
 
   int linhas = 0;
@@ -247,11 +247,11 @@ int contarLinhas(fs::FS &fs, const char *path) {
 
 // Escreve cabeçalho CSV em log.txt caso o arquivo ainda não exista
 void inicializarArquivoLog() {
-  if (!SD.exists(logFileName)) {
+  if (!sd.exists(logFileName)) {
     const char* cabecalho =
       "data_hora, lat, lon, sat, hdop, kmh, direcao, umidade, temp_dht,"
       " ac_x, ac_y, ac_z, gy_x, gy_y, gy_z\n";
-    appendFile(SD, logFileName, cabecalho);
+    appendFile(logFileName, cabecalho);
     Serial.println("Cabecalho CSV criado em log.txt");
   }
 }
@@ -504,42 +504,42 @@ void setup() {
   // seguir gravando no vazio (causa raiz de "às vezes precisa religar
   // várias vezes até o SD pegar").
   int tentativaSD = 0;
-  while (!SD.begin() || SD.cardType() == CARD_NONE) {
+  while (!sd.begin(SD_CONFIG)) {
     tentativaSD++;
     Serial.printf("Falha ao montar o cartao SD (tentativa %d). Tentando novamente...\n", tentativaSD);
-    SD.end();
+    sd.end();
     delay(500);
   }
 
-  uint8_t cardType = SD.cardType();
+  uint8_t cardType = sd.card()->type();
   Serial.print("Cartao SD montado. Tipo: ");
-  if (cardType == CARD_MMC)       Serial.println("MMC");
-  else if (cardType == CARD_SD)   Serial.println("SDSC");
-  else if (cardType == CARD_SDHC) Serial.println("SDHC");
-  else                            Serial.println("DESCONHECIDO");
+  if (cardType == SD_CARD_TYPE_SD1)       Serial.println("SDSC");
+  else if (cardType == SD_CARD_TYPE_SD2)  Serial.println("SDSC");
+  else if (cardType == SD_CARD_TYPE_SDHC) Serial.println("SDHC/SDXC");
+  else                                    Serial.println("DESCONHECIDO");
 
-  uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+  uint64_t cardSize = (uint64_t)sd.card()->sectorCount() * 512ULL / (1024 * 1024);
   Serial.printf("Tamanho do Cartao: %llu MB\n", cardSize);
 
   // Cria cabeçalho CSV se o arquivo ainda não existir
   inicializarArquivoLog();
 
   // Verificação do arquivo de log
-  if (SD.exists(logFileName)) {
-    File file = SD.open(logFileName);
+  if (sd.exists(logFileName)) {
+    FsFile file = sd.open(logFileName, O_RDONLY);
     Serial.printf("Arquivo %s encontrado.\n", logFileName);
-    Serial.printf("Tamanho: %u bytes\n", file.size());
+    Serial.printf("Tamanho: %u bytes\n", (unsigned)file.size());
     file.close();
 
-    int linhas = contarLinhas(SD, logFileName);
+    int linhas = contarLinhas(logFileName);
     Serial.printf("Quantidade de linhas: %d\n", linhas);
   }
 
   // Verificação do arquivo de wifi
-  if (SD.exists(wifiFileName)) {
-    File file = SD.open(wifiFileName);
+  if (sd.exists(wifiFileName)) {
+    FsFile file = sd.open(wifiFileName, O_RDONLY);
     Serial.printf("Arquivo %s encontrado.\n", wifiFileName);
-    Serial.printf("Tamanho: %u bytes\n", file.size());
+    Serial.printf("Tamanho: %u bytes\n", (unsigned)file.size());
     file.close();
   } else {
     Serial.printf("Arquivo %s nao existe. Sera criado na primeira gravacao.\n", wifiFileName);
