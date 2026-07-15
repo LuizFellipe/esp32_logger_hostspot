@@ -1,0 +1,333 @@
+#include <TinyGPS.h>
+#include "FS.h"
+#include "SD.h"
+#include "SPI.h"
+#include "DHT.h"
+#include "WiFi.h"
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+
+// Configuração do GPS
+#define GPS_RX 17
+#define GPS_TX 16
+#define GPS_Serial_Baud 9600
+
+// Configuração do DHT22
+#define DHTPIN 32
+#define DHTTYPE DHT22
+
+TinyGPS gps;
+DHT dht(DHTPIN, DHTTYPE);
+Adafruit_MPU6050 mpu;
+bool mpuDisponivel = false;
+
+// Estrutura para armazenar dados médios do MPU6050
+struct DadosMPU {
+  float acX, acY, acZ;  // Aceleração em m/s²
+  float gyX, gyY, gyZ;  // Giroscópio em rad/s
+};
+
+// Nomes dos arquivos de log
+const char* logFileName  = "/log.txt";
+const char* wifiFileName = "/wifi.txt";
+
+// Função para contar linhas no arquivo
+int contarLinhas(fs::FS &fs, const char *path) {
+  File file = fs.open(path);
+  if (!file) return 0;
+
+  int linhas = 0;
+  while (file.available()) {
+    if (file.read() == '\n') {
+      linhas++;
+    }
+  }
+  file.close();
+  return linhas;
+}
+
+// Grava dados no final de um arquivo no cartão SD
+void appendFile(fs::FS &fs, const char *path, const char *message) {
+  // Abre o arquivo para verificar se está disponível para escrita
+  File file = fs.open(path, FILE_APPEND);
+  if (!file) {
+    Serial.print("Aviso: ");
+    Serial.print(path);
+    Serial.println(" nao disponivel para escrita.");
+    return;
+  }
+
+  // Com o arquivo aberto e verificado, realizamos a gravação
+  if (file.print(message)) {
+    // Sucesso na gravação
+  } else {
+    Serial.print("Erro ao gravar em: ");
+    Serial.println(path);
+  }
+  file.close();
+}
+
+// Escreve cabeçalho CSV em log.txt caso o arquivo ainda não exista
+void inicializarArquivoLog() {
+  if (!SD.exists(logFileName)) {
+    const char* cabecalho =
+      "data_hora, lat, lon, sat, hdop, kmh, direcao, umidade, temp_dht,"
+      " ac_x, ac_y, ac_z, gy_x, gy_y, gy_z\n";
+    appendFile(SD, logFileName, cabecalho);
+    Serial.println("Cabecalho CSV criado em log.txt");
+  }
+}
+
+// Converte o tipo de criptografia WiFi para string legível
+const char* obterTipoCriptografia(wifi_auth_mode_t encryptionType) {
+  switch (encryptionType) {
+    case WIFI_AUTH_OPEN:            return "open";
+    case WIFI_AUTH_WEP:             return "WEP";
+    case WIFI_AUTH_WPA_PSK:         return "WPA";
+    case WIFI_AUTH_WPA2_PSK:        return "WPA2";
+    case WIFI_AUTH_WPA_WPA2_PSK:    return "WPA+WPA2";
+    case WIFI_AUTH_WPA2_ENTERPRISE: return "WPA2-EAP";
+    case WIFI_AUTH_WPA3_PSK:        return "WPA3";
+    case WIFI_AUTH_WPA2_WPA3_PSK:   return "WPA2+WPA3";
+    case WIFI_AUTH_WAPI_PSK:        return "WAPI";
+    default:                        return "unknown";
+  }
+}
+
+// Faz scan de redes WiFi e grava os resultados em wifi.txt
+void varrerWiFi(const char* timeStamp, long lat, long lon) {
+  Serial.println("Iniciando Scan WiFi...");
+  int n = WiFi.scanNetworks();
+  Serial.printf("Scan concluido. %d redes encontradas.\n", n);
+
+  if (n > 0) {
+    for (int i = 0; i < n; ++i) {
+      char dadosWifi[256];
+      // Formato: [TimeStamp], [Lat], [Lon], [SSID], [RSSI], [CH], [Encryption]
+      snprintf(dadosWifi, sizeof(dadosWifi), "%s, %ld, %ld, %s, %ld, %d, %s\n",
+               timeStamp, lat, lon, WiFi.SSID(i).c_str(), WiFi.RSSI(i),
+               WiFi.channel(i), obterTipoCriptografia(WiFi.encryptionType(i)));
+
+      // Grava no arquivo wifi.txt
+      if (SD.cardType() != CARD_NONE) {
+        appendFile(SD, wifiFileName, dadosWifi);
+      }
+    }
+    Serial.println("Dados de WiFi gravados em wifi.txt. OK");
+  }
+  WiFi.scanDelete();
+}
+
+// Processa dados do GPS e DHT22, exibe no Serial e grava em log.txt
+// Recebe a média das leituras do MPU6050 coletadas durante o ciclo GPS
+void processarDadosGPS(DadosMPU mediaMPU) {
+  long lat, lon;
+  unsigned long fix_age, date, time;
+
+  // Coleta posição em números inteiros (milionésimos de grau)
+  gps.get_position(&lat, &lon, &fix_age);
+
+  // Coleta data e hora brutas
+  gps.get_datetime(&date, &time, &fix_age);
+
+  // Coleta outros dados
+  int sat   = (gps.satellites() == TinyGPS::GPS_INVALID_SATELLITES) ? 0 : gps.satellites();
+  float hdop = (gps.hdop() == TinyGPS::GPS_INVALID_HDOP) ? 0 : gps.hdop() / 100.0;
+  float kmh  = (gps.f_speed_kmph() == TinyGPS::GPS_INVALID_F_SPEED) ? 0.0 : gps.f_speed_kmph();
+
+  // Coleta direção em formato cardinal ("N", "S", "SE", etc.)
+  const char* direcao = TinyGPS::cardinal(gps.f_course());
+
+  // Coleta dados do DHT22
+  float umidade = dht.readHumidity();
+  float tempDHT = dht.readTemperature();
+
+  // Extrai componentes da data (DDMMYY)
+  int dia  = date / 10000;
+  int mes  = (date / 100) % 100;
+  int ano  = 2000 + (date % 100);
+
+  // Extrai componentes da hora (HHMMSSCC)
+  int hora    = time / 1000000;
+  int minuto  = (time / 10000) % 100;
+  int segundo = (time / 100) % 100;
+
+  // Ajuste de fuso horário (-3h) com tratamento de virada de dia
+  struct tm t;
+  t.tm_year  = ano - 1900;
+  t.tm_mon   = mes - 1;
+  t.tm_mday  = dia;
+  t.tm_hour  = hora;
+  t.tm_min   = minuto;
+  t.tm_sec   = segundo;
+  t.tm_isdst = -1; // Não considerar horário de verão
+
+  // Subtrai 3 horas (UTC-3)
+  t.tm_hour -= 3;
+
+  // mktime "normaliza" a estrutura (ajustando dia/mês/ano se necessário)
+  mktime(&t);
+
+  // Buffer para o timestamp usado no varrerWiFi
+  char timeStamp[25];
+  snprintf(timeStamp, sizeof(timeStamp), "%02d/%02d/%04d %02d:%02d:%02d",
+           t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min, t.tm_sec);
+
+  // Monta linha do CSV (256 bytes para acomodar todos os campos)
+  char logData[256];
+  if (mpuDisponivel) {
+    snprintf(logData, sizeof(logData),
+             "%s, %ld, %ld, %d, %.2f, %.2f, %s, %.1f, %.1f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+             timeStamp, lat, lon, sat, hdop, kmh, direcao, umidade, tempDHT,
+             mediaMPU.acX, mediaMPU.acY, mediaMPU.acZ,
+             mediaMPU.gyX, mediaMPU.gyY, mediaMPU.gyZ);
+  } else {
+    // MPU indisponível: campos vazios para manter estrutura do CSV
+    snprintf(logData, sizeof(logData),
+             "%s, %ld, %ld, %d, %.2f, %.2f, %s, %.1f, %.1f, , , , , , \n",
+             timeStamp, lat, lon, sat, hdop, kmh, direcao, umidade, tempDHT);
+  }
+
+  // Exibe dados GPS e DHT22 no terminal
+  Serial.print("GPS+DHT: ");
+  Serial.print(logData);
+
+  // Exibe dados do MPU6050 no terminal
+  if (mpuDisponivel) {
+    Serial.printf("MPU6050: Ac(X:%.2f Y:%.2f Z:%.2f m/s2) Gy(X:%.2f Y:%.2f Z:%.2f rad/s)\n",
+                  mediaMPU.acX, mediaMPU.acY, mediaMPU.acZ,
+                  mediaMPU.gyX, mediaMPU.gyY, mediaMPU.gyZ);
+  }
+
+  // Escreve no arquivo de log no cartão SD
+  if (SD.cardType() != CARD_NONE) {
+    Serial.print("Escrevendo no arquivo log.txt... ");
+    appendFile(SD, logFileName, logData);
+    Serial.println("OK");
+
+    // Executa Scan WiFi e grava em wifi.txt
+    varrerWiFi(timeStamp, lat, lon);
+  } else {
+    Serial.println("Erro: Cartao SD nao disponivel para gravacao.");
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial2.begin(GPS_Serial_Baud, SERIAL_8N1, GPS_RX, GPS_TX);
+
+  // Inicialização do WiFi no modo Estação
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+
+  // Inicialização do DHT22
+  dht.begin();
+
+  Serial.println(F("\n--- ESP32 GPS Logger com SD, DHT22 e MPU6050 ---"));
+
+  // Inicialização do MPU6050 (I2C padrão: SDA=21, SCL=22)
+  if (!mpu.begin()) {
+    Serial.println("Aviso: MPU6050 nao encontrado. Dados de IMU desabilitados.");
+    mpuDisponivel = false;
+  } else {
+    mpu.setAccelerometerRange(MPU6050_RANGE_16_G);   // ±16G para offroad
+    mpu.setGyroRange(MPU6050_RANGE_1000_DEG);        // ±1000 deg/s para offroad
+    mpu.setFilterBandwidth(MPU6050_BAND_44_HZ);      // Filtro 44 Hz
+    mpuDisponivel = true;
+    Serial.println("MPU6050 inicializado. Range: +-16G / +-1000 deg/s / 44Hz");
+  }
+
+  // Inicialização do SD Card
+  if (!SD.begin()) {
+    Serial.println("Falha ao montar o cartao SD!");
+  } else {
+    uint8_t cardType = SD.cardType();
+    if (cardType == CARD_NONE) {
+      Serial.println("Nenhum cartao SD detectado!");
+    } else {
+      Serial.print("Cartao SD montado. Tipo: ");
+      if (cardType == CARD_MMC)       Serial.println("MMC");
+      else if (cardType == CARD_SD)   Serial.println("SDSC");
+      else if (cardType == CARD_SDHC) Serial.println("SDHC");
+      else                            Serial.println("DESCONHECIDO");
+
+      uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+      Serial.printf("Tamanho do Cartao: %llu MB\n", cardSize);
+
+      // Cria cabeçalho CSV se o arquivo ainda não existir
+      inicializarArquivoLog();
+
+      // Verificação do arquivo de log
+      if (SD.exists(logFileName)) {
+        File file = SD.open(logFileName);
+        Serial.printf("Arquivo %s encontrado.\n", logFileName);
+        Serial.printf("Tamanho: %u bytes\n", file.size());
+        file.close();
+
+        int linhas = contarLinhas(SD, logFileName);
+        Serial.printf("Quantidade de linhas: %d\n", linhas);
+      }
+
+      // Verificação do arquivo de wifi
+      if (SD.exists(wifiFileName)) {
+        File file = SD.open(wifiFileName);
+        Serial.printf("Arquivo %s encontrado.\n", wifiFileName);
+        Serial.printf("Tamanho: %u bytes\n", file.size());
+        file.close();
+      } else {
+        Serial.printf("Arquivo %s nao existe. Sera criado na primeira gravacao.\n", wifiFileName);
+      }
+    }
+  }
+
+  Serial.println(F("Aguardando fix do GPS...\n"));
+}
+
+void loop() {
+  bool newData = false;
+
+  // Acumuladores para calcular a média do MPU6050 durante o ciclo GPS
+  DadosMPU somaMPU = {0, 0, 0, 0, 0, 0};
+  int contadorMPU = 0;
+  unsigned long ultimaLeituraMPU = millis();
+
+  // Analisa dados do GPS por 1 segundo, amostrando o MPU a cada 100ms
+  for (unsigned long start = millis(); millis() - start < 1000;) {
+    while (Serial2.available()) {
+      char c = Serial2.read();
+      if (gps.encode(c)) {
+        newData = true;
+      }
+    }
+
+    // Lê o MPU6050 a cada 100ms durante o ciclo GPS (sem bloquear o loop)
+    if (mpuDisponivel && (millis() - ultimaLeituraMPU >= 100)) {
+      sensors_event_t a, g, t;
+      mpu.getEvent(&a, &g, &t);
+      somaMPU.acX += a.acceleration.x;
+      somaMPU.acY += a.acceleration.y;
+      somaMPU.acZ += a.acceleration.z;
+      somaMPU.gyX += g.gyro.x;
+      somaMPU.gyY += g.gyro.y;
+      somaMPU.gyZ += g.gyro.z;
+      contadorMPU++;
+      ultimaLeituraMPU = millis();
+    }
+  }
+
+  // Calcula a média das amostras coletadas do MPU
+  DadosMPU mediaMPU = {0, 0, 0, 0, 0, 0};
+  if (contadorMPU > 0) {
+    mediaMPU.acX = somaMPU.acX / contadorMPU;
+    mediaMPU.acY = somaMPU.acY / contadorMPU;
+    mediaMPU.acZ = somaMPU.acZ / contadorMPU;
+    mediaMPU.gyX = somaMPU.gyX / contadorMPU;
+    mediaMPU.gyY = somaMPU.gyY / contadorMPU;
+    mediaMPU.gyZ = somaMPU.gyZ / contadorMPU;
+  }
+
+  if (newData) {
+    processarDadosGPS(mediaMPU);
+  }
+}
