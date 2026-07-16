@@ -107,7 +107,7 @@ DD/MM/AAAA HH:MM:SS, latitude, longitude, SSID, RSSI, canal, criptografia
 25/12/2024 18:30:45, -23550123, -46633456, MinhaRede, -65, 6, WPA2
 ```
 
-> O scan de WiFi é assíncrono (não bloqueia o loop) e faz deduplicação de SSIDs por um cache único que **nunca reseta** (nem no flush, nem quando o WiFi acorda do sono) — cada rede só é gravada 1 vez em wifi.txt até `SSID_CACHE_MAX` (64) encher ou o ESP32 reiniciar. Com o veículo parado e sem redes novas, o rádio WiFi desliga sozinho (ver [Gerenciamento de energia e vida útil do SD](#-gerenciamento-de-energia-e-vida-útil-do-sd)) e o wifi.txt para de crescer até o WiFi acordar.
+> O scan de WiFi é assíncrono (não bloqueia o loop) e faz deduplicação de SSIDs por um cache único que **nunca reseta** (nem no flush, nem quando o WiFi acorda do sono) — cada rede só é gravada 1 vez em wifi.txt até `SSID_CACHE_MAX` (500) encher ou o ESP32 reiniciar. Com o veículo parado e sem redes novas, o rádio WiFi desliga sozinho (ver [Gerenciamento de energia e vida útil do SD](#-gerenciamento-de-energia-e-vida-útil-do-sd)) e o wifi.txt para de crescer até o WiFi acordar.
 
 > **Nota:** O fuso horário está configurado para UTC-3 (Brasília).
 
@@ -137,7 +137,7 @@ As principais configurações podem ser ajustadas no início do arquivo `esp32gp
 
 #define LOG_BUFFER_MAX    150    // Linhas de log GPS acumuladas em RAM antes de gravar no SD
 #define WIFI_BUFFER_MAX   100    // Linhas de log WiFi acumuladas em RAM antes de gravar no SD
-#define SSID_CACHE_MAX    64     // Máx. SSIDs rastreadas para deduplicação por ciclo
+#define SSID_CACHE_MAX    500    // Máx. SSIDs rastreadas para deduplicação (guarda hash, não string)
 
 #define WDT_TIMEOUT_S     15     // Timeout (s) do watchdog: reseta o ESP32 se o loop travar
 #define SD_REMOUNT_MAX_FALHAS 10 // Falhas consecutivas de remount do SD antes de reiniciar o ESP32
@@ -164,14 +164,16 @@ A combinação de scan WiFi + escrita no SD com o GPS ativo já causou brownout/
 ### 1. Sono do WiFi (rádio desligado quando parado)
 - Veículo parado (`kmh < WIFI_SLEEP_KMH_THRESHOLD`) **e** nenhuma rede nova encontrada na última varredura → `WiFi.mode(WIFI_OFF)`, rádio desligado.
 - Acorda (`WiFi.mode(WIFI_STA)`) se o veículo voltar a se mover (`kmh >= WIFI_SLEEP_KMH_THRESHOLD`) **ou** se `WIFI_SLEEP_MS` (5 min) se esgotarem — o que ocorrer primeiro.
-- O cache de SSIDs (`ssidCache`, `SSID_CACHE_MAX`=64) **não reseta ao acordar**: o scan pós-sono é comparado contra tudo que já foi visto antes de dormir. Se não achar rede nova, nada é gravado em wifi.txt e ele volta a dormir imediatamente — evita duplicar nome de rede já registrado em ciclos anteriores de sono.
+- O cache de SSIDs (`ssidCache`, `SSID_CACHE_MAX`=500) **não reseta ao acordar**: o scan pós-sono é comparado contra tudo que já foi visto antes de dormir. Se não achar rede nova, nada é gravado em wifi.txt e ele volta a dormir imediatamente — evita duplicar nome de rede já registrado em ciclos anteriores de sono.
 
 ### 2. Gate de escrita no SD durante scan WiFi
 - `flushBuffers()` nunca grava no SD enquanto um `WiFi.scanNetworks()` assíncrono está em andamento (`scanEmAndamento`) — adia a escrita pro próximo ciclo (o buffer circular tolera o atraso). Evita o pico de corrente do rádio coincidir com o pico de escrita física no SD, tanto parado quanto em movimento.
 
 ### 3. Rajada de log.txt quando parado
 - Em movimento, log.txt grava normalmente por contagem (flush a cada `LOG_BUFFER_MAX` linhas, ~150 linhas ≈ 2,5 min a 1 leitura/s).
-- Parado (`kmh < WIFI_SLEEP_KMH_THRESHOLD`), a gravação por contagem é suspensa: o `logBuffer` continua acumulando 1 linha/ciclo (circular — preserva só o último ~1 min de leituras), mas só é gravado no SD em rajada única a cada `WIFI_SLEEP_MS` (5 min), usando um timer próprio (`logParadoStart`), desacoplado do timer do sono do WiFi.
+- **Ao parar** (`kmh < WIFI_SLEEP_KMH_THRESHOLD`), faz um flush imediato do buffer — grava os dados da viagem antes de entrar no modo esparso, para não perdê-los quando o buffer circular (~2,5 min) sobrescrever as linhas mais antigas enquanto espera a rajada.
+- Já parado, a gravação por contagem é suspensa: o `logBuffer` continua acumulando 1 linha/ciclo (circular — preserva só o trecho mais recente), mas só é gravado no SD em rajada única a cada `WIFI_SLEEP_MS` (5 min), usando um timer próprio (`logParadoStart`), desacoplado do timer do sono do WiFi.
+- **Ao voltar a mover**, faz flush do que restou em buffer da parada e retoma a cadência normal por contagem.
 - Diferente do WiFi (que fica sem dado novo útil quando parado), o log sempre tem dados relevantes (temperatura/umidade/IMU), então continua sendo gravado — só com cadência mais espaçada.
 
 ### Status no Monitor Serial

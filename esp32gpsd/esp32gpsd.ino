@@ -191,26 +191,31 @@ bool remontarSD() {
 // Recebe o buffer como ponteiro plano (base + stride) em vez de template
 // com referência a array — o pré-processador do Arduino IDE (ctags) não
 // gera corretamente o protótipo automático para esse tipo de assinatura.
-bool appendLinhasCirculares(const char* path, char* buf, int rows, int lineLen, int head, int count) {
+// Retorna quantas linhas foram efetivamente gravadas (pode ser < count se
+// falhar no meio) — o chamador usa isso pra não reenviar linha já gravada
+// numa tentativa seguinte (retry duplicava blocos inteiros antes).
+int appendLinhasCirculares(const char* path, char* buf, int rows, int lineLen, int head, int count) {
   FsFile file = sd.open(path, O_WRONLY | O_CREAT | O_APPEND);
   if (!file) {
     Serial.print("Aviso: ");
     Serial.print(path);
     Serial.println(" nao disponivel para escrita.");
-    return false;
+    return 0;
   }
 
+  int escritas = 0;
   bool ok = true;
   for (int i = 0; i < count && ok; i++) {
     const char* linha = buf + ((size_t)((head + i) % rows) * lineLen);
     ok = file.print(linha) > 0;
+    if (ok) escritas++;
   }
   if (!ok) {
     Serial.print("Erro ao gravar em: ");
     Serial.println(path);
   }
   file.close();
-  return ok;
+  return escritas;
 }
 
 // Adiciona uma linha a um buffer circular: se cheio, descarta a mais antiga
@@ -245,28 +250,32 @@ void flushBuffers() {
   Serial.println(F(">> GRAVANDO SD... NAO DESLIGAR! <<"));
   bool falhaAlgum = false;
 
-  // Flush buffer de log GPS
+  // Flush buffer de log GPS. Avança head/count só pelas linhas confirmadas
+  // gravadas — se falhar no meio, as linhas já escritas não são reenviadas
+  // no próximo retry (evita duplicar bloco no arquivo).
   if (logBufferCount > 0) {
     Serial.printf("  log.txt: %d linhas... ", logBufferCount);
-    if (appendLinhasCirculares(logFileName, &logBuffer[0][0], LOG_BUFFER_MAX, 160, logBufferHead, logBufferCount)) {
+    int escritas = appendLinhasCirculares(logFileName, &logBuffer[0][0], LOG_BUFFER_MAX, 160, logBufferHead, logBufferCount);
+    logBufferHead   = (logBufferHead + escritas) % LOG_BUFFER_MAX;
+    logBufferCount -= escritas;
+    if (escritas > 0 && logBufferCount == 0) {
       Serial.println("OK");
-      logBufferHead  = 0;
-      logBufferCount = 0;
     } else {
-      Serial.println("FALHOU (dados mantidos em buffer)");
+      Serial.printf("FALHOU (%d/%d linhas gravadas, restante mantido em buffer)\n", escritas, escritas + logBufferCount);
       falhaAlgum = true;
     }
   }
 
-  // Flush buffer WiFi
+  // Flush buffer WiFi (mesma lógica de avanço parcial acima)
   if (wifiBufferCount > 0) {
     Serial.printf("  wifi.txt: %d linhas... ", wifiBufferCount);
-    if (appendLinhasCirculares(wifiFileName, &wifiBuffer[0][0], WIFI_BUFFER_MAX, 256, wifiBufferHead, wifiBufferCount)) {
+    int escritas = appendLinhasCirculares(wifiFileName, &wifiBuffer[0][0], WIFI_BUFFER_MAX, 256, wifiBufferHead, wifiBufferCount);
+    wifiBufferHead   = (wifiBufferHead + escritas) % WIFI_BUFFER_MAX;
+    wifiBufferCount -= escritas;
+    if (escritas > 0 && wifiBufferCount == 0) {
       Serial.println("OK");
-      wifiBufferHead  = 0;
-      wifiBufferCount = 0;
     } else {
-      Serial.println("FALHOU (dados mantidos em buffer)");
+      Serial.printf("FALHOU (%d/%d linhas gravadas, restante mantido em buffer)\n", escritas, escritas + wifiBufferCount);
       falhaAlgum = true;
     }
   }
@@ -434,7 +443,8 @@ WifiStats varrerWiFi(const char* timeStamp, long lat, long lon, float kmh) {
   WifiStats stats = {n, 0, 0};
 
   for (int i = 0; i < n; ++i) {
-    const char* ssid = WiFi.SSID(i).c_str();
+    String ssidStr = WiFi.SSID(i);
+    const char* ssid = ssidStr.c_str();
 
     // Deduplicação: ignora SSIDs já gravadas (cache nunca reseta)
     if (ssidJaVista(ssid)) {
@@ -552,15 +562,21 @@ void processarDadosGPS(DadosMPU mediaMPU) {
 
   // Flush do log.txt: cadência normal (por contagem) em movimento; parado,
   // vira rajada única a cada WIFI_SLEEP_MS (mesma regra do sono do WiFi,
-  // timer próprio pra não interferir no wifiSleepStart).
+  // timer próprio pra não interferir no wifiSleepStart). Nas transições
+  // (parar / voltar a mover) faz flush do que está em buffer, para não
+  // perder dados de viagem enquanto o buffer circular espera a rajada.
   if (kmh > WIFI_SLEEP_KMH_THRESHOLD) {
-    logParadoStart = 0;
+    if (logParadoStart != 0) {
+      flushBuffers();          // voltou a mover: grava o buffer da parada
+      logParadoStart = 0;
+    }
     if (logBufferCount >= LOG_BUFFER_MAX) {
-      flushBuffers();
+      flushBuffers();          // cadência normal em movimento
     }
   } else {
     if (logParadoStart == 0) {
-      logParadoStart = millis(); // acabou de parar, começa a espera
+      flushBuffers();          // acabou de parar: grava dados da viagem
+      logParadoStart = millis(); // inicia a janela de 5 min
     } else if (millis() - logParadoStart >= WIFI_SLEEP_MS) {
       flushBuffers();
       logParadoStart = millis(); // reinicia o ciclo de 5 min
