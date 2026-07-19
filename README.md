@@ -181,6 +181,19 @@ O dashboard ASCII (a cada ciclo, com ou sem fix de GPS) mostra:
 - **RF**: `WiFi:ON` ou `WiFi:OFF (dormindo)` com contagem regressiva até acordar.
 - **LOG**: `Em movimento: gravacao normal (por buffer)` ou `Parado: gravacao em rajada em Xs` com contagem até a próxima rajada.
 
+## 🧠 Versão Dual-Core (esp32gpsd_dualcore)
+
+Existe uma versão avançada no diretório [esp32gpsd_dualcore](file:///home/luiz/Documents/esp32/esp32gpsd_dualcore/esp32gpsd_dualcore.ino) desenvolvida especificamente para tirar proveito da arquitetura de dois núcleos (Xtensa LX6) do ESP32 através do FreeRTOS:
+
+*   **Divisão de Tarefas por Núcleo:**
+    *   **Core 1 (APP_CPU):** Executa a tarefa de sensores (`tarefaSensores`). Responsável pela leitura de alta frequência do MPU6050, DHT22 e recepção serial contínua de sentenças do GPS. Livre de bloqueios físicos.
+    *   **Core 0 (PRO_CPU):** Executa a tarefa de sistema (`tarefaSDWifi`). Responsável pela varredura WiFi e escrita física no cartão SD via SPI (barramentos lentos).
+*   **Sincronização Segura e Otimizada:**
+    *   Uso de Mutexes para proteção de dados compartilhados em RAM (`logMutex`, `wifiMutex`, `sensorMutex`, `serialMutex`).
+    *   **Double-Buffering & Heap Allocation:** Para evitar que o Core 1 sofra atrasos na leitura serial/sensor devido à lentidão de gravação do SD, os buffers são copiados rapidamente em memória sob Mutex para buffers locais e descarregados fora do lock. Todos os buffers grandes são alocados dinamicamente no **Heap** no momento da inicialização para evitar estouro de memória estática da DRAM (`dram0_0_seg`).
+*   **Watchdog (TWDT) Multitarefa:**
+    *   Ambas as tarefas registram-se individualmente ao Watchdog do sistema (`esp_task_wdt_add`) garantindo reinício automático caso ocorra travamento de hardware em qualquer barramento (I2C, SPI ou serial).
+
 ## 🚀 Como Usar
 
 1. **Monte o hardware** conforme o diagrama de conexões acima
