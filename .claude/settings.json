@@ -1,6 +1,7 @@
 {
   "enabledPlugins": {
     "andrej-karpathy-skills@karpathy-skills": true,
-    "drawio@365-skills": true
+    "drawio@365-skills": true,
+    "ponytail@ponytail": true
   }
 }
