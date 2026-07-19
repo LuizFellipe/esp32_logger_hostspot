@@ -55,3 +55,49 @@ A técnica padrão funciona assim:
 4. No início do `void setup()`, o código lê a variável armazenada, descobre qual tecnologia deve iniciar e ativa **apenas aquela biblioteca específica**.
 
 **Vantagens do Reset:** A memória RAM é totalmente limpa (eliminando fragmentação), os registradores físicos do rádio são resetados para o estado de fábrica e o seu produto ganha estabilidade absoluta para funcionar por meses seguidos sem travamentos imprevisíveis.
+
+[BT Consumer] Task iniciada no Core 1
+[BT Orch] Core 0 | Inquiry: 12000 ms | Fase: 15000 ms
+ets Jun  8 2016 00:22:57
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4640
+load:0x40078000,len:15620
+ho 0 tail 12 room 4
+load:0x40080400,len:3164
+entry 0x4008059c
+
+=== RF Scanner PoC — RF Phase Sequencer ===
+Reset Reason : 1
+Fase atual : 0  |  Ciclo total: 1
+
+┌─────────────────────────────────────────────────
+│ [BLE] Timestamp    : 3085 ms
+│ Address            : db:47:24:c0:23:2f  (type=1)
+│ Name               : [sem nome]
+│ RSSI               : -88 dBm
+│ TX Power           : [não anunciado]
+│ Adv Type           : 0x03
+│ Adv Flags          : 0x00
+│ Connectable        : nao
+│ Scannable          : nao
+│ Legacy Adv         : sim
+│ Manuf[0]           : 4C:00:12:02:00:03
+│ Svc UUIDs          : [nenhum]
+│ Svc Data           : [nenhum]
+└─────────────────────────────────────────────────
+
+
+[BLE Scanner] Ciclo encerrado | Devices únicos: 7 | Razão: 0
+
+Quando em modo parado, fazer BLE, BT e WIFI dormirem juntos por 5 minutos, a placa tbm pode dormir, mantendo somente o RTC.
+
+Gravar a média de temperatura e umidade das últimas 10 leituras.
+
+
+Quando em movimento pode mudar a gravação para somente em 30 em 30 segundos, dados coletados no meio são amostrados e feita média.
+
+Verificar se salvar somente MAC de Wifi e BT, BLE são mais efeficientes para evitar duplicação
