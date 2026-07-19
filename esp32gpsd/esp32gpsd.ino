@@ -100,19 +100,19 @@ const char* btFileName   = "/bt.txt";
 // ─────────────────────────────────────────────────────────────────────────────
 // Buffers em RAM comum — circulares por linha, mesma lógica pros 4 arquivos.
 // Só são esvaziados quando a escrita no SD é confirmada.
-char logBuffer[LOG_BUFFER_MAX][160];
+char (*logBuffer)[160];  // malloc'd em setup() — ver comentário abaixo
 int  logBufferHead  = 0;
 int  logBufferCount = 0;
 
-char wifiBuffer[WIFI_BUFFER_MAX][256];
+char (*wifiBuffer)[256];
 int  wifiBufferHead  = 0;
 int  wifiBufferCount = 0;
 
-char bleBuffer[BLE_BUFFER_MAX][256];
+char (*bleBuffer)[256];
 int  bleBufferHead  = 0;
 int  bleBufferCount = 0;
 
-char btBuffer[BT_BUFFER_MAX][256];
+char (*btBuffer)[256];
 int  btBufferHead  = 0;
 int  btBufferCount = 0;
 
@@ -971,6 +971,16 @@ void setup() {
   sdMutex = xSemaphoreCreateMutex();
   if (sdMutex == nullptr) {
     Serial.println(F("ERRO CRITICO: falha ao criar sdMutex. Travando."));
+    while (1) delay(1000);
+  }
+
+  // Aloca os 4 buffers circulares no heap (antes eram arrays estáticos)
+  logBuffer  = (char(*)[160])malloc((size_t)LOG_BUFFER_MAX  * 160);
+  wifiBuffer = (char(*)[256])malloc((size_t)WIFI_BUFFER_MAX * 256);
+  bleBuffer  = (char(*)[256])malloc((size_t)BLE_BUFFER_MAX  * 256);
+  btBuffer   = (char(*)[256])malloc((size_t)BT_BUFFER_MAX   * 256);
+  if (!logBuffer || !wifiBuffer || !bleBuffer || !btBuffer) {
+    Serial.println(F("ERRO CRITICO: falha ao alocar buffers de log. Travando."));
     while (1) delay(1000);
   }
 

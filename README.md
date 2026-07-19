@@ -1,6 +1,6 @@
 # ESP32 GPS Logger com SD Card e DHT22
 
-Projeto de datalogger baseado em ESP32 que coleta dados de GPS, temperatura, umidade, aceleração/giroscópio (IMU) e realiza scan de redes WiFi, gravando todas as informações em cartão SD.
+Projeto de datalogger baseado em ESP32 que coleta dados de GPS, temperatura, umidade, aceleração/giroscópio (IMU) e realiza scan de redes WiFi, dispositivos BLE e dispositivos Bluetooth Clássico próximos, gravando todas as informações em cartão SD. Os três rádios (WiFi/BLE/BT) nunca operam ao mesmo tempo — alternam em fases via o **RF Phase Sequencer** (ver seção dedicada abaixo).
 
 ## 📋 Componentes Utilizados
 
@@ -74,9 +74,20 @@ Projeto de datalogger baseado em ESP32 que coleta dados de GPS, temperatura, umi
 - **Canal**
 - **Tipo de Criptografia** (Open, WEP, WPA, WPA2, WPA3, etc.)
 
+### 5. Scanner BLE (Bluetooth Low Energy)
+- **Endereço MAC**
+- **Nome** (se anunciado)
+- **RSSI**
+- **TX Power** (se anunciado)
+
+### 6. Scanner Bluetooth Clássico
+- **Endereço MAC**
+- **Nome** (se anunciado)
+- **RSSI**
+
 ## 📁 Arquivos de Saída
 
-Os dados são gravados no cartão SD em dois arquivos:
+Os dados são gravados no cartão SD em quatro arquivos:
 
 ### log.txt
 Contém os dados do GPS, DHT22 e MPU6050 (formato CSV, com cabeçalho gravado automaticamente na primeira execução):
@@ -107,7 +118,31 @@ DD/MM/AAAA HH:MM:SS, latitude, longitude, SSID, RSSI, canal, criptografia
 25/12/2024 18:30:45, -23550123, -46633456, MinhaRede, -65, 6, WPA2
 ```
 
-> O scan de WiFi é assíncrono (não bloqueia o loop) e faz deduplicação de SSIDs por um cache único que **nunca reseta** (nem no flush, nem quando o WiFi acorda do sono) — cada rede só é gravada 1 vez em wifi.txt até `SSID_CACHE_MAX` (500) encher ou o ESP32 reiniciar. Com o veículo parado e sem redes novas, o rádio WiFi desliga sozinho (ver [Gerenciamento de energia e vida útil do SD](#-gerenciamento-de-energia-e-vida-útil-do-sd)) e o wifi.txt para de crescer até o WiFi acordar.
+> O scan de WiFi é assíncrono (não bloqueia o loop) e faz deduplicação de SSIDs por um cache único que **nunca reseta** (nem no flush, nem quando o WiFi acorda do sono, nem nas trocas de fase RF) — cada rede só é gravada 1 vez em wifi.txt até `SSID_CACHE_MAX` (500) encher ou o dispositivo perder energia. Com o veículo parado e sem redes novas, o rádio WiFi desliga sozinho (ver [Gerenciamento de energia e vida útil do SD](#-gerenciamento-de-energia-e-vida-útil-do-sd)) e o wifi.txt para de crescer até o WiFi acordar.
+
+### ble.txt
+Contém os dispositivos BLE encontrados, no formato:
+```
+DD/MM/AAAA HH:MM:SS, latitude, longitude, MAC, nome, RSSI, tx_power
+```
+
+**Exemplo:**
+```
+25/12/2024 18:31:10, -23550145, -46633478, AA:BB:CC:DD:EE:FF, MeuFone, -70, 4
+```
+
+### bt.txt
+Contém os dispositivos Bluetooth Clássico encontrados, no formato:
+```
+DD/MM/AAAA HH:MM:SS, latitude, longitude, MAC, nome, RSSI
+```
+
+**Exemplo:**
+```
+25/12/2024 18:31:55, -23550145, -46633478, 11:22:33:44:55:66, FoneCarro, -60
+```
+
+> `ble.txt`/`bt.txt` só são gravados durante as respectivas fases do RF Phase Sequencer (ver seção abaixo). A posição (`latitude`/`longitude`/timestamp) é a **última posição conhecida do GPS**, não a posição exata do instante da detecção. Deduplicação por endereço MAC funciona igual à de SSID (cache de hash em `RTC_DATA_ATTR`, `BLE_CACHE_MAX`/`BT_CACHE_MAX` = 200, nunca reseta).
 
 > **Nota:** O fuso horário está configurado para UTC-3 (Brasília).
 
@@ -120,8 +155,11 @@ Instale as seguintes bibliotecas no Arduino IDE:
 - **Adafruit MPU6050** - Para leitura do sensor IMU (opcional)
 - **Adafruit Unified Sensor** - Dependência da lib acima
 - **SdFat** (Bill Greiman) - Para acesso ao cartão SD
+- **NimBLE-Arduino** - Para o scan ativo de dispositivos BLE
 
-As bibliotecas `SPI`, `WiFi` e `Wire` já fazem parte do framework ESP32.
+As bibliotecas `SPI`, `WiFi`, `Wire`, `BluetoothSerial` (inquiry Bluetooth Clássico) e `esp_task_wdt` (watchdog) já fazem parte do framework ESP32.
+
+> **Partition Scheme:** selecione **"No OTA (Large APP)"** em Tools → Partition Scheme na Arduino IDE. WiFi + BluetoothSerial + NimBLE juntos estouram a flash da partição padrão de 4 MB.
 
 ## ⚙️ Configuração
 
@@ -137,13 +175,21 @@ As principais configurações podem ser ajustadas no início do arquivo `esp32gp
 
 #define LOG_BUFFER_MAX    150    // Linhas de log GPS acumuladas em RAM antes de gravar no SD
 #define WIFI_BUFFER_MAX   100    // Linhas de log WiFi acumuladas em RAM antes de gravar no SD
+#define BLE_BUFFER_MAX    100    // Linhas de log BLE acumuladas em RAM antes de gravar no SD
+#define BT_BUFFER_MAX     100    // Linhas de log BT Clássico acumuladas em RAM antes de gravar no SD
+
 #define SSID_CACHE_MAX    500    // Máx. SSIDs rastreadas para deduplicação (guarda hash, não string)
+#define BLE_CACHE_MAX     200    // Máx. MACs BLE rastreados para deduplicação
+#define BT_CACHE_MAX      200    // Máx. MACs BT Clássico rastreados para deduplicação
 
 #define WDT_TIMEOUT_S     15     // Timeout (s) do watchdog: reseta o ESP32 se o loop travar
 #define SD_REMOUNT_MAX_FALHAS 10 // Falhas consecutivas de remount do SD antes de reiniciar o ESP32
 
 #define WIFI_SLEEP_KMH_THRESHOLD 2.0   // Abaixo desse km/h o veículo é considerado "parado"
-#define WIFI_SLEEP_MS   (5UL*60UL*1000UL) // Duração do sono do WiFi / intervalo de rajada do log parado (5 min)
+#define WIFI_SLEEP_MS   (5UL*60UL*1000UL) // Duração do sono do WiFi / intervalo de rajada do log parado / duração da fase WiFi (5 min)
+
+#define PHASE_BLE_MS    30000UL           // Duração da fase BLE (30s)
+#define PHASE_BT_MS     15000UL           // Duração da fase BT Clássico (15s)
 
 const uint8_t SD_CS_PIN = 5;              // Pino CS do cartão SD
 #define SPI_CLOCK SD_SCK_MHZ(16)          // Clock SPI do SD (reduza p/ SD_SCK_MHZ(10) ou (4) se houver falhas de leitura/escrita)
@@ -155,7 +201,22 @@ O MPU6050 usa o barramento I2C padrão do ESP32 (GPIO 21/22) e é inicializado a
 
 O projeto usa a biblioteca **SdFat** (não a `SD.h` do core ESP32) para acesso ao cartão, via volume `SdFs` (auto-detecta FAT16/FAT32/exFAT). A instância global `sd` (tipo `SdFs`) substitui o antigo objeto `SD`. Configuração SPI em `SD_CONFIG` (CS + clock, acima).
 
-Cada gravação (`appendLinhasCirculares()`, usada tanto pra log.txt quanto wifi.txt) abre o arquivo **1 única vez**, grava todas as linhas do buffer circular em sequência, e fecha — sem montar uma cópia intermediária do bloco inteiro em RAM (economiza `rows × lineLen` bytes por buffer). No boot, a verificação dos arquivos existentes usa só `sd.exists()` (sem abrir/ler o conteúdo nem contar linhas), pra minimizar ciclos de acesso ao cartão.
+Cada gravação (`appendLinhasCirculares()`, usada por log.txt/wifi.txt/ble.txt/bt.txt) abre o arquivo **1 única vez**, grava todas as linhas do buffer circular em sequência, e fecha — sem montar uma cópia intermediária do bloco inteiro em RAM (economiza `rows × lineLen` bytes por buffer). Os 4 buffers circulares são alocados no **heap** (`malloc`, em `setup()`), não como arrays estáticos. No boot, a verificação dos arquivos existentes usa só `sd.exists()` (sem abrir/ler o conteúdo nem contar linhas), pra minimizar ciclos de acesso ao cartão.
+
+Como o objeto `sd` é compartilhado entre o `loop()` principal e as tasks orquestradoras de BLE/BT (que rodam no Core 0 durante suas respectivas fases), um `sdMutex` (FreeRTOS `SemaphoreHandle_t`) protege todo acesso a `sd` contra escrita concorrente.
+
+## 📡 RF Phase Sequencer
+
+WiFi, BLE e Bluetooth Clássico nunca ficam ativos ao mesmo tempo — dividir o rádio em fases evita picos de corrente simultâneos e conflitos de coexistência WiFi/BT no chip. O ESP32 alterna entre 3 fases, nessa ordem:
+
+```
+PHASE_WIFI (~5 min, = WIFI_SLEEP_MS)  ──►  PHASE_BLE (30s)  ──►  PHASE_BT (15s)  ──►  PHASE_WIFI  ──► ...
+```
+
+- **WiFi é a fase "padrão" de longa duração** — o scan de WiFi e a leitura de GPS/DHT22/MPU6050 seguem normalmente, sem tarefa dedicada.
+- **BLE e BT são excursões curtas** disparadas ao fim de cada janela WiFi. O log de sensores/GPS **nunca para**, mesmo durante as excursões BLE/BT (tasks de scan de rádio pinadas no Core 0; leitura de sensores segue no Core 1).
+- Cada troca de fase é feita via `triggerRestart()`: antes de avançar, o firmware confirma que `flushBuffers()` teve sucesso (retry no ciclo seguinte se o SD estiver indisponível), evitando perder linhas de log por causa do timing do restart.
+- `triggerRestart()` usa deep sleep de 10ms (não `esp_restart()` puro) para garantir a preservação do estado salvo em `RTC_DATA_ATTR` — que inclui a fase atual (`currentPhase`), o contador de ciclos (`phaseCount`) e os 3 caches de deduplicação (SSID/BLE/BT). Esse estado sobrevive aos restarts periódicos entre fases, mas é perdido em power-off real.
 
 ## 🔋 Gerenciamento de energia e vida útil do SD
 
@@ -209,9 +270,9 @@ Existe uma versão avançada no diretório [esp32gpsd_dualcore](file:///home/lui
 O projeto exibe informações como:
 - Status de inicialização do cartão SD
 - Tipo e tamanho do cartão SD
-- Existência dos arquivos de log (log.txt/wifi.txt), verificada só por `sd.exists()` no boot
+- Existência dos arquivos de log (log.txt/wifi.txt/ble.txt/bt.txt), verificada só por `sd.exists()` no boot
 - Dados lidos do GPS em tempo real
-- Status do scan de WiFi
+- Fase RF atual (WiFi/BLE/BT) e status do scan/inquiry correspondente
 - Estado do sono do WiFi (ON/OFF + contagem regressiva) e da rajada de log.txt quando parado
 
 ## 🔧 Funcionalidades
@@ -221,20 +282,23 @@ O projeto exibe informações como:
 - ✅ Leitura de temperatura e umidade
 - ✅ Leitura de aceleração e giroscópio (MPU6050, opcional, com média por ciclo)
 - ✅ Scan assíncrono e periódico de redes WiFi próximas, com deduplicação de SSID
+- ✅ Scan ativo de dispositivos BLE (NimBLE) e inquiry de Bluetooth Clássico (BluetoothSerial), com deduplicação por MAC
+- ✅ RF Phase Sequencer: WiFi/BLE/BT alternam em fases exclusivas, sem coexistir (ver [RF Phase Sequencer](#-rf-phase-sequencer))
 - ✅ Sono automático do WiFi quando parado e sem redes novas (`WIFI_SLEEP_KMH_THRESHOLD`/`WIFI_SLEEP_MS`)
 - ✅ Rajada de gravação do log.txt a cada 5 min quando parado (em vez de por contagem de linhas)
 - ✅ Gate: nunca grava no SD com scan WiFi em andamento (evita coincidir picos de corrente)
-- ✅ Buffer em RAM para log GPS e WiFi, com flush em lote no SD (reduz desgaste do cartão)
-- ✅ Gravação em arquivos separados (log.txt e wifi.txt), 1 open/close por lote (sem cópia intermediária em RAM)
+- ✅ Buffers circulares em RAM (heap-alocados) para log GPS/WiFi/BLE/BT, com flush em lote no SD (reduz desgaste do cartão)
+- ✅ Gravação em arquivos separados (log.txt, wifi.txt, ble.txt, bt.txt), 1 open/close por lote (sem cópia intermediária em RAM)
+- ✅ `sdMutex` protegendo o cartão SD contra acesso concorrente entre `loop()` e as tasks de BLE/BT
 - ✅ Cabeçalho CSV automático em log.txt
 - ✅ Tratamento de erros para cartão SD e sensores ausentes
-- ✅ Dashboard em ASCII no Monitor Serial (inclui estado do sono do WiFi e da rajada de log)
+- ✅ Dashboard em ASCII no Monitor Serial (inclui fase RF atual, estado do sono do WiFi e da rajada de log)
 - ✅ Watchdog (esp_task_wdt): reseta o ESP32 automaticamente se o loop travar
 - ✅ Reinício automático do ESP32 após falhas consecutivas de remount do SD (`SD_REMOUNT_MAX_FALHAS`)
 
 ## 📌 Observações
 
-- O scan de WiFi é realizado a cada atualização válida dos dados do GPS, exceto quando o WiFi está dormindo (veículo parado, ver [Gerenciamento de energia e vida útil do SD](#-gerenciamento-de-energia-e-vida-útil-do-sd))
+- O scan de WiFi é realizado a cada atualização válida dos dados do GPS, exceto quando o WiFi está dormindo (veículo parado, ver [Gerenciamento de energia e vida útil do SD](#-gerenciamento-de-energia-e-vida-útil-do-sd)) ou fora da fase `PHASE_WIFI` (ver [RF Phase Sequencer](#-rf-phase-sequencer))
 - O cartão SD deve estar formatado em FAT32
 - Para melhor precisão do GPS, utilize o módulo em área aberta
 - O sensor DHT22 tem tempo de leitura de ~2 segundos entre medições
