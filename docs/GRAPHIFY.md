@@ -41,6 +41,12 @@ flowchart TD
   Docs --> Readme[README.md]
 ```
 
+## Arquitetura ilustrada da v3
+
+O mapa acima cobre a família de projetos. A imagem abaixo detalha somente firmware v3 com hotspot. [Índice dos 15 diagramas](../esp32gpsd_v3/docs/diagramas/README.md) · [Fonte DrawIO editável](../esp32gpsd_v3/docs/diagramas/esp32gpsd-v3.drawio).
+
+![Arquitetura integrada da v3](../esp32gpsd_v3/docs/diagramas/01-visao-geral.png)
+
 ## Relações principais
 
 - `esp32gpsd` é a linha principal do logger local: sensores e posição alimentam `log.txt`; scanners WiFi/BLE alimentam `wifi.txt` e `ble.txt` através de buffers e cache de deduplicação.

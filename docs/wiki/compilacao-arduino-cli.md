@@ -2,6 +2,10 @@
 
 Registro do ambiente e dos comandos usados para compilar o firmware **`esp32gpsd_v3`** (logger + hotspot de download + dashboard) pela linha de comando. Valores medidos em **2026-10-05**.
 
+[Atlas DrawIO editável](../../esp32gpsd_v3/docs/diagramas/esp32gpsd-v3.drawio) · [Índice dos 15 diagramas](../../esp32gpsd_v3/docs/diagramas/README.md)
+
+![Bibliotecas, sincronização e build v3](../../esp32gpsd_v3/docs/diagramas/14-build.png)
+
 ## 1. Ambiente
 
 | Item | Valor |
@@ -57,7 +61,7 @@ O sketch é compilado com as bibliotecas da pasta **`libraries/`** do projeto (f
 
 Incluídas no core (sem instalar): `WiFi`, `WebServer`, `NetworkClient`, `SPI`, `Wire`, `esp_task_wdt`.
 
-Antes de compilar, se mexeu em bibliotecas:
+Antes de compilar cada nova versão, sincronize e verifique bibliotecas projeto → IDE:
 
 ```sh
 python3 libraries/sync.py --apply   # copia projeto -> ~/Arduino/libraries
@@ -73,12 +77,11 @@ Todos executados na raiz do projeto (`/home/luiz/Documents/esp32`).
 ```sh
 arduino-cli compile \
   --fqbn esp32:esp32:esp32:PartitionScheme=no_ota \
-  --libraries libraries \
   esp32gpsd_v3
 ```
 
 - `--fqbn ...:PartitionScheme=no_ota` — placa + opção de partição (opções extras entram separadas por vírgula, ex.: `:PartitionScheme=no_ota,UploadSpeed=460800`).
-- `--libraries libraries` — usa as bibliotecas do projeto, não as do usuário.
+- Compilação usa cópias da IDE sincronizadas com o projeto; `--libraries` não substitui a verificação obrigatória.
 - Primeira compilação: ~minutos; seguintes: **~14 s** (cache em `~/.cache/arduino/sketches/`).
 
 Referência histórica de tamanho (v3 anterior ao console Serial):
@@ -93,7 +96,6 @@ Global variables use 62416 bytes (19%) of dynamic memory, leaving 265264 bytes f
 ```sh
 arduino-cli compile \
   --fqbn esp32:esp32:esp32:PartitionScheme=no_ota \
-  --libraries libraries \
   --output-dir build/v3 \
   esp32gpsd_v3
 ```
@@ -164,7 +166,7 @@ O painel custou ~3,5 KB de flash e 0 de RAM global (o CSS é um literal na flash
 
 ## 6. Página do hotspot (resumo para quem compila)
 
-- Só HTML5 + CSS embutido (`PAGINA_CSS`), **sem JavaScript e sem rota `/api`**. `httpRaiz()` monta a página inteira numa `String` e envia de uma vez (sem `chunked`).
+- Só HTML5 + CSS embutido (`PAGINA_CSS`), **sem JavaScript e sem rota `/api`**. `httpRaiz()` envia a página em blocos (`chunked`), sem montar uma `String` grande.
 - Os valores vêm das globais `volatile` `dashTemp`, `dashUmid`, `dashBle` e de `ultimoWifiStats.total`; mudam ao clicar em "Atualizar".
 - Barras via `<progress>` (WiFi, BLE) e `<meter>` (temperatura, umidade); cores via `accent-color`.
 - Abrir a página renova o prazo de 5 min do hotspot (`ultimaAtividade`), como baixar um arquivo.
@@ -175,3 +177,7 @@ O painel custou ~3,5 KB de flash e 0 de RAM global (o CSS é um literal na flash
 Versão de boot `serial-2026-10-06-painel2`: resumo compacto (3 a 4 linhas) a cada 5 s (30 s com hotspot; mudo em download); eventos imediatos `[EVT]`, `[ERR]`, `[OK ]`. O painel traz modo, velocidade, posição, DHT, ciclo RF, buffers, SD, heap/maior bloco e, com hotspot aberto, clientes e contadores web; a linha final do download traz motivo, heap e maior bloco. HTTP publica estado e métricas atômicas para impressão pela `loopTask`. HTTP permanece na tarefa `Hotspot_HTTP`, core 1; página HTML/CSS com atualização manual, endpoints `/` e `/download`.
 
 Hotspot e downloads validados em placa. Pendente: GPS ausente, troca de modo, hotspot/download e retirada do SD, com captura do log incluindo versão. Lotes SD só são confirmados após tamanho escrito, `sync()` e `close()`; retry de lote incerto pode duplicar linhas.
+
+No foco HTTP (download ou acesso nos últimos 8 s), aquisição e processamento GPS são pausados; movimento não pode ser detectado nesse período. BLE é desinicializado antes do AP para liberar heap e reinicializado no próximo scan.
+
+![Console e critérios de validação v3](../../esp32gpsd_v3/docs/diagramas/15-diagnostico.png)

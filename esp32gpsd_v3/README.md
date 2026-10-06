@@ -1,10 +1,14 @@
+# ESP32 GPS Logger v3 — Documentação Completa
+
+Rastreador baseado em ESP32 que coleta dados de **GPS**, **temperatura/umidade (DHT22)**, **aceleração/giroscópio (MPU6050)**, **redes WiFi** e **dispositivos BLE** próximos, gravando tudo em arquivos CSV no cartão SD (via SdFat) para análise posterior.
+
 > **v3 (em teste):** `esp32gpsd_v3.ino` = v2 + hotspot de download dos logs quando parado (ver abaixo e [`serial.md`](serial.md)). Este documento descreve a v3 e identifica sua base v2.
 >
-> **v2:** v1 + (1) ciclo WiFi+BLE final ao parar; (2) flush no SD ao parar; (3) histerese de velocidade (limiar assimétrico + debounce); (4) consumo BLE na `loopTask`; (5) RX GPS de 1024 bytes e reconfiguração do watchdog.
+> **Escopo:** hardware e software de `esp32gpsd_v3.ino`, versão `serial-2026-10-06-painel2`. Diagramas conferidos contra o firmware em 06/10/2026; não representam variantes históricas ou projeto GSM.
 
 ## Hotspot de download (v3)
 
-Parado → 1 ciclo WiFi+BLE → flush → abre o AP. Sem atividade por 5 min → fecha o AP → sono de 5 min sem scan → novo check → reabre. Ao voltar ao movimento (histerese atual), o AP fecha na hora, mesmo no meio de um download.
+Parado → 1 ciclo WiFi+BLE → flush → abre o AP. Sem atividade por 5 min → fecha o AP → sono de 5 min sem scan → novo check → reabre. Ao detectar retorno ao movimento pela histerese, o AP fecha e a tarefa HTTP aborta a transferência. **Limitação atual:** durante foco HTTP/download, o firmware descarta a UART GPS; portanto, não detecta movimento nesse período. A transição só pode ocorrer após retomar o processamento GPS.
 
 | Item | Valor (editar no topo do `.ino`) |
 |---|---|
@@ -13,45 +17,51 @@ Parado → 1 ciclo WiFi+BLE → flush → abre o AP. Sem atividade por 5 min →
 | Janela | `HOTSPOT_IDLE_MS` = 5 min; abrir/atualizar a página ou baixar renova (conectar ao WiFi, não) |
 | Arquivos | `log.txt`, `wifi.txt`, `ble.txt`, enviados byte a byte como estão no SD |
 
-- Durante o download, o flush/remount do SD é adiado e os dados ficam nos buffers circulares (o buffer GPS parado aguenta cerca de 75 min).
-- O download é abortado após 15 s sem progresso (`HTTP_STALL_MS`), por desconexão ou por movimento.
+- Durante o download, flush/remount do SD são adiados e os dados já bufferizados permanecem em RAM. O foco HTTP pausa aquisição: **não são adicionadas novas linhas GPS/sensores durante o download**. Fora do foco, 150 linhas a cada 30 s equivalem a cerca de 75 min de capacidade do buffer GPS parado.
+- O download é abortado após 15 s sem progresso (`HTTP_STALL_MS`), por desconexão, erro de leitura SD ou AP fechado. Fechamento por movimento depende de nova leitura GPS; o foco HTTP impede essa detecção enquanto ativo.
 - A tarefa `Hotspot_HTTP` (core 1, prioridade 2, stack de 8 KB) atende o servidor; o `sdMutex` serializa o SD entre ela e a `loopTask`.
 - **Heap:** com WiFi AP + BLE o heap livre caía a ~13 KB e a página/downloads falhavam. Antes de abrir o AP, `entrarModoParadoHotspot()` esvazia a fila BLE e chama `bleParar()` (`NimBLEDevice::deinit`), subindo o heap livre a ~76 KB; `bleScanLigar()` reinicia o BLE no próximo ciclo.
 - **Foco no hotspot:** com download ou acesso HTTP nos últimos 8 s (`HOTSPOT_FOCO_MS`), `loop()` pausa (sem GPS/MPU/SD/painel; só descarta a UART do GPS e alimenta o watchdog).
 - A página `/` é enviada em blocos (chunked), sem montar um `String` grande.
-- Os temporizadores de sono/hotspot e o fechamento do ciclo de scan rodam a cada volta do `loop()`, mesmo sem fix GPS.
+- Os temporizadores de sono/hotspot e o fechamento do ciclo de scan rodam nas voltas normais do `loop()`, mesmo sem fix GPS. O retorno antecipado de foco HTTP não executa `servicoModo()`.
 - Limite: arquivos acima de 4.294.967.295 bytes (4 GiB − 1 byte) são recusados (`Content-Length` de 32 bits); o log cresce cerca de 1,3 MB/dia.
 
-# ESP32 GPS Logger — Documentação Completa
+![Ciclo do hotspot, página local e prioridade HTTP](docs/diagramas/11-hotspot.png)
 
-Rastreador baseado em ESP32 que coleta dados de **GPS**, **temperatura/umidade (DHT22)**, **aceleração/giroscópio (MPU6050)**, **redes WiFi** e **dispositivos BLE** próximos, gravando tudo em arquivos CSV no cartão SD (via SdFat) para análise posterior.
+### Download dos arquivos
+
+`GET /download?file=...` aceita somente `log.txt`, `wifi.txt` e `ble.txt`. O servidor lê blocos de até 2048 bytes sob `sdMutex` e libera o mutex durante o envio TCP. O arquivo permanece aberto e `downloadAtivo` impede escrita/remount até o encerramento.
+
+Nomes inválidos retornam 400; arquivo ausente, 404; SD ocupado/indisponível, falha de abertura, tamanho excessivo ou download ainda ocupado, 503. A confirmação exige todos os bytes enviados e fechamento do arquivo bem-sucedido. Desconexão, AP fechado, leitura SD incompleta ou 15 s sem progresso abortam; a conexão incompleta permite ao navegador detectar falha.
+
+![Validação, streaming e término do download HTTP](docs/diagramas/12-download.png)
 
 ---
 
 ## Visão Geral
 
-```mermaid
-flowchart LR
-  GPS[GPS UART RX 1024 bytes] --> Loop[loopTask Core 1]
-  Sensors[DHT22 e MPU6050] --> Loop
-  BLE[Callback NimBLE] --> Queue[Fila BLE: 10 registros]
-  Queue --> Drain[drenarFilaBLE na loopTask]
-  Drain --> Buffers[Buffers log WiFi BLE]
-  Loop --> Buffers
-  Buffers --> Flush[flushBuffers na loopTask]
-  Flush --> SD[microSD]
-```
+![Arquitetura completa do logger ESP32 v3](docs/diagramas/01-visao-geral.png)
 
 O `loop()` trabalha em ciclos de aproximadamente 1 s, lê UART GPS, drena a fila
 BLE sem bloquear e amostra MPU6050 a cada 100 ms. Dentro desse ciclo,
 `vTaskDelay(1)` cede CPU. Posição/hora e buffers pertencem à `loopTask`;
 não há `BLE_Consumer`. O `sdMutex` existe só para serializar o SD entre a `loopTask` (`flushBuffers()`) e a tarefa `Hotspot_HTTP`.
 
-`atualizarModo()` (transições por velocidade válida de RMC) e `servicoModo()`
-(temporizadores, poll do scan WiFi e fechamento do ciclo, a cada volta do
+`atualizarModo()` (chamada por `receberGPS()` nas transições por velocidade válida de RMC) e `servicoModo()`
+(temporizadores, poll do scan WiFi e fechamento do ciclo, nas voltas normais do
 `loop()`) controlam modos e ciclos de rádio. A v3 mantém o ciclo final ao parar,
 flush antes do hotspot/sono e retorno ao movimento com histerese, e implementa o
 hotspot como `MODO_PARADO_HOTSPOT`.
+
+---
+
+### Concorrência e responsabilidade pelos dados
+
+`loopTask` e `Hotspot_HTTP` rodam no core 1. A tarefa HTTP tem prioridade 2 e stack de 8192 bytes. A afinidade interna das pilhas WiFi/NimBLE é controlada pelo core/IDF, não pelo sketch. Callback BLE produz registros/flags; `loopTask` consome, formata CSV, altera buffers/caches e imprime Serial. HTTP lê SD e publica métricas.
+
+`sdMutex` serializa operações de SD. A página usa snapshots `volatile`; contadores/estado HTTP usam `std::atomic`. Durante download, a flag sob mutex protege o arquivo aberto entre leituras.
+
+![Ownership dos buffers, tarefas e exclusão mútua no SD](docs/diagramas/10-concorrencia.png)
 
 ---
 
@@ -60,15 +70,19 @@ hotspot como `MODO_PARADO_HOTSPOT`.
 | Componente | Interface | Pinos ESP32 |
 |-----------|-----------|-------------|
 | Módulo GPS (ex: NEO-6M) | UART2 | RX=GPIO17, TX=GPIO16 |
-| DHT22 | 1-Wire digital | GPIO32 |
+| DHT22 | Protocolo digital DHT (não Dallas/Maxim 1-Wire) | GPIO32 |
 | MPU6050 (IMU 6 eixos) | I2C | SDA=GPIO21, SCL=GPIO22 (padrão ESP32) |
-| Cartão SD (via SPI, SdFat) | SPI | CS=GPIO5, clock configurável (`SPI_CLOCK`) |
+| Cartão SD (via SPI, SdFat) | SPI | CS=GPIO5, SCK=GPIO18, MOSI=GPIO23, MISO=GPIO19; 16 MHz |
 
-> **Alimentação:** todos os sensores a 3.3 V. O módulo GPS pode exigir 5 V dependendo do modelo — verificar datasheet.
+> **Alimentação:** lógica do ESP32 em 3,3 V e GND comum. Tensão de alimentação depende do módulo GPS/DHT/IMU/SD utilizado; conferir especificações antes de ligar. O repositório não contém esquema elétrico completo, BOM, regulador ou valores de pull-up/desacoplamento. Diagrama representa interligações confirmadas, não um circuito pronto para fabricação.
 
-> **Build:** Arduino IDE → Tools → Partition Scheme → **"No OTA (Large APP)"**. Necessário porque WiFi + NimBLE juntos estouram a flash da partição padrão de 4 MB.
+I²C 21/22 e SPI 18/19/23 são padrões do ESP32 Dev Module documentado; o sketch define explicitamente CS5, UART17/16 e DHT32.
+
+![Ligações físicas UART, DHT, I2C, SPI e alimentação](docs/diagramas/02-hardware.png)
+
+> **Build:** Arduino IDE → Tools → Partition Scheme → **"No OTA (Large APP)"**. Necessário porque WiFi + NimBLE excedem a partição APP padrão (~1,2 MB) em uma placa com 4 MB de flash.
 >
-> **Arduino CLI:** `arduino-cli compile --fqbn esp32:esp32:esp32:PartitionScheme=no_ota --libraries libraries esp32gpsd_v3` (no core 3.3.12 a partição aparece como "No OTA (2MB APP/2MB SPIFFS)"; v3 ocupa ~1,29 MB de 2 MB). Ambiente, gravação, monitor e problemas conhecidos em [`docs/wiki/compilacao-arduino-cli.md`](../docs/wiki/compilacao-arduino-cli.md).
+> **Arduino CLI:** na raiz `esp32/`, após sincronizar bibliotecas, `arduino-cli compile --fqbn esp32:esp32:esp32:PartitionScheme=no_ota esp32gpsd_v3` (no core 3.3.12 a partição aparece como "No OTA (2MB APP/2MB SPIFFS)"; v3 ocupa ~1,29 MB de 2 MB). Ambiente, gravação, monitor e problemas conhecidos em [`docs/wiki/compilacao-arduino-cli.md`](../docs/wiki/compilacao-arduino-cli.md).
 
 ---
 
@@ -83,7 +97,9 @@ de compilar cada nova versão.
 | `TinyGPS` | Parser de sentenças NMEA do GPS | Arduino Library Manager |
 | `SdFat` (Bill Greiman) | Sistema de arquivos e acesso ao cartão SD (substitui `FS`/`SD` do core) | Arduino Library Manager → "SdFat" |
 | `DHT` (Adafruit) | Leitura de temperatura e umidade do DHT22 | Arduino Library Manager → "DHT sensor library" |
-| `WiFi` | Scan de redes WiFi (modo estação) | Embutida no ESP32 Arduino Core |
+| `WiFi` | Scan de redes WiFi e hotspot local | Embutida no ESP32 Arduino Core |
+| `WebServer` / `NetworkClient` | Página HTTP e download TCP | Embutidas no ESP32 Arduino Core |
+| `SPI` / FreeRTOS | Bus SD, tarefas, fila e mutex | Embutidos no ESP32 Arduino Core |
 | `Adafruit_MPU6050` | Leitura de aceleração e giroscópio | Arduino Library Manager → "Adafruit MPU6050" |
 | `Adafruit_Sensor` | Interface unificada Adafruit (dependência) | Instalada automaticamente com MPU6050 |
 | `Wire` | Comunicação I2C com o MPU6050 | Embutida no Arduino Core |
@@ -159,44 +175,33 @@ const char* bleFileName  = "/ble.txt";   // Dispositivos BLE
 | `bleQueue` | `QueueHandle_t` | Fila de 10 ponteiros; callback NimBLE produz registros e `drenarFilaBLE()` os consome sem bloquear na `loopTask`. |
 | `modoAtual` | `uint8_t` | Estado atual da máquina Movimento/Parado (`MODO_MOVIMENTO`/`MODO_PARADO_SONO`/`MODO_PARADO_CHECK`/`MODO_PARADO_HOTSPOT`) — vive em RAM comum, não sobrevive a restart (não há mais restart periódico) |
 | `modoInicio` | `unsigned long` | millis() de quando entrou no modo/substado atual |
-| `radioCicloAtivo` / `radioCicloWifiDone` / `radioCicloBleDone` / `radioCicloInicio` / `ultimoCicloFim` | `bool`/`bool`/`bool`/`unsigned long`/`unsigned long` | Controlam o ciclo de scan WiFi+BLE simultâneo (Movimento: repetido a cada `RADIO_SCAN_INTERVAL_MS`; Parado/Check: disparado uma vez ao acordar) |
-| `ssidCacheHash` / `bleCacheHash` | `RTC_DATA_ATTR uint32_t[]` | Caches de hash FNV-1a das SSIDs/MACs já gravadas — nunca resetam enquanto a placa fica ligada; ficam em RTC só pra sobreviver a um reset inesperado (watchdog, brownout), não a restarts planejados |
-| `bootCount` | `RTC_DATA_ATTR uint32_t` | Contador de boot, incrementado em `setup()`. Sobrevive a soft-reset/watchdog; usado pra diagnosticar reset espúrio no meio de um ciclo (gravado em `log.txt` a cada boot) |
+| `radioCicloAtivo` / `radioCicloWifiDone` / `radioCicloBleDone` / `radioCicloInicio` / `ultimoCicloFim` | `bool`/`bool`/`bool`/`unsigned long`/`unsigned long` | Controlam o ciclo de scan WiFi+BLE simultâneo (Movimento: repetido após `RADIO_SCAN_INTERVAL_MS` desde o fim anterior e com RMC válido; Parado/Check: disparado uma vez ao acordar) |
+| `ssidCacheHash` / `bleCacheHash` | `RTC_DATA_ATTR uint32_t[]` | Caches FNV-1a dos IDs já observados, inseridos antes de gravar no SD. Não são limpas em flush/troca de modo; RTC busca retenção em resets, dependente do tipo de reset |
+| `bootCount` | `RTC_DATA_ATTR uint32_t` | Contador de boot, incrementado em `setup()`. RTC busca retenção em resets; comportamento depende do tipo de reset. Usado para diagnosticar reset no meio de um ciclo (gravado em `log.txt` a cada boot) |
 
 ---
 
 ## Estado Movimento/Parado
 
-WiFi e BLE **nunca desligam** — a placa não economiza mais energia, só cartão SD (menos gravações durante o sono parado). Os dois rádios sempre escaneiam **juntos**, em ciclos disparados por `iniciarCicloRadio()`/`atualizarCicloRadio()`; o que muda entre modos é só a cadência entre ciclos. `atualizarModo(kmh)` roda a cada fix de GPS (~1×/s), chamado de dentro de `processarDadosGPS()`; `servicoModo()` roda a cada volta do `loop()`, com ou sem fix:
+WiFi e BLE escaneiam em ciclos coordenados. Na v3, **BLE é desinicializado antes do hotspot** para liberar heap; o próximo `bleScanLigar()` o inicializa novamente. Não há deep sleep ou reinício periódico. `PARADO_SONO` é uma espera lógica sem scan, com aquisição normal fora do foco HTTP.
 
-```
-MODO_MOVIMENTO (1 ciclo WiFi+BLE a cada RADIO_SCAN_INTERVAL_MS/30s)
-   │  kmh <= 2 (PARKED_KMH_THRESHOLD)
-   ▼
-MODO_PARADO_CHECK (ciclo WiFi+BLE final: aproveita o aberto ou inicia um)
-   │  ciclo fecha → entrarModoParadoHotspot(): flushBuffers() + abre o AP
-   ▼
-MODO_PARADO_HOTSPOT (sem scan; HOTSPOT_IDLE_MS/5 min sem atividade)
-   │  inatividade → fecharHotspot() + entrarModoParadoSono()
-   ▼
-MODO_PARADO_SONO (sem nenhum scan, por PARKED_SLEEP_MS/5 min)
-   │  passados 5 min
-   ▼
-MODO_PARADO_CHECK (1 ciclo WiFi+BLE, depois hotspot de novo)
-   │
-   └──► (repete CHECK → HOTSPOT → SONO enquanto ficar parado)
+`atualizarModo(kmh)` é chamado por `receberGPS()` para RMC com velocidade válida. `servicoModo()` trata temporizadores e fechamento de ciclo independentemente de novo fix, nas voltas normais do loop.
 
-Parado → Movimento (qualquer sub-estado parado): kmh > 5 (MOVING_KMH_THRESHOLD)
-por 5 fixes seguidos (MOVING_DEBOUNCE_FIXES). Histerese: ignora os picos de 2–5 km/h
-que o GPS reporta parado; Movimento → Parado usa só kmh <= 2.
-```
+![Máquina de estados movimento, check, hotspot e sono](docs/diagramas/05-maquina-estados.png)
 
-- **`MODO_MOVIMENTO`**: (entra com histerese, ver diagrama) dispara um ciclo de scan WiFi+BLE simultâneo a cada `RADIO_SCAN_INTERVAL_MS` (30s).
-- **Ao parar** (`atualizarModo()`, Movimento→Parado): entra em `MODO_PARADO_CHECK` e roda 1 ciclo WiFi+BLE completo antes de abrir o hotspot (aproveita o ciclo aberto, ou chama `iniciarCicloRadio()`). Ao fechar, `atualizarCicloRadio()` chama `entrarModoParadoHotspot()` (sem hotspot disponível, cai direto no sono).
-- **`MODO_PARADO_SONO`**: nenhum scan roda (nem WiFi nem BLE) por `PARKED_SLEEP_MS` (5 min). Ao entrar (`entrarModoParadoSono()`), `flushBuffers()` grava os 3 buffers no SD. O ciclo de rádio já está fechado nesse ponto (o sono só vem depois do hotspot, que vem do fim do check), então a v3 não precisa mais do fechamento forçado de ciclo.
-- **`MODO_PARADO_CHECK`**: acorda do sono, dispara **um único ciclo** de WiFi+BLE simultâneo (dedup normal contra as caches persistentes), depois abre o hotspot (com flush) — só o veículo voltando a se mover interrompe o ciclo sono/check.
-- GPS/MPU são processados a **1 Hz em qualquer sub-estado**; DHT respeita intervalo mínimo de 2 s e console imprime resumo a cada 5 s — só a cadência de scan muda.
-- BLE é inicializado **uma única vez** em `setup()` (`setupBLE()`, cria a fila e configura callbacks). Cada scan dura `BLE_SCAN_DURATION_MS` (5 s) e termina sem reinício em callback. `drenarFilaBLE()` consome a fila no `loop()`, sem tarefa extra.
+- **MOVIMENTO → CHECK:** velocidade ≤2 km/h. Aproveita ciclo aberto ou inicia ciclo WiFi+BLE final.
+- **CHECK → HOTSPOT:** ambos os ramos de scan encerrados, inclusive falha sinalizada; tenta flush, drena fila e desinicializa BLE antes de abrir AP. Flush falho não impede AP; dados ficam retidos. Se HTTP não foi criado ou AP falha, vai ao SONO.
+- **HOTSPOT → SONO:** 5 min sem atividade válida, sem download ativo; fecha AP e tenta flush.
+- **SONO → CHECK:** após 5 min, inicia um único ciclo. Retoma hotspot ao terminar.
+- **Qualquer parado → MOVIMENTO:** >5 km/h por 5 RMCs válidos consecutivos. Leitura ≤5 zera contador; valores entre 2 e 5 não provocam retorno. RMC inválido não decide modo.
+- **Ciclos em movimento:** novo RMC válido pode iniciar ciclo quando passaram ≥30 s desde o fim do ciclo anterior. Não é período fixo entre inícios, e não inicia novo ciclo sem RMC válido.
+- **Cadências normais:** janela GPS/IMU ≈1 s, MPU a cada 100 ms, DHT no mínimo a cada 2 s; GPS no buffer a cada 10 s em movimento ou 30 s parado. Foco HTTP pausa essas etapas.
+
+### Coordenação dos scanners
+
+`iniciarCicloRadio()` inicia BLE; `servicoModo()` dispara/polla WiFi assíncrono. WiFi inclui SSIDs ocultos com `scanNetworks(true, true)`; o segundo argumento não configura scan passivo. BLE faz scan ativo de 5 s. Duração WiFi depende do resultado real. Falha de início/término é registrada e conclui o respectivo ramo, evitando confundir falha com scan vazio.
+
+![Início, dois ramos de scan e fechamento coordenado do ciclo](docs/diagramas/07-ciclo-radio.png)
 
 ---
 
@@ -212,14 +217,16 @@ Para reduzir o desgaste do cartão SD, os dados são acumulados em 3 buffers cir
 
 Cada buffer é **circular**: se encher (SD indisponível por tempo suficiente), a linha mais antiga é sobrescrita para abrir espaço à mais recente — nunca trava a gravação em RAM esperando o SD.
 
-A cadência com que `logBuffer` recebe novas linhas depende do modo: a cada `LOG_ADD_MOVING_MS` (10s) em movimento, a cada `LOG_ADD_PARKED_MS` (30s) em qualquer sub-estado parado — GPS/MPU continuam a 1 Hz, DHT a cada 2 s e resumo Serial a cada 5 s, só o *append* no buffer é throttled.
+A cadência com que `logBuffer` recebe novas linhas depende do modo: a cada `LOG_ADD_MOVING_MS` (10s) em movimento, a cada `LOG_ADD_PARKED_MS` (30s) em qualquer sub-estado parado — GPS/MPU continuam com janela de ≈1 s, DHT no mínimo a cada 2 s e resumo Serial a cada 5 s (30 s com AP), fora do foco HTTP; o *append* no buffer é limitado pela cadência.
 
 `flushBuffers()` grava os 3 buffers no SD numa única passada (1 open/close por arquivo, via `appendLinhasCirculares()`, sem montar cópia intermediária em RAM), só quando:
 - nenhum rádio está em scan (`scanEmAndamento == false` e `bleScanAtivo == false` — evita coincidir pico de corrente do rádio com o pico da escrita física, causa já confirmada de brownout em campo);
 - não há download em andamento (`downloadAtivo == false`, checado antes e depois de adquirir o `sdMutex`);
 - é executado pela `loopTask`, proprietária dos buffers; o `sdMutex` protege o volume contra a leitura da tarefa `Hotspot_HTTP`.
 
-Um lote só sai do buffer após confirmar tamanho de cada escrita, `sync()` e `close()`. Qualquer falha retém o lote inteiro e informa a etapa; retry pode duplicar linhas já escritas. Flush adiado permanece pendente e retorna após scan/download; falhas SD tentam remount, com limite de 10 falhas consecutivas.
+Um lote só sai do buffer após confirmar tamanho de cada escrita, `sync()` e `close()`. A confirmação é por arquivo: lotes bem-sucedidos são removidos mesmo se outro arquivo falhar; não há transação envolvendo os três logs. Qualquer falha retém o lote inteiro e informa a etapa; retry pode duplicar linhas já escritas. Flush adiado permanece pendente e retorna após scan/download; falhas SD tentam remount, com limite de 10 falhas consecutivas.
+
+![Buffers circulares, gates de flush, confirmação por lote e recuperação SD](docs/diagramas/09-armazenamento.png)
 
 > **Nota:** em caso de perda abrupta de energia, os dados ainda no buffer (não gravados) serão perdidos.
 
@@ -230,10 +237,14 @@ Um lote só sai do buffer após confirmar tamanho de cada escrita, `sync()` e `c
 Generalização das 2 caches de deduplicação: `hashString()` calcula FNV-1a de 32 bits de qualquer string; `hashJaVisto()`/`adicionarHashCache()` recebem array/contador/limite como parâmetros, reaproveitando a mesma lógica para SSID e MAC BLE (guardam 4 bytes/entrada em vez da string/MAC completa).
 
 **Comportamento:**
-- Cada cache vive em `RTC_DATA_ATTR` e **nunca reseta** enquanto a placa fica ligada (nem no flush, nem na troca de modo, nem no sono/check) — não há limpeza explícita durante flush ou mudanças de modo. O atributo RTC não equivale a armazenamento permanente em flash.
-- Comparação por hash (equivalente a nome/MAC exato).
+- Cada cache vive em `RTC_DATA_ATTR` e **não é limpa pelo firmware** no flush, na troca de modo ou no sono/check — não há limpeza explícita durante flush ou mudanças de modo. O atributo RTC não equivale a armazenamento permanente em flash.
+- Comparação só pelo hash FNV-1a de 32 bits, sem comparar string original: colisões podem descartar identificadores distintos. WiFi deduplica SSID, não BSSID; redes diferentes com mesmo nome são agrupadas.
 - Cache cheio (`SSID_CACHE_MAX`=500 / `BLE_CACHE_MAX`=500) → aviso único no Serial, IDs conhecidos continuam deduplicados; novos IDs são bufferizados, mas não entram no cache.
-- O filtro nativo de duplicatas do NimBLE atua no scan (`setScanCallbacks(..., false)`). `seenInCycleBLE`, `bleParar` e reinício em `onScanEnd()` foram removidos. A dedup por hash permanece em `drenarFilaBLE()`.
+- O filtro nativo de duplicatas do NimBLE atua no scan (`setScanCallbacks(..., false)`). Não há reinício em `onScanEnd()`. A dedup por hash permanece em `drenarFilaBLE()`; `bleParar()` existe na v3 para liberar heap antes do AP.
+- O hash é inserido antes da confirmação no SD. Se uma linha depois for perdida por sobrescrita/falha, a cache não garante sua reobservação.
+- `RTC_DATA_ATTR` expressa a intenção de reter caches/boot em resets; retenção depende do tipo de reset e deve ser validada em placa. Power-off não preserva histórico RTC.
+
+![Fila BLE, consumo, caches de hash e limitações da deduplicação](docs/diagramas/08-deduplicacao.png)
 
 ---
 
@@ -291,7 +302,7 @@ Ver [Deduplicação por Hash](#deduplicação-por-hash-ssid--ble-mac).
 Converte o enum de segurança WiFi para string legível (`"open"`, `"WPA2"`, `"WPA3"`, etc.).
 
 ### `modoNome(uint8_t) → const char*`
-Nome legível do modo atual (`"MOVIMENTO"`/`"PARADO (sono)"`/`"PARADO (check)"`), usado no Serial/dashboard.
+Nome legível do modo atual (`"MOVIMENTO"`/`"PARADO (sono)"`/`"PARADO (check)"`/`"PARADO (hotspot)"`), usado no Serial/dashboard.
 
 ### `varrerWiFi(timeStamp, lat, lon) → WifiStats`
 Scan assíncrono (não-bloqueante) de redes WiFi. Filtra duplicadas pela cache de hash, acumula no `wifiBuffer`. Só é chamado por `servicoModo()` enquanto há um ciclo de scan ativo e o WiFi ainda não terminou a parte dele (`radioCicloAtivo && !radioCicloWifiDone`), usando a última posição/hora conhecida — a função em si não sabe nada sobre modos, é scan+dedup+buffer puro.
@@ -300,15 +311,15 @@ Scan assíncrono (não-bloqueante) de redes WiFi. Filtra duplicadas pela cache d
 Resumo compacto (3 a 4 linhas) a cada 5 s, ou 30 s com o hotspot aberto; mudo durante download. Mostra uptime, modo, velocidade RMC, duração do loop, posição, DHT, aceleração Z, ciclo RF (WiFi/BLE), ocupação dos 3 buffers, estado do SD, heap livre e maior bloco, perdas e, com hotspot aberto, SSID, clientes, prazo de fechamento e contadores web/download. Eventos imediatos trazem uptime, `[EVT]`/`[ERR]`/`[OK ]`, número e fase do loop; a linha final de download inclui motivo, esperas de TCP, heap e maior bloco. Apenas `loopTask` escreve Serial (incluindo `setup()`); HTTP e callbacks BLE publicam contadores/estado atômicos.
 
 ### BLE — `setupBLE()`, `bleScanLigar()`, `bleScanDesligar()`, `drenarFilaBLE()`
-`setupBLE()` cria a fila e chama `bleIniciar()`; `bleParar()` derruba o controller com o hotspot aberto. `onResult()` aloca o registro
+`setupBLE()` cria a fila e chama `bleIniciar()`; `bleParar()` desinicializa o controller antes de abrir o hotspot. `onResult()` aloca o registro
 e tenta enviá-lo sem espera; fila cheia ou falha de alocação descarta o achado e incrementa `perdidos`, assim como sobrescrita dos buffers.
-O scan dura 5 s e seu callback de término fecha a parte BLE do ciclo; falha de início é registrada. Não há reinício no callback. `drenarFilaBLE()` usa
+O scan dura 5 s e seu callback de término publica flags; `atualizarCicloRadio()` conclui a parte BLE na `loopTask`; falha de início é registrada. Não há reinício no callback. `drenarFilaBLE()` usa
 `xQueueReceive(..., 0)` no `loop()`, deduplica MAC, formata CSV com a última
 posição/hora GPS, acumula `bleBuffer` e libera cada registro. Nenhuma tarefa
 consumidora separada é criada.
 
 ### Estado Movimento/Parado — `atualizarModo(kmh)`, `entrarModoMovimento()`, `entrarModoParadoSono()`, `entrarModoParadoCheck()`, `iniciarCicloRadio()`, `atualizarCicloRadio()`
-Ver [Estado Movimento/Parado](#estado-movimentoparado). `atualizarModo()` é chamado a cada RMC com velocidade válida e decide, com base em `kmh` e no timer (`modoInicio`), se deve trocar de sub-estado — as funções `entrarModo*()` fazem a transição (resetam o timer do novo estado). `iniciarCicloRadio()`/`atualizarCicloRadio()` controlam o ciclo de scan WiFi+BLE simultâneo, reusado tanto em Movimento (repetido) quanto no check parado (único).
+Ver [Estado Movimento/Parado](#estado-movimentoparado). `atualizarModo()` é chamado a cada RMC com velocidade válida e decide, com base em `kmh` e na cadência de rádio (`ultimoCicloFim`), se deve trocar por velocidade ou iniciar um ciclo em movimento — as funções `entrarModo*()` fazem a transição (resetam o timer do novo estado). `iniciarCicloRadio()`/`atualizarCicloRadio()` controlam o ciclo de scan WiFi+BLE simultâneo, reusado tanto em Movimento (repetido) quanto no check parado (único).
 
 ### `processarDadosGPS(DadosMPU mediaMPU)`
 Função principal de processamento, executada quando o GPS produz um fix válido, **em qualquer modo**.
@@ -319,29 +330,41 @@ Somente RMC com velocidade válida renova leitura e dispara decisões pelos limi
 
 Cadência CSV: 10 s em movimento, 30 s parado. DHT é lido separadamente, no mínimo a cada 2 s. O resumo é emitido após `servicoModo()`.
 
+![Pipeline NMEA, velocidade RMC, sensores e validação CSV](docs/diagramas/06-aquisicao.png)
+
 ### `servicoModo()`
-Chamado a cada volta do `loop()`, com ou sem fix: poll de `varrerWiFi()` durante o ciclo, `atualizarCicloRadio()`, expiração do sono (→ `entrarModoParadoCheck()`) e inatividade do hotspot (→ `fecharHotspot()` + `entrarModoParadoSono()`).
+Chamado a cada volta normal do `loop()`, com ou sem fix (não executa no retorno antecipado de foco HTTP): poll de `varrerWiFi()` durante o ciclo, `atualizarCicloRadio()`, expiração do sono (→ `entrarModoParadoCheck()`) e inatividade do hotspot (→ `fecharHotspot()` + `entrarModoParadoSono()`).
 
 ### `setup()`
+
 1. Inicia `Serial` a 115200; configura RX de `Serial2` em 1024 bytes antes de iniciar GPS a 9600.
 2. Aloca os três buffers circulares no heap; falha impede inicialização.
 3. Inicia DHT22 e MPU6050 opcional.
 4. Monta SD com retry, cria cabeçalho e informa existência dos três arquivos.
 5. No core Arduino 3.x, reconfigura TWDT com `esp_task_wdt_reconfigure()` para `WDT_TIMEOUT_S` (60 s); registra a tarefa atual.
 6. Incrementa `bootCount` e grava marcador `# BOOT` com motivo do reset.
-7. Inicializa NimBLE/fila (`bleIniciar()`), servidor WebServer e tarefa `Hotspot_HTTP`; entra em movimento, sem iniciar scan BLE imediatamente.
+7. Inicializa fila/NimBLE (`setupBLE()`), entra em movimento e depois configura servidor/tarefa HTTP (`setupHotspot()`), com a pilha de rede já iniciada. Não inicia scan BLE imediatamente.
+
+Falha na alocação de buffers/mutex ou criação da fila BLE impede o loop. Montagem inicial do SD tenta indefinidamente com intervalo de 500 ms. MPU ausente e falha da tarefa HTTP permitem continuidade com recursos reduzidos.
+
+![Sequência real de setup e tratamento das falhas de boot](docs/diagramas/03-inicializacao.png)
 
 ### `loop()`
+
 - Alimenta watchdog; recebe UART, chama `drenarFilaBLE()` e amostra MPU durante aproximadamente 1 s.
 - `vTaskDelay(1)` cede CPU dentro do ciclo de aquisição.
 - Lê DHT respeitando 2 s; com novos dados GPS, chama `processarDadosGPS(mediaMPU)`.
-- Ao fim de cada volta, `servicoModo()` trata temporizadores e scans; imprime transições de download, retoma flush pendente e emite resumo (5 s; 30 s com hotspot; mudo em download), mesmo sem GPS. Em foco de hotspot, `loop()` apenas pausa (ver Hotspot).
+- Ao fim de cada volta normal, `servicoModo()` trata temporizadores e scans; imprime transições de download, retoma flush pendente e emite resumo (5 s; 30 s com hotspot; mudo em download), mesmo sem GPS. Em foco de hotspot, `loop()` apenas pausa (ver Hotspot).
+
+![Ciclo de aquisição, serviço, retry e retorno antecipado HTTP](docs/diagramas/04-loop.png)
 
 ---
 
 ## Formato dos Arquivos de Saída
 
-Todos sem cabeçalho, exceto `log.txt`.
+Todos sem cabeçalho, exceto `log.txt`. Este também contém marcadores de boot iniciados por `#`; ferramentas de análise devem ignorar essas linhas. Downloads mantêm conteúdo original.
+
+![Contratos CSV, unidades e distribuição de RAM, RTC e flash](docs/diagramas/13-dados-csv.png)
 
 ### `log.txt`
 ```
@@ -371,7 +394,7 @@ O GPS fornece hora em **UTC**. O código subtrai 3 horas para **UTC-3 (Brasília
 
 Para outros fusos, alterar a linha:
 ```cpp
-t.tm_hour -= 3;  // UTC-3 → alterar para o offset desejado
+t.tm_hour = hora - 3;  // UTC-3 → alterar para o offset desejado
 ```
 
 ---
@@ -387,8 +410,10 @@ Manager serve para obter os pacotes; as cópias locais são a fonte principal.
 3. **DHT sensor library** (Adafruit) — Library Manager → buscar `DHT sensor library`
 4. **Adafruit MPU6050** — Library Manager → buscar `Adafruit MPU6050` *(instala `Adafruit Unified Sensor` automaticamente)*
 5. **NimBLE-Arduino** — Library Manager → buscar `NimBLE-Arduino`
-6. **ESP32 Arduino Core** — Boards Manager → `esp32` by Espressif *(inclui `WiFi`, `Wire`, `esp_task_wdt`)*
+6. **ESP32 Arduino Core** — Boards Manager → `esp32` by Espressif *(inclui `WiFi`, `WebServer`, `NetworkClient`, `Wire`, `SPI`, FreeRTOS e `esp_task_wdt`)*
 7. **Partition Scheme:** Tools → Partition Scheme → **"No OTA (Large APP)"**
+
+![Bibliotecas, sincronização, compilação no_ota e gravação](docs/diagramas/14-build.png)
 
 ---
 
@@ -402,21 +427,23 @@ Manager serve para obter os pacotes; as cópias locais são a fonte principal.
 
 ```
 esp32gpsd_v3/
-├── esp32gpsd_v3.ino   ← Logger com hotspot e download HTTP
-├── README.md          ← Esta documentação
-└── serial.md          ← Plano de console e processamento
-
-archive/ble_scanner_poc/
-└── ble_scanner_poc.ino  ← PoC original do antigo RF Phase Sequencer (BLE ↔ BT ↔ WiFi
-                            via restart) — arquitetura já substituída no esp32gpsd.ino
-                            pelo estado Movimento/Parado em RAM, sem restart
-
-archive/esp32gpsd_dualcore/
-└── esp32gpsd_dualcore.ino  ← Versão dual-core (só GPS/DHT/MPU/SD/WiFi
-                                divididos em 2 tasks por núcleo) — ver README raiz e archive/esp32gpsd_dualcore/DUALCORE.MD
+├── esp32gpsd_v3.ino          ← Firmware v3
+├── README.md                ← Documentação com diagramas
+├── serial.md                ← Console e critérios de validação
+├── tests/test_serial.py     ← Regressões no host
+└── docs/diagramas/
+    ├── esp32gpsd-v3.drawio   ← Atlas editável: 15 páginas
+    ├── 01-*.png … 15-*.png   ← Imagens com fonte DrawIO embutida
+    ├── gerar_diagramas.py    ← Gerador do XML editável
+    ├── paginas.tsv          ← Índice de exportação
+    └── README.md            ← Fontes, legenda e reprodução
 ```
 
 ---
+
+## Diagramas editáveis
+
+[Baixar atlas DrawIO completo](docs/diagramas/esp32gpsd-v3.drawio) · [Fontes, legenda e instruções de exportação](docs/diagramas/README.md). Os 15 PNGs também contêm o diagrama individual embutido: abrir no DrawIO permite editar blocos e conexões.
 
 ## Notas para Desenvolvimento Futuro
 
@@ -437,3 +464,5 @@ Na placa: hotspot, páginas e downloads dos 3 arquivos validados (heap ~76 KB co
 Regressões no host (requer `g++`): `python3 esp32gpsd_v3/tests/test_serial.py`. Usa TinyGPS real e funções do sketch com SD simulado: checksum, GGA/idade da velocidade, RMC vazio, posição incompleta, CSV/UTC-3, escrita parcial, sync/close, cache cheio e sobrescrita. Não substitui testes em placa.
 
 O painel mede aquisição da volta atual; `anterior` inclui envio do resumo Serial da volta anterior. Tempos são medidos, não prazos garantidos. Acessos são requisições HTTP (conectar ao AP não conta como acesso). Eventos agregam requisições entre voltas para evitar spam. Resultado do último download permanece visível depois de liberar o estado para nova transferência.
+
+![Observabilidade, recuperação automática e validação em host e placa](docs/diagramas/15-diagnostico.png)

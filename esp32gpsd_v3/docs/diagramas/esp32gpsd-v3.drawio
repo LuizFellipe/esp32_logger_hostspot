@@ -1,0 +1,1316 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" agent="ESP32 v3 documentation" version="31.4.5" type="device" compressed="false">
+  <diagram id="01-visao-geral" name="Arquitetura integrada">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Arquitetura integrada" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="Do ambiente físico ao CSV: aquisição local, observação de rádio e download enquanto parado." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:1–233, 1344–1547; README.md" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="s" value="" style="rounded=1;arcSize=4;fillColor=#EAF3FF;fillOpacity=35;strokeColor=#2864A0;strokeOpacity=35;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="175" width="320" height="750" />
+        </mxCell>
+        <mxCell id="s-title" value="ENTRADAS / AMBIENTE" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=17;fontColor=#2864A0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="66" y="187" width="284" height="30" />
+        </mxCell>
+        <mxCell id="f" value="" style="rounded=1;arcSize=4;fillColor=#EFF3F8;fillOpacity=35;strokeColor=#354D6B;strokeOpacity=35;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="418" y="175" width="690" height="750" />
+        </mxCell>
+        <mxCell id="f-title" value="FIRMWARE / ESP32" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=17;fontColor=#354D6B;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="436" y="187" width="654" height="30" />
+        </mxCell>
+        <mxCell id="o" value="" style="rounded=1;arcSize=4;fillColor=#E7F3ED;fillOpacity=35;strokeColor=#287452;strokeOpacity=35;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1158" y="175" width="394" height="750" />
+        </mxCell>
+        <mxCell id="o-title" value="SAÍDAS / OPERADOR" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=17;fontColor=#287452;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1176" y="187" width="358" height="30" />
+        </mxCell>
+        <mxCell id="gps" value="&lt;b&gt;GPS / UART2&lt;/b&gt;&lt;br&gt;&lt;br&gt;Posição, hora UTC, RMC/GGA&lt;br&gt;9600 baud • RX 1024 B" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="68" y="239" width="280" height="135" />
+        </mxCell>
+        <mxCell id="sensor" value="&lt;b&gt;DHT22 + MPU6050&lt;/b&gt;&lt;br&gt;&lt;br&gt;Temperatura / umidade&lt;br&gt;Aceleração / giroscópio" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="68" y="438" width="280" height="135" />
+        </mxCell>
+        <mxCell id="rf" value="&lt;b&gt;Redes WiFi + BLE&lt;/b&gt;&lt;br&gt;&lt;br&gt;Observação de redes e anúncios&lt;br&gt;Scans coordenados por modo" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="68" y="650" width="280" height="135" />
+        </mxCell>
+        <mxCell id="loop" value="&lt;b&gt;loopTask / core 1&lt;/b&gt;&lt;br&gt;&lt;br&gt;Parser + sensores + modos&lt;br&gt;Consumo BLE e escrita SD" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="445" y="300" width="290" height="150" />
+        </mxCell>
+        <mxCell id="buf" value="&lt;b&gt;Buffers circulares&lt;/b&gt;&lt;br&gt;&lt;br&gt;GPS 150 • WiFi 50 • BLE 50&lt;br&gt;Lotes temporários no heap" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="785" y="300" width="290" height="150" />
+        </mxCell>
+        <mxCell id="radio" value="&lt;b&gt;Scanners / fila BLE&lt;/b&gt;&lt;br&gt;&lt;br&gt;WiFi assíncrono&lt;br&gt;NimBLE → fila 10 → loopTask" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="445" y="650" width="290" height="150" />
+        </mxCell>
+        <mxCell id="http" value="&lt;b&gt;Hotspot_HTTP / core 1&lt;/b&gt;&lt;br&gt;&lt;br&gt;WebServer :80 • AP parado&lt;br&gt;Leitura do SD via sdMutex" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="785" y="650" width="290" height="150" />
+        </mxCell>
+        <mxCell id="sd" value="&lt;b&gt;microSD / SdFat&lt;/b&gt;&lt;br&gt;&lt;br&gt;/log.txt • /wifi.txt • /ble.txt&lt;br&gt;FAT16 / FAT32 / exFAT" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1190" y="300" width="330" height="150" />
+        </mxCell>
+        <mxCell id="user" value="&lt;b&gt;Celular / computador&lt;/b&gt;&lt;br&gt;&lt;br&gt;192.168.4.1&lt;br&gt;Atualizar página / baixar logs" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1190" y="650" width="330" height="150" />
+        </mxCell>
+        <mxCell id="e1" value="NMEA" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#2864A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="gps" target="loop">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e2" value="leituras" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#2864A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="sensor" target="loop">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e3" value="scan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="rf" target="radio">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e4" value="resultados / fila" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;entryX=0.5;entryY=1;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="radio" target="loop">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e5" value="linhas CSV" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#287452;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="loop" target="buf">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e6" value="flush confirmado" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#287452;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="buf" target="sd">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e7" value="arquivo original" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#287452;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="sd" target="http">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1355" y="545" />
+              <mxPoint x="930" y="545" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" value="HTTP / download" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#167580;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="http" target="user">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="n" value="&lt;b&gt;Coleta local, sem backend&lt;/b&gt;&lt;br&gt;&lt;br&gt;WiFi STA faz scan; AP oferece arquivos. GSM, nuvem e BT clássico não integram a v3." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="445" y="845" width="1075" height="65" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="02-hardware" name="Hardware e interligações">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Hardware e interligações" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="Pinagem do ESP32 Dev Module; UART cruzada e sinais SPI separados de alimentação." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:20–32, 1344–1391; ../docs/wiki/dados-hardware.md" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="esp" value="&lt;b&gt;ESP32 Dev Module&lt;/b&gt;&lt;br&gt;&lt;br&gt;UART2: RX17 / TX16&lt;br&gt;DHT: GPIO32&lt;br&gt;I²C: SDA21 / SCL22&lt;br&gt;SPI: CS5 / SCK18 / MOSI23 / MISO19&lt;br&gt;Rádio WiFi + BLE integrado" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="600" y="300" width="390" height="320" />
+        </mxCell>
+        <mxCell id="gps" value="&lt;b&gt;Módulo GPS&lt;/b&gt;&lt;br&gt;&lt;br&gt;TX GPS → RX17 ESP32&lt;br&gt;RX GPS ← TX16 ESP32&lt;br&gt;NMEA • 9600 baud • 8N1" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="70" y="220" width="350" height="165" />
+        </mxCell>
+        <mxCell id="dht" value="&lt;b&gt;DHT22&lt;/b&gt;&lt;br&gt;&lt;br&gt;DATA ↔ GPIO32&lt;br&gt;Protocolo digital DHT&lt;br&gt;Não é Dallas/Maxim 1-Wire" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="70" y="525" width="350" height="165" />
+        </mxCell>
+        <mxCell id="imu" value="&lt;b&gt;MPU6050 / opcional&lt;/b&gt;&lt;br&gt;&lt;br&gt;SDA ↔ GPIO21 • SCL ← GPIO22&lt;br&gt;I²C padrão • ±16 g&lt;br&gt;±1000 °/s • filtro 44 Hz" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1150" y="220" width="380" height="165" />
+        </mxCell>
+        <mxCell id="sd" value="&lt;b&gt;Módulo microSD&lt;/b&gt;&lt;br&gt;&lt;br&gt;CS ← GPIO5 • SCK ← GPIO18&lt;br&gt;MOSI ← GPIO23 • MISO → GPIO19&lt;br&gt;SPI compartilhado • 16 MHz" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1150" y="525" width="380" height="165" />
+        </mxCell>
+        <mxCell id="pwr" value="&lt;b&gt;Alimentação / GND comum&lt;/b&gt;&lt;br&gt;&lt;br&gt;Lógica ESP32: 3,3 V. Tensão de alimentação depende do módulo.&lt;br&gt;Fonte, regulador, pull-ups e desacoplamento não possuem esquema/BOM neste projeto." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="70" y="810" width="1000" height="125" />
+        </mxCell>
+        <mxCell id="usb" value="&lt;b&gt;Host / USB serial&lt;/b&gt;&lt;br&gt;&lt;br&gt;Programação do ESP32&lt;br&gt;Console: 115200 baud" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1150" y="810" width="380" height="125" />
+        </mxCell>
+        <mxCell id="e1" value="TX GPS → RX17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#2864A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.35;entryX=0;entryY=0.18;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="gps" target="esp">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e2" value="TX16 → RX GPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#2864A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.35;entryX=1;entryY=0.8;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="esp" target="gps">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e3" value="DATA GPIO32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#2864A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;entryX=0;entryY=0.82;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="dht" target="esp">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e4" value="I²C 21 / 22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#2864A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.18;entryX=0;entryY=0.5;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="esp" target="imu">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e5" value="SPI 5 / 18 / 23 / 19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#287452;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.82;entryX=0;entryY=0.5;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="esp" target="sd">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e6" value="VCC / GND: validar módulos" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#A36A15;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;exitX=0.7;exitY=0;entryX=0.5;entryY=1;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="pwr" target="esp">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e7" value="USB / programação e console" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;entryX=0.9;entryY=1;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="usb" target="esp">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1340" y="760" />
+              <mxPoint x="950" y="760" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="limits" value="SPI 18/19/23 e I²C 21/22 são padrões da placa documentada; não há remapeamento explícito no sketch." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=17;fontColor=#17324F;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="70" y="736" width="1460" height="40" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="03-inicializacao" name="Inicialização e recuperação de boot">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Inicialização e recuperação de boot" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="setup() só entrega controle ao loop após montar SD e preparar recursos essenciais." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:709–731, 1333–1453" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="serial" value="&lt;b&gt;Serial + GPS&lt;/b&gt;&lt;br&gt;&lt;br&gt;115200 / 9600 baud&lt;br&gt;TZ=UTC0 • UART RX 1024 B" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="195" width="440" height="135" />
+        </mxCell>
+        <mxCell id="ram" value="&lt;b&gt;Alocar RAM + mutex&lt;/b&gt;&lt;br&gt;&lt;br&gt;3 buffers • sdMutex&lt;br&gt;Falha → espera infinita" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="195" width="440" height="135" />
+        </mxCell>
+        <mxCell id="sens" value="&lt;b&gt;Iniciar sensores&lt;/b&gt;&lt;br&gt;&lt;br&gt;DHT22; MPU opcional&lt;br&gt;Falha MPU → sem IMU" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1080" y="195" width="440" height="135" />
+        </mxCell>
+        <mxCell id="mount" value="&lt;b&gt;Montar microSD&lt;/b&gt;&lt;br&gt;&lt;br&gt;sd.begin(SD_CONFIG)&lt;br&gt;Retry infinito a cada 500 ms" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1080" y="390" width="440" height="135" />
+        </mxCell>
+        <mxCell id="files" value="&lt;b&gt;Preparar arquivos&lt;/b&gt;&lt;br&gt;&lt;br&gt;Cabeçalho se log.txt não existe&lt;br&gt;Conferir existência dos logs" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="390" width="440" height="135" />
+        </mxCell>
+        <mxCell id="wdt" value="&lt;b&gt;Configurar watchdog&lt;/b&gt;&lt;br&gt;&lt;br&gt;60 s • reconfigure no core 3.x&lt;br&gt;Registrar tarefa atual" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="390" width="440" height="135" />
+        </mxCell>
+        <mxCell id="boot" value="&lt;b&gt;Registrar boot&lt;/b&gt;&lt;br&gt;&lt;br&gt;bootCount++ • reset_reason&lt;br&gt;# BOOT em log.txt" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="585" width="440" height="135" />
+        </mxCell>
+        <mxCell id="ble" value="&lt;b&gt;Criar fila / iniciar BLE&lt;/b&gt;&lt;br&gt;&lt;br&gt;10 ponteiros • callbacks&lt;br&gt;Falha fila → espera infinita" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="585" width="440" height="135" />
+        </mxCell>
+        <mxCell id="move" value="&lt;b&gt;Entrar em movimento&lt;/b&gt;&lt;br&gt;&lt;br&gt;WIFI_STA • sem conexão&lt;br&gt;Não inicia scan imediato" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1080" y="585" width="440" height="135" />
+        </mxCell>
+        <mxCell id="web" value="&lt;b&gt;Preparar HTTP&lt;/b&gt;&lt;br&gt;&lt;br&gt;Rotas / e /download&lt;br&gt;Tarefa core 1, 8192 B, prio 2" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1080" y="780" width="440" height="135" />
+        </mxCell>
+        <mxCell id="run" value="&lt;b&gt;Aguardar GPS / loop()&lt;/b&gt;&lt;br&gt;&lt;br&gt;Scans em movimento dependem&lt;br&gt;de RMC com velocidade válida" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="780" width="440" height="135" />
+        </mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="serial" target="ram">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ram" target="sens">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="sens" target="mount">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="mount" target="files">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="files" target="wdt">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="wdt" target="boot">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="boot" target="ble">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ble" target="move">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="move" target="web">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="web" target="run">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="failure" value="&lt;b&gt;Falha da tarefa HTTP&lt;/b&gt;&lt;br&gt;&lt;br&gt;Logger continua; hotspotDisponivel=false.&lt;br&gt;CHECK passa direto ao SONO." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="780" width="440" height="135" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="04-loop" name="Ciclo principal e prioridades">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Ciclo principal e prioridades" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="Aquisição ≈1 s, seguida de serviço de modo, retry SD e resumo; foco HTTP tem retorno antecipado." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:1459–1547" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="start" value="&lt;b&gt;Entrada de loop()&lt;/b&gt;&lt;br&gt;&lt;br&gt;hotspotEmFoco()?&lt;br&gt;AP aberto + download ou HTTP &amp;lt;8 s" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="70" y="190" width="400" height="130" />
+        </mxCell>
+        <mxCell id="focus" value="&lt;b&gt;Foco HTTP / retorno&lt;/b&gt;&lt;br&gt;&lt;br&gt;Descartar bytes UART GPS&lt;br&gt;Alimentar WDT • delay 50 ms&lt;br&gt;Retornar sem etapas seguintes" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1090" y="190" width="440" height="150" />
+        </mxCell>
+        <mxCell id="acq" value="&lt;b&gt;GPS / MPU • janela 1 s&lt;/b&gt;&lt;br&gt;&lt;br&gt;receberGPS(c) • drenarFilaBLE()&lt;br&gt;MPU a cada 100 ms • WDT&lt;br&gt;vTaskDelay(1) por passagem" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="70" y="405" width="400" height="155" />
+        </mxCell>
+        <mxCell id="data" value="&lt;b&gt;Média + dados&lt;/b&gt;&lt;br&gt;&lt;br&gt;Média das amostras MPU&lt;br&gt;lerDHT() ≥2 s&lt;br&gt;newData → processarDadosGPS()" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="590" y="405" width="400" height="155" />
+        </mxCell>
+        <mxCell id="mode" value="&lt;b&gt;Modo / RF&lt;/b&gt;&lt;br&gt;&lt;br&gt;servicoModo(): poll WiFi&lt;br&gt;Fechar ciclo BLE+WiFi&lt;br&gt;Timers sono / inatividade AP" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1090" y="405" width="440" height="155" />
+        </mxCell>
+        <mxCell id="panel" value="&lt;b&gt;Resumo e fim&lt;/b&gt;&lt;br&gt;&lt;br&gt;Painel 5 s / 30 s com AP&lt;br&gt;Sem resumo em download&lt;br&gt;Guardar duração da volta" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="70" y="700" width="400" height="155" />
+        </mxCell>
+        <mxCell id="retry" value="&lt;b&gt;SD / retry pendente&lt;/b&gt;&lt;br&gt;&lt;br&gt;Qualquer buffer cheio → pendente&lt;br&gt;Retry ≥1 s; sem ciclo/scan/download&lt;br&gt;flushBuffers()" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="590" y="700" width="400" height="155" />
+        </mxCell>
+        <mxCell id="web" value="&lt;b&gt;Eventos HTTP&lt;/b&gt;&lt;br&gt;&lt;br&gt;imprimirAcessosWeb()&lt;br&gt;imprimirDownload()&lt;br&gt;Impressão só pela loopTask" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1090" y="700" width="440" height="155" />
+        </mxCell>
+        <mxCell id="e1" value="sim" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#A36A15;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="start" target="focus">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e2" value="não" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#2864A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="start" target="acq">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="acq" target="data">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="data" target="mode">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="mode" target="web">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="web" target="retry">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="retry" target="panel">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e8" value="próxima volta" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;entryX=0;entryY=0.5;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="panel" target="start">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="40" y="777" />
+              <mxPoint x="40" y="255" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="note" value="&lt;b&gt;Timers independem de fix novo, mas não executam no retorno de foco HTTP&lt;/b&gt;&lt;br&gt;&lt;br&gt;Durante foco, não há leitura de sensores, novas linhas GPS, serviço de modos, retry SD ou impressão Serial." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="590" y="900" width="940" height="80" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="05-maquina-estados" name="Máquina de estados movimento / parado">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Máquina de estados movimento / parado" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="Histerese controla transições por RMC válido; servicoModo() controla tempo e fechamento dos ciclos." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:764–949, 963–1011, 1459–1474" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="mov" value="&lt;b&gt;MOVIMENTO / 0&lt;/b&gt;&lt;br&gt;&lt;br&gt;RMC válido dispara ciclo após ≥30 s&lt;br&gt;desde fim anterior. CSV: 10 s.&lt;br&gt;WiFi STA + BLE quando escaneia." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="90" y="230" width="560" height="160" />
+        </mxCell>
+        <mxCell id="check" value="&lt;b&gt;PARADO_CHECK / 3&lt;/b&gt;&lt;br&gt;&lt;br&gt;Ao parar: reaproveitar ciclo aberto&lt;br&gt;ou iniciar ciclo final WiFi+BLE.&lt;br&gt;Ao acordar: iniciar ciclo único." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="940" y="230" width="560" height="160" />
+        </mxCell>
+        <mxCell id="sono" value="&lt;b&gt;PARADO_SONO / 2&lt;/b&gt;&lt;br&gt;&lt;br&gt;5 min sem scan • tentativa de flush&lt;br&gt;Sono lógico: sem deep sleep.&lt;br&gt;Aquisição continua fora do foco." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="90" y="640" width="560" height="160" />
+        </mxCell>
+        <mxCell id="hot" value="&lt;b&gt;PARADO_HOTSPOT / 4&lt;/b&gt;&lt;br&gt;&lt;br&gt;Flush → drenar fila → BLE deinit&lt;br&gt;AP: 5 min sem ação HTTP válida&lt;br&gt;CSV parado: 30 s, fora do foco." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="940" y="640" width="560" height="160" />
+        </mxCell>
+        <mxCell id="e1" value="km/h ≤2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="mov" target="check">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e2" value="WiFi done + BLE done" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#167580;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="check" target="hot">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e3" value="5 min inativo; sem download" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#167580;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="hot" target="sono">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e4" value="5 min desde entrada" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;entryX=0.15;entryY=1;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="sono" target="check">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="370" y="495" />
+              <mxPoint x="1024" y="495" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" value="HTTP indisponível / AP falhou" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#A36A15;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;exitX=0;exitY=0.55;entryX=1;entryY=0.3;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="check" target="sono">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="830" y="318" />
+              <mxPoint x="830" y="688" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="return" value="&lt;b&gt;Qualquer estado parado → MOVIMENTO&lt;/b&gt;&lt;br&gt;&lt;br&gt;&amp;gt;5 km/h por 5 RMCs válidos consecutivos; leitura ≤5 zera contador.&lt;br&gt;Ao sair do HOTSPOT: fechar AP; próximo scan reinicializa BLE." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="70" y="855" width="790" height="110" />
+        </mxCell>
+        <mxCell id="fresh" value="&lt;b&gt;GPS e foco HTTP&lt;/b&gt;&lt;br&gt;&lt;br&gt;Sem RMC válido, modo permanece; velocidade fica obsoleta em 3 s.&lt;br&gt;No foco HTTP, UART é descartada: movimento não é detectado." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="900" y="855" width="630" height="110" />
+        </mxCell>
+        <mxCell id="e6" value="&amp;gt;5 ×5 RMCs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#2864A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;exitX=0;exitY=0.5;entryX=0;entryY=0.5;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="sono" target="mov">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="52" y="720" />
+              <mxPoint x="52" y="310" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="resume" value="HOTSPOT/CHECK → MOVIMENTO seguem a mesma regra; download só aborta por movimento se a transição puder ser detectada." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#17324F;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="90" y="170" width="1410" height="40" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="06-aquisicao" name="Aquisição GPS e sensores">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Aquisição GPS e sensores" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="Validade do NMEA, idade da velocidade e validação de calendário precedem gravação de telemetria." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:512–524, 953–1067, 1478–1519" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="g" value="" style="rounded=1;arcSize=4;fillColor=#EAF3FF;fillOpacity=35;strokeColor=#2864A0;strokeOpacity=35;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="175" width="485" height="660" />
+        </mxCell>
+        <mxCell id="g-title" value="GPS / NMEA" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=17;fontColor=#2864A0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="66" y="187" width="449" height="30" />
+        </mxCell>
+        <mxCell id="i" value="" style="rounded=1;arcSize=4;fillColor=#EAF3FF;fillOpacity=35;strokeColor=#2864A0;strokeOpacity=35;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="558" y="175" width="485" height="660" />
+        </mxCell>
+        <mxCell id="i-title" value="SENSORES" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=17;fontColor=#2864A0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="576" y="187" width="449" height="30" />
+        </mxCell>
+        <mxCell id="c" value="" style="rounded=1;arcSize=4;fillColor=#E7F3ED;fillOpacity=35;strokeColor=#287452;strokeOpacity=35;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1068" y="175" width="484" height="660" />
+        </mxCell>
+        <mxCell id="c-title" value="COMPOSIÇÃO / CSV" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=17;fontColor=#287452;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1086" y="187" width="448" height="30" />
+        </mxCell>
+        <mxCell id="parse" value="&lt;b&gt;UART → receberGPS()&lt;/b&gt;&lt;br&gt;&lt;br&gt;NMEA até 127 chars&lt;br&gt;gps.encode(): checksum&lt;br&gt;Aceita $GPRMC / $GPGGA" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="75" y="245" width="430" height="135" />
+        </mxCell>
+        <mxCell id="rmc" value="&lt;b&gt;RMC: velocidade / direção&lt;/b&gt;&lt;br&gt;&lt;br&gt;Campos numéricos e posição&lt;br&gt;knots ×1,852 → km/h&lt;br&gt;Velocidade válida → atualizarModo()" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="75" y="435" width="430" height="150" />
+        </mxCell>
+        <mxCell id="gga" value="&lt;b&gt;GGA: satélites / HDOP&lt;/b&gt;&lt;br&gt;&lt;br&gt;Atualiza leitura de posição&lt;br&gt;Não renova velocidade RMC&lt;br&gt;Sem velocidade nova: manter modo" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="75" y="635" width="430" height="145" />
+        </mxCell>
+        <mxCell id="mpu" value="&lt;b&gt;MPU6050&lt;/b&gt;&lt;br&gt;&lt;br&gt;Amostra a cada 100 ms&lt;br&gt;Média por janela de ≈1 s&lt;br&gt;Sem MPU: campos IMU vazios" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="585" y="245" width="430" height="135" />
+        </mxCell>
+        <mxCell id="dht" value="&lt;b&gt;DHT22&lt;/b&gt;&lt;br&gt;&lt;br&gt;Intervalo mínimo 2 s&lt;br&gt;NaN → campo CSV vazio&lt;br&gt;Última leitura alimenta página" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="585" y="435" width="430" height="150" />
+        </mxCell>
+        <mxCell id="units" value="&lt;b&gt;Unidades / freshness&lt;/b&gt;&lt;br&gt;&lt;br&gt;ac: m/s² • gy: rad/s&lt;br&gt;Velocidade CSV só se idade &amp;lt;3 s&lt;br&gt;Sensores pausam no foco HTTP" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="585" y="635" width="430" height="145" />
+        </mxCell>
+        <mxCell id="valid" value="&lt;b&gt;processarDadosGPS()&lt;/b&gt;&lt;br&gt;&lt;br&gt;Atualizar última posição válida&lt;br&gt;Validar data/hora/calendário&lt;br&gt;Normalizar UTC−3 com mktime" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1095" y="245" width="430" height="155" />
+        </mxCell>
+        <mxCell id="csv" value="&lt;b&gt;Compor 15 colunas&lt;/b&gt;&lt;br&gt;&lt;br&gt;Posição em milionésimos de grau&lt;br&gt;Campos inválidos vazios&lt;br&gt;Linha GPS: máximo 159 chars" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1095" y="475" width="430" height="135" />
+        </mxCell>
+        <mxCell id="cad" value="&lt;b&gt;Cadência → logBuffer&lt;/b&gt;&lt;br&gt;&lt;br&gt;MOVIMENTO: ≥10 s&lt;br&gt;Qualquer PARADO: ≥30 s&lt;br&gt;Somente quando há newData" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1095" y="690" width="430" height="115" />
+        </mxCell>
+        <mxCell id="e1" value="RMC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#2864A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="parse" target="rmc">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e2" value="GGA" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#2864A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.6;entryX=0;entryY=0.5;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="parse" target="gga">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="60" y="326" />
+              <mxPoint x="60" y="707" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" value="leituraGPS / modo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#2864A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.25;entryX=0;entryY=0.95;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="rmc" target="valid">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="542" y="472" />
+              <mxPoint x="542" y="412" />
+              <mxPoint x="1050" y="412" />
+              <mxPoint x="1050" y="392" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4" value="média IMU" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#2864A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.4;entryX=0;entryY=0.3;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="mpu" target="csv">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e5" value="DHT" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#2864A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="dht" target="csv">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e6" value="data/hora válidas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#287452;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="valid" target="csv">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e7" value="intervalo atingido" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#287452;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="csv" target="cad">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="pos" value="&lt;b&gt;Posição dos achados de rádio&lt;/b&gt;&lt;br&gt;&lt;br&gt;WiFi/BLE usam lastLat / lastLon / lastTimeStamp na composição; sem fix inicial, coordenadas vazias.&lt;br&gt;Hora pode permanecer antiga: não é posição exata no instante da detecção." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="75" y="875" width="1450" height="100" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="07-ciclo-radio" name="Ciclo coordenado WiFi + BLE">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Ciclo coordenado WiFi + BLE" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="Ciclo só encerra após ambos concluírem ou sinalizarem falha; durações não são iguais." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:555–619, 671–807, 882–949" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="trigger" value="&lt;b&gt;iniciarCicloRadio()&lt;/b&gt;&lt;br&gt;&lt;br&gt;Reset flags / stats • cicloNumero++&lt;br&gt;BLE começa aqui; WiFi no serviço&lt;br&gt;radioCicloAtivo=true" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="565" y="185" width="470" height="130" />
+        </mxCell>
+        <mxCell id="w" value="" style="rounded=1;arcSize=4;fillColor=#F0ECFB;fillOpacity=35;strokeColor=#7157A0;strokeOpacity=35;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="360" width="680" height="440" />
+        </mxCell>
+        <mxCell id="w-title" value="RAMO WIFI / loopTask" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=17;fontColor=#7157A0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="78" y="372" width="644" height="30" />
+        </mxCell>
+        <mxCell id="b" value="" style="rounded=1;arcSize=4;fillColor=#F0ECFB;fillOpacity=35;strokeColor=#7157A0;strokeOpacity=35;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="860" y="360" width="680" height="440" />
+        </mxCell>
+        <mxCell id="b-title" value="RAMO BLE / PILHA + loopTask" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=17;fontColor=#7157A0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="878" y="372" width="644" height="30" />
+        </mxCell>
+        <mxCell id="wifi" value="&lt;b&gt;varrerWiFi()&lt;/b&gt;&lt;br&gt;&lt;br&gt;scanNetworks(true, true)&lt;br&gt;Assíncrono; incluir SSIDs ocultos&lt;br&gt;Poll scanComplete() no serviço" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="90" y="425" width="620" height="135" />
+        </mxCell>
+        <mxCell id="wdone" value="&lt;b&gt;WiFi finalizado&lt;/b&gt;&lt;br&gt;&lt;br&gt;Resultado ≥0 → dedup + wifiBuffer&lt;br&gt;scanDelete(); scanEmAndamento=false&lt;br&gt;Falha → flag; wifiDone=true" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="90" y="620" width="620" height="135" />
+        </mxCell>
+        <mxCell id="ble" value="&lt;b&gt;bleScanLigar()&lt;/b&gt;&lt;br&gt;&lt;br&gt;Reiniciar NimBLE se necessário&lt;br&gt;Scan ativo: 5000 ms&lt;br&gt;Callbacks não reiniciam scan" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="890" y="425" width="620" height="135" />
+        </mxCell>
+        <mxCell id="bdone" value="&lt;b&gt;BLE finalizado&lt;/b&gt;&lt;br&gt;&lt;br&gt;onScanEnd → flags atômicas&lt;br&gt;loopTask drena fila; bleDone=true&lt;br&gt;Falha start → bleDone=true" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="890" y="620" width="620" height="135" />
+        </mxCell>
+        <mxCell id="join" value="&lt;b&gt;atualizarCicloRadio() / junção&lt;/b&gt;&lt;br&gt;&lt;br&gt;wifiDone &amp;amp;&amp;amp; bleDone → fechar ciclo; guardar ultimoCicloFim.&lt;br&gt;Em PARADO_CHECK → entrarModoParadoHotspot(); em movimento → aguardar novo RMC e ≥30 s." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="310" y="855" width="980" height="115" />
+        </mxCell>
+        <mxCell id="e1" value="servicoModo()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=0.15;exitY=1;entryX=0.5;entryY=0;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="trigger" target="wifi">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="635" y="340" />
+              <mxPoint x="400" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2" value="início BLE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=0.85;exitY=1;entryX=0.5;entryY=0;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="trigger" target="ble">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="965" y="340" />
+              <mxPoint x="1200" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" value="running → seguir poll; concluído/falhou" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="wifi" target="wdone">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e4" value="fim / falha de início" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ble" target="bdone">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e5" value="WiFi done" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="wdone" target="join">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e6" value="BLE done" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="bdone" target="join">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="08-deduplicacao" name="Fila BLE e deduplicação por hash">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Fila BLE e deduplicação por hash" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="Callback produz registros sem bloquear; loopTask é dona da formatação, caches e buffers." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:286–311, 622–706, 579–611" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="cb" value="&lt;b&gt;NimBLE onResult()&lt;/b&gt;&lt;br&gt;&lt;br&gt;malloc BLEDeviceRecord&lt;br&gt;MAC / nome até 64 / RSSI / TX&lt;br&gt;Falha malloc → perdas++" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="195" width="440" height="145" />
+        </mxCell>
+        <mxCell id="q" value="&lt;b&gt;FreeRTOS bleQueue&lt;/b&gt;&lt;br&gt;&lt;br&gt;10 ponteiros • xQueueSend(...,0)&lt;br&gt;Fila cheia → free + perdas++&lt;br&gt;Filtro nativo reduz duplicatas" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="580" y="195" width="440" height="145" />
+        </mxCell>
+        <mxCell id="drain" value="&lt;b&gt;drenarFilaBLE()&lt;/b&gt;&lt;br&gt;&lt;br&gt;xQueueReceive(...,0)&lt;br&gt;dashBle++ para cada consumido&lt;br&gt;Ao final: free(rec)" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1095" y="195" width="440" height="145" />
+        </mxCell>
+        <mxCell id="key" value="&lt;b&gt;Identificador observado&lt;/b&gt;&lt;br&gt;&lt;br&gt;WiFi: SSID, não BSSID&lt;br&gt;BLE: endereço MAC&lt;br&gt;Calcula FNV-1a 32 bits" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1095" y="455" width="440" height="145" />
+        </mxCell>
+        <mxCell id="cache" value="&lt;b&gt;Hash já visto?&lt;/b&gt;&lt;br&gt;&lt;br&gt;Busca linear em cache RTC&lt;br&gt;SSID 500 / MAC BLE 500&lt;br&gt;Conhecido → ignorar CSV" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="580" y="455" width="440" height="145" />
+        </mxCell>
+        <mxCell id="buf" value="&lt;b&gt;Novo → cache + CSV&lt;/b&gt;&lt;br&gt;&lt;br&gt;Adiciona hash antes do flush&lt;br&gt;Carimba última posição/hora&lt;br&gt;Buffer circular WiFi ou BLE" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="455" width="440" height="145" />
+        </mxCell>
+        <mxCell id="e1" value="ponteiro" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="cb" target="q">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e2" value="consumo no loop" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="q" target="drain">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e3" value="MAC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="drain" target="key">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e4" value="hash" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="key" target="cache">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e5" value="não visto" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#287452;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="cache" target="buf">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="full" value="&lt;b&gt;Cache cheia&lt;/b&gt;&lt;br&gt;&lt;br&gt;Aviso único. Conhecidos continuam filtrados.&lt;br&gt;Novos IDs geram CSV, mas não entram no cache." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="735" width="440" height="165" />
+        </mxCell>
+        <mxCell id="rtc" value="&lt;b&gt;Retenção RTC&lt;/b&gt;&lt;br&gt;&lt;br&gt;Caches e bootCount usam RTC_DATA_ATTR.&lt;br&gt;Intenção: reter em resets, não power-off.&lt;br&gt;Retenção real depende do tipo de reset." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="580" y="735" width="440" height="165" />
+        </mxCell>
+        <mxCell id="limit" value="&lt;b&gt;Limites de deduplicação&lt;/b&gt;&lt;br&gt;&lt;br&gt;Hash 32 bits pode colidir. SSID igual agrupa redes.&lt;br&gt;Hash é inserido antes de escrita confirmada: perda&lt;br&gt;de buffer não garante reobservação do registro." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1095" y="735" width="440" height="165" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="09-armazenamento" name="Buffers, flush e recuperação do SD">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Buffers, flush e recuperação do SD" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="Confirmação por arquivo/lote; não existe transação única envolvendo os três arquivos." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:313–472, 831–878, 1536–1542" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="ram" value="&lt;b&gt;Acumular em RAM&lt;/b&gt;&lt;br&gt;&lt;br&gt;log: 150×160 B • WiFi/BLE: 50×256 B&lt;br&gt;Total: 49.600 B de buffers&lt;br&gt;Cheio → sobrescrever mais antiga + perdas" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="190" width="460" height="150" />
+        </mxCell>
+        <mxCell id="req" value="&lt;b&gt;Solicitar flush&lt;/b&gt;&lt;br&gt;&lt;br&gt;Qualquer buffer cheio ou&lt;br&gt;entrada HOTSPOT / SONO&lt;br&gt;flushPendente=true" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="190" width="460" height="150" />
+        </mxCell>
+        <mxCell id="gate" value="&lt;b&gt;Pode gravar agora?&lt;/b&gt;&lt;br&gt;&lt;br&gt;Sem scan WiFi/BLE e download&lt;br&gt;Adquirir sdMutex; checar download&lt;br&gt;Se bloqueado: manter pendente" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1080" y="190" width="460" height="150" />
+        </mxCell>
+        <mxCell id="write" value="&lt;b&gt;appendLinhasCirculares()&lt;/b&gt;&lt;br&gt;&lt;br&gt;log → wifi → ble; um open/close por lote&lt;br&gt;O_APPEND; ordem cronológica&lt;br&gt;Sem cópia intermediária do lote" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1080" y="440" width="460" height="150" />
+        </mxCell>
+        <mxCell id="ok" value="&lt;b&gt;Escrita + sync + close OK?&lt;/b&gt;&lt;br&gt;&lt;br&gt;Exigir tamanho exato por linha&lt;br&gt;Sucesso → remover lote daquele buffer&lt;br&gt;Falha → reter lote inteiro" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="440" width="460" height="150" />
+        </mxCell>
+        <mxCell id="success" value="&lt;b&gt;Todos os lotes confirmados&lt;/b&gt;&lt;br&gt;&lt;br&gt;Liberar mutex&lt;br&gt;flushPendente=false&lt;br&gt;Evento [OK ]" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="440" width="460" height="150" />
+        </mxCell>
+        <mxCell id="remount" value="&lt;b&gt;Falha: remontar cartão&lt;/b&gt;&lt;br&gt;&lt;br&gt;Ainda sob sdMutex: sd.end()&lt;br&gt;50 ms → sd.begin()&lt;br&gt;Sucesso zera falhasRemountSD" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="735" width="460" height="150" />
+        </mxCell>
+        <mxCell id="reset" value="&lt;b&gt;10 remounts falhos seguidos&lt;/b&gt;&lt;br&gt;&lt;br&gt;esp_restart()&lt;br&gt;Boot volta ao estado MOVIMENTO&lt;br&gt;RAM não gravada pode se perder" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1080" y="735" width="460" height="150" />
+        </mxCell>
+        <mxCell id="retry" value="&lt;b&gt;Retry no loop ≥1 s&lt;/b&gt;&lt;br&gt;&lt;br&gt;Manter pendente até confirmar&lt;br&gt;Sem ciclo/scan/download ativo&lt;br&gt;Retry pode duplicar escrita parcial" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="735" width="460" height="150" />
+        </mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ram" target="req">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="req" target="gate">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e3" value="permitido" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#287452;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="gate" target="write">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="write" target="ok">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e5" value="todos OK" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#287452;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ok" target="success">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e6" value="algum falhou" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#A36A15;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ok" target="remount">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e7" value="limite atingido" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#A36A15;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="remount" target="reset">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e8" value="abaixo do limite" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#A36A15;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="remount" target="retry">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e9" value="próxima tentativa" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#A36A15;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;entryX=0.5;entryY=1;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="retry" target="req">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="40" y="810" />
+              <mxPoint x="40" y="650" />
+              <mxPoint x="800" y="650" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="risk" value="Retenção do lote incerto preserva dados para retry; energia interrompida perde RAM. Flush falho não impede tentativa de abrir AP." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=17;fontColor=#17324F;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="925" width="1480" height="45" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="10-concorrencia" name="Tarefas, ownership e exclusão mútua">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Tarefas, ownership e exclusão mútua" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="loopTask e Hotspot_HTTP compartilham core 1; pilhas do core/IDF atendem rádio em seus contextos." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:95–146, 643–706, 1229–1341, 1467–1547" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="core0" value="" style="rounded=1;arcSize=4;fillColor=#F0ECFB;fillOpacity=35;strokeColor=#7157A0;strokeOpacity=35;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="175" width="440" height="760" />
+        </mxCell>
+        <mxCell id="core0-title" value="PILHAS DE RÁDIO / CONTEXTO IDF" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=17;fontColor=#7157A0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="66" y="187" width="404" height="30" />
+        </mxCell>
+        <mxCell id="core1" value="" style="rounded=1;arcSize=4;fillColor=#EFF3F8;fillOpacity=35;strokeColor=#354D6B;strokeOpacity=35;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="518" y="175" width="635" height="760" />
+        </mxCell>
+        <mxCell id="core1-title" value="CORE 1 / APLICAÇÃO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=17;fontColor=#354D6B;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="536" y="187" width="599" height="30" />
+        </mxCell>
+        <mxCell id="shared" value="" style="rounded=1;arcSize=4;fillColor=#E7F3ED;fillOpacity=35;strokeColor=#287452;strokeOpacity=35;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1183" y="175" width="369" height="760" />
+        </mxCell>
+        <mxCell id="shared-title" value="RECURSOS COMPARTILHADOS" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=17;fontColor=#287452;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1201" y="187" width="333" height="30" />
+        </mxCell>
+        <mxCell id="stack" value="&lt;b&gt;WiFi + NimBLE&lt;/b&gt;&lt;br&gt;&lt;br&gt;Execução interna do core/IDF&lt;br&gt;Callback BLE: sem Serial / SD&lt;br&gt;Afinidade interna não definida aqui" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="73" y="245" width="390" height="170" />
+        </mxCell>
+        <mxCell id="queue" value="&lt;b&gt;Fila / flags BLE&lt;/b&gt;&lt;br&gt;&lt;br&gt;10 ponteiros → loopTask&lt;br&gt;bleFimPendente / bleScanAtivo&lt;br&gt;Falhas incrementam perdidos" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="73" y="610" width="390" height="150" />
+        </mxCell>
+        <mxCell id="loop" value="&lt;b&gt;loopTask&lt;/b&gt;&lt;br&gt;&lt;br&gt;Sensores / GPS / modos&lt;br&gt;Dona dos buffers e caches&lt;br&gt;Única emissora de Serial&lt;br&gt;Escrita SD + retry / remount" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="548" y="245" width="575" height="210" />
+        </mxCell>
+        <mxCell id="http" value="&lt;b&gt;Hotspot_HTTP&lt;/b&gt;&lt;br&gt;&lt;br&gt;Prioridade 2 • stack 8192 B&lt;br&gt;server.handleClient()&lt;br&gt;Tick 2 ms aberto / 100 ms fechado&lt;br&gt;Lê SD; publica métricas atômicas" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="548" y="610" width="575" height="210" />
+        </mxCell>
+        <mxCell id="sd" value="&lt;b&gt;sdMutex / SdFs&lt;/b&gt;&lt;br&gt;&lt;br&gt;Flush/remount no loop&lt;br&gt;HTTP: listagem e leitura&lt;br&gt;Serializa operações SD" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1208" y="245" width="319" height="170" />
+        </mxCell>
+        <mxCell id="state" value="&lt;b&gt;Estado de download&lt;/b&gt;&lt;br&gt;&lt;br&gt;downloadAtivo sob mutex&lt;br&gt;Impede flush/remount&lt;br&gt;Arquivo aberto entre blocos" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1208" y="500" width="319" height="145" />
+        </mxCell>
+        <mxCell id="dash" value="&lt;b&gt;Snapshots / métricas&lt;/b&gt;&lt;br&gt;&lt;br&gt;DHT / scans: volatile&lt;br&gt;Estado HTTP: atomic&lt;br&gt;Página usa últimos valores" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1208" y="750" width="319" height="145" />
+        </mxCell>
+        <mxCell id="e1" value="onResult / onScanEnd" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="stack" target="queue">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e2" value="drenarFilaBLE()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#7157A0;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.2;entryX=0;entryY=0.8;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="queue" target="loop">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e3" value="lock / escrita" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#287452;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="loop" target="sd">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e4" value="lock / flag" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#167580;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.2;entryX=0;entryY=0.6;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="http" target="state">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1158" y="652" />
+              <mxPoint x="1158" y="587" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" value="guard de arquivo aberto" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#287452;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="state" target="sd">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e6" value="métricas HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#167580;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.85;entryX=0;entryY=0.75;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="http" target="dash">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1163" y="788" />
+              <mxPoint x="1163" y="859" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" value="últimas leituras" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;exitX=1;exitY=0.9;entryX=0;entryY=0.15;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="loop" target="dash">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1180" y="434" />
+              <mxPoint x="1180" y="772" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n" value="Não há BLE_Consumer na v3. Buffers não precisam de mutex próprio; HTTP não os modifica." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=17;fontColor=#17324F;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="73" y="945" width="1450" height="36" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="11-hotspot" name="Hotspot, página e foco HTTP">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Hotspot, página e foco HTTP" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="AP local sem internet; dados exibidos são snapshots e atualização ocorre por recarga manual." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:810–911, 1110–1225, 1459–1475" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="pre" value="&lt;b&gt;Fim do CHECK&lt;/b&gt;&lt;br&gt;&lt;br&gt;Sem ciclo / scan WiFi / BLE&lt;br&gt;Tentativa de flush → drenar fila&lt;br&gt;bleParar(): deinit libera heap" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="190" width="460" height="150" />
+        </mxCell>
+        <mxCell id="ap" value="&lt;b&gt;Abrir AP&lt;/b&gt;&lt;br&gt;&lt;br&gt;WIFI_AP • 192.168.4.1/24&lt;br&gt;ESP32GPS-Logs • canal 1&lt;br&gt;Máximo 1 estação • senha configurada" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="190" width="460" height="150" />
+        </mxCell>
+        <mxCell id="root" value="&lt;b&gt;GET / • httpRaiz()&lt;/b&gt;&lt;br&gt;&lt;br&gt;HTML5 + CSS embutido&lt;br&gt;Sem JS / recursos externos / API&lt;br&gt;Resposta chunked • Cache-Control no-store" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1080" y="190" width="460" height="150" />
+        </mxCell>
+        <mxCell id="cards" value="&lt;b&gt;Painel e arquivos&lt;/b&gt;&lt;br&gt;&lt;br&gt;WiFi / BLE últimos scans&lt;br&gt;DHT última leitura; NaN → sem leitura&lt;br&gt;Listar nomes / tamanhos via sdMutex" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1080" y="440" width="460" height="150" />
+        </mxCell>
+        <mxCell id="act" value="&lt;b&gt;Atividade válida&lt;/b&gt;&lt;br&gt;&lt;br&gt;Abrir / atualizar página ou baixar&lt;br&gt;renova ultimaAtividade&lt;br&gt;Só conectar no AP não renova" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="440" width="460" height="150" />
+        </mxCell>
+        <mxCell id="focus" value="&lt;b&gt;Prioridade HTTP&lt;/b&gt;&lt;br&gt;&lt;br&gt;Acesso recente &amp;lt;8 s ou download&lt;br&gt;→ UART descartada; WDT + delay&lt;br&gt;GPS / MPU / DHT / SD / modo pausam" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="440" width="460" height="150" />
+        </mxCell>
+        <mxCell id="wait" value="&lt;b&gt;Após foco: retomar loop&lt;/b&gt;&lt;br&gt;&lt;br&gt;Volta aquisição / timers / Serial&lt;br&gt;Sem atividade por 5 min e&lt;br&gt;sem download → fechar AP" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="735" width="460" height="150" />
+        </mxCell>
+        <mxCell id="sleep" value="&lt;b&gt;PARADO_SONO / 5 min&lt;/b&gt;&lt;br&gt;&lt;br&gt;Tentativa de flush&lt;br&gt;Fim do intervalo → CHECK&lt;br&gt;Próximo scan religa NimBLE" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="735" width="460" height="150" />
+        </mxCell>
+        <mxCell id="fail" value="&lt;b&gt;Falha AP ou tarefa HTTP&lt;/b&gt;&lt;br&gt;&lt;br&gt;AP falhou → WIFI_STA&lt;br&gt;Sem tarefa → hotspot desabilitado&lt;br&gt;CHECK vai ao sono; logger continua" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1080" y="735" width="460" height="150" />
+        </mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="pre" target="ap">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e2" value="navegador" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#167580;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="ap" target="root">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="root" target="cards">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e4" value="página / download" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#167580;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="cards" target="act">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="act" target="focus">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e6" value="sem foco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="focus" target="wait">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e7" value="inativo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="wait" target="sleep">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e8" value="softAP falhou" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#A36A15;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;exitX=0.9;exitY=1;entryX=0.5;entryY=0;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="ap" target="fail">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="1052" y="385" />
+              <mxPoint x="1052" y="665" />
+              <mxPoint x="1310" y="665" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n" value="BLE não permanece ligado no hotspot. Sem foco HTTP, aquisição normal continua; dados não são coletados durante download." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=17;fontColor=#17324F;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="925" width="1480" height="45" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="12-download" name="Download HTTP: validação, streaming e encerramento">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Download HTTP: validação, streaming e encerramento" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="GET /download?file=... envia bytes originais do SD; não converte CSV nem oferece escrita/upload." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:276–284, 1110–1115, 1219–1322" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="req" value="&lt;b&gt;Receber requisição&lt;/b&gt;&lt;br&gt;&lt;br&gt;DownloadEstado != OCIOSO → 503&lt;br&gt;Allowlist: log.txt / wifi.txt / ble.txt&lt;br&gt;Nome fora da lista → 400" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="190" width="460" height="150" />
+        </mxCell>
+        <mxCell id="open" value="&lt;b&gt;Validar sob sdMutex&lt;/b&gt;&lt;br&gt;&lt;br&gt;Lock até 2 s → ocupado: 503&lt;br&gt;Volume/off/open falhou: 503&lt;br&gt;Arquivo ausente: 404" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="190" width="460" height="150" />
+        </mxCell>
+        <mxCell id="header" value="&lt;b&gt;Abrir e enviar headers&lt;/b&gt;&lt;br&gt;&lt;br&gt;Tamanho ≤4.294.967.295 B&lt;br&gt;Maior → 503; downloadAtivo=true&lt;br&gt;Content-Length / attachment / no-store" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1080" y="190" width="460" height="150" />
+        </mxCell>
+        <mxCell id="read" value="&lt;b&gt;Ler bloco do arquivo&lt;/b&gt;&lt;br&gt;&lt;br&gt;Blocos de até 2048 B&lt;br&gt;sdMutex só durante f.read()&lt;br&gt;Leitura curta → abortar" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1080" y="445" width="460" height="150" />
+        </mxCell>
+        <mxCell id="send" value="&lt;b&gt;Enviar via NetworkClient&lt;/b&gt;&lt;br&gt;&lt;br&gt;client.write() pode ser parcial&lt;br&gt;Atualizar bytes / último progresso&lt;br&gt;Sem escrita → stalls++; delay 2 ms" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="445" width="460" height="150" />
+        </mxCell>
+        <mxCell id="abort" value="&lt;b&gt;Condição de aborto&lt;/b&gt;&lt;br&gt;&lt;br&gt;AP fechado ou desconexão&lt;br&gt;15 s sem progresso&lt;br&gt;Erro leitura SD" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="445" width="460" height="150" />
+        </mxCell>
+        <mxCell id="close" value="&lt;b&gt;Encerrar sob sdMutex&lt;/b&gt;&lt;br&gt;&lt;br&gt;f.close() • downloadAtivo=false&lt;br&gt;client.stop()&lt;br&gt;Renovar ultimaAtividade" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="745" width="460" height="150" />
+        </mxCell>
+        <mxCell id="result" value="&lt;b&gt;Resultado atômico&lt;/b&gt;&lt;br&gt;&lt;br&gt;Concluído: sem motivo, close OK&lt;br&gt;e bytes enviados = total&lt;br&gt;Caso contrário: DOWNLOAD_ERRO" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E4F3F4;strokeColor=#167580;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="570" y="745" width="460" height="150" />
+        </mxCell>
+        <mxCell id="print" value="&lt;b&gt;loopTask imprime transição&lt;/b&gt;&lt;br&gt;&lt;br&gt;[OK ] / [ERR]: bytes / duração&lt;br&gt;Motivo / stalls / heap / maxblk&lt;br&gt;Liberar estado para novo download" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="1080" y="745" width="460" height="150" />
+        </mxCell>
+        <mxCell id="e1" value="nome permitido" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="req" target="open">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e2" value="SD / arquivo OK" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="open" target="header">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="header" target="read">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e4" value="bytes lidos" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="read" target="send">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e5" value="próximo bloco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#167580;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;entryX=0.5;entryY=0;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="send" target="read">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="800" y="400" />
+              <mxPoint x="1310" y="400" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6" value="verificar entre writes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#A36A15;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="send" target="abort">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e7" value="abortou" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#A36A15;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="abort" target="close">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e8" value="total enviado" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#287452;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=1;entryPerimeter=1;" edge="1" parent="1" source="send" target="close">
+          <mxGeometry as="geometry" relative="1">
+            <Array as="points">
+              <mxPoint x="800" y="680" />
+              <mxPoint x="290" y="680" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="close" target="result">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="result" target="print">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="n" value="Enquanto arquivo está aberto: sem flush/remount. Download incompleto fecha conexão antes de Content-Length → navegador detecta falha." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#17324F;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="60" y="940" width="1480" height="36" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="13-dados-csv" name="Contratos de dados e memória">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Contratos de dados e memória" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="Três arquivos locais; dados numéricos com unidades explícitas e timestamp normalizado em UTC−3." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:162–199, 474–481, 595–609, 651–664, 1018–1067" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="log" value="&lt;b&gt;/log.txt • GPS + sensores&lt;/b&gt;&lt;br&gt;&lt;br&gt;Cabeçalho de 15 colunas:&lt;br&gt;data_hora, lat, lon, sat, hdop, kmh, direcao,&lt;br&gt;umidade, temp_dht, ac_x, ac_y, ac_z,&lt;br&gt;gy_x, gy_y, gy_z&lt;br&gt;Marcador: # BOOT bootCount=N reset_reason=R" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="215" width="700" height="220" />
+        </mxCell>
+        <mxCell id="wifi" value="&lt;b&gt;/wifi.txt • achados WiFi&lt;/b&gt;&lt;br&gt;&lt;br&gt;Sem cabeçalho • 7 colunas:&lt;br&gt;data_hora, lat, lon, SSID, RSSI, canal, criptografia&lt;br&gt;Dedup por hash do SSID&lt;br&gt;RSSI: dBm • segurança em texto" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="835" y="215" width="700" height="220" />
+        </mxCell>
+        <mxCell id="ble" value="&lt;b&gt;/ble.txt • achados BLE&lt;/b&gt;&lt;br&gt;&lt;br&gt;Sem cabeçalho • 7 colunas:&lt;br&gt;data_hora, lat, lon, MAC, nome, RSSI, tx_power&lt;br&gt;Nome / TX vazios se não anunciados&lt;br&gt;Posição/hora no consumo da fila, não no callback" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F0ECFB;strokeColor=#7157A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="505" width="700" height="200" />
+        </mxCell>
+        <mxCell id="units" value="&lt;b&gt;Representação / exportação&lt;/b&gt;&lt;br&gt;&lt;br&gt;DD/MM/AAAA HH:MM:SS • UTC−3 fixo&lt;br&gt;lat/lon ÷1.000.000 → graus decimais&lt;br&gt;km/h; umidade %; DHT °C; ac m/s²; gy rad/s&lt;br&gt;Downloads preservam bytes exatos do arquivo" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="835" y="505" width="700" height="200" />
+        </mxCell>
+        <mxCell id="heap" value="&lt;b&gt;RAM / heap volátil&lt;/b&gt;&lt;br&gt;&lt;br&gt;logBuffer: 24.000 B • WiFi: 12.800 B • BLE: 12.800 B.&lt;br&gt;Fila BLE: 10 ponteiros + records alocados dinamicamente.&lt;br&gt;Power-off perde dados não gravados." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="795" width="700" height="160" />
+        </mxCell>
+        <mxCell id="rtc" value="&lt;b&gt;RTC / flash / SD&lt;/b&gt;&lt;br&gt;&lt;br&gt;RTC: 2 caches ×500 hashes ×4 B + contadores de cache/boot.&lt;br&gt;Flash: firmware + PAGINA_CSS; não grava telemetria em SPIFFS.&lt;br&gt;SD: histórico CSV; não há rotação implementada." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="835" y="795" width="700" height="160" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="14-build" name="Dependências e entrega do firmware">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Dependências e entrega do firmware" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="Bibliotecas do projeto são fonte principal; sincronizar e verificar antes de compilar nova versão." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: ../libraries/manifest.json; ../CONTEXT.md; ../docs/wiki/compilacao-arduino-cli.md" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="lib" value="&lt;b&gt;libraries/ • versões registradas&lt;/b&gt;&lt;br&gt;&lt;br&gt;TinyGPS 13.0.0 • SdFat 2.3.0 • DHT 1.4.7&lt;br&gt;MPU6050 2.2.9 • Unified Sensor 1.1.15&lt;br&gt;BusIO 1.17.4 • NimBLE-Arduino 2.5.0" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="200" width="700" height="175" />
+        </mxCell>
+        <mxCell id="core" value="&lt;b&gt;ESP32 Arduino Core 3.3.12&lt;/b&gt;&lt;br&gt;&lt;br&gt;WiFi / WebServer / NetworkClient&lt;br&gt;SPI / Wire / FreeRTOS / esp_task_wdt&lt;br&gt;Placa: esp32:esp32:esp32" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="835" y="200" width="700" height="175" />
+        </mxCell>
+        <mxCell id="sync" value="&lt;b&gt;Sincronizar projeto → IDE&lt;/b&gt;&lt;br&gt;&lt;br&gt;Na raiz esp32/:&lt;br&gt;python3 libraries/sync.py --apply&lt;br&gt;python3 libraries/sync.py --check&lt;br&gt;Divergência impede considerar build validado" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="450" width="700" height="175" />
+        </mxCell>
+        <mxCell id="compile" value="&lt;b&gt;Compilar v3 / no_ota&lt;/b&gt;&lt;br&gt;&lt;br&gt;arduino-cli compile&lt;br&gt;--fqbn esp32:esp32:esp32:PartitionScheme=no_ota&lt;br&gt;esp32gpsd_v3&lt;br&gt;Partição APP: 2.097.152 B; sem OTA" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="835" y="450" width="700" height="175" />
+        </mxCell>
+        <mxCell id="upload" value="&lt;b&gt;Gravar / monitorar&lt;/b&gt;&lt;br&gt;&lt;br&gt;Upload na porta correta com mesmo FQBN&lt;br&gt;Porta documentada: /dev/ttyACM0&lt;br&gt;Console Serial: 115200 baud&lt;br&gt;Porta precisa estar livre durante upload" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#2864A0;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="835" y="735" width="700" height="175" />
+        </mxCell>
+        <mxCell id="scope-build" value="&lt;b&gt;Uso real das dependências&lt;/b&gt;&lt;br&gt;&lt;br&gt;GFX / SSD1306 no manifesto, mas fora da v3.&lt;br&gt;WiFi + NimBLE exigem APP maior que padrão.&lt;br&gt;Não há display OLED, SIM800L ou backend nesta v3." style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="735" width="700" height="175" />
+        </mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="lib" target="sync">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="core" target="compile">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e3" value="check OK" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="sync" target="compile">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e4" value="binário validado" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="compile" target="upload">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="15-diagnostico" name="Observabilidade e limites operacionais">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sheet" value="" style="fillColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="0" y="0" width="1600" height="1100" />
+        </mxCell>
+        <mxCell id="accent" value="" style="fillColor=#2864A0;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="40" y="38" width="8" height="91" />
+        </mxCell>
+        <mxCell id="kicker" value="ESP32 GPS LOGGER / V3 / ATLAS TÉCNICO" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=14;fontColor=#2864A0;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="32" width="1450" height="25" />
+        </mxCell>
+        <mxCell id="title" value="Observabilidade e limites operacionais" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Ubuntu Sans;fontSize=30;fontColor=#17324F;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="61" width="1450" height="43" />
+        </mxCell>
+        <mxCell id="sub" value="Console concentra diagnóstico; estados HTTP e callbacks publicam métricas para a loopTask." style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=16;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="64" y="111" width="1450" height="37" />
+        </mxCell>
+        <mxCell id="footerline" value="" style="fillColor=#DCE4ED;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1006" width="1504" height="1" />
+        </mxCell>
+        <mxCell id="source" value="Fonte: esp32gpsd_v3.ino:246–284, 525–552, 1069–1108; serial.md; tests/test_serial.py" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=DejaVu Sans Mono;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1021" width="1500" height="25" />
+        </mxCell>
+        <mxCell id="scope" value="SENSOR  azul     RÁDIO  violeta     SD  verde     HTTP  petróleo     CONDIÇÃO / FALHA  âmbar  •  Snapshot 06/10/2026" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;spacing=0;fontFamily=Noto Sans;fontSize=13;fontColor=#52667B;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="48" y="1050" width="1500" height="24" />
+        </mxCell>
+        <mxCell id="events" value="&lt;b&gt;Eventos imediatos&lt;/b&gt;&lt;br&gt;&lt;br&gt;[EVT] / [ERR] / [OK ]&lt;br&gt;Uptime + número/fase do loop&lt;br&gt;Boot, rádio, SD e download" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="200" width="700" height="160" />
+        </mxCell>
+        <mxCell id="panel" value="&lt;b&gt;Resumo Serial&lt;/b&gt;&lt;br&gt;&lt;br&gt;5 s normal / 30 s com AP&lt;br&gt;Sem resumo durante download&lt;br&gt;Modo / GPS / DHT / az / RF / buffers" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="835" y="200" width="700" height="160" />
+        </mxCell>
+        <mxCell id="metrics" value="&lt;b&gt;Métricas operacionais&lt;/b&gt;&lt;br&gt;&lt;br&gt;SD confirmado/incerto • perdidos&lt;br&gt;Heap livre + maior bloco&lt;br&gt;Clientes AP / páginas / downloads&lt;br&gt;Último download: motivo, stalls, bytes, duração" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF3F8;strokeColor=#354D6B;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="435" width="700" height="175" />
+        </mxCell>
+        <mxCell id="recover" value="&lt;b&gt;Recuperação automática&lt;/b&gt;&lt;br&gt;&lt;br&gt;Watchdog loopTask: 60 s&lt;br&gt;Falha SD: retry / remount; 10 falhas → reset&lt;br&gt;Falha AP: ir ao sono; próximo check tenta&lt;br&gt;MPU ausente: continuar sem IMU" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="835" y="435" width="700" height="175" />
+        </mxCell>
+        <mxCell id="host" value="&lt;b&gt;Regressão no host&lt;/b&gt;&lt;br&gt;&lt;br&gt;tests/test_serial.py • TinyGPS real / SD simulado&lt;br&gt;Checksum, RMC/GGA, idade e UTC−3&lt;br&gt;Escrita parcial / sync / close&lt;br&gt;Cache cheia / sobrescrita circular" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#E7F3ED;strokeColor=#287452;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="65" y="735" width="700" height="200" />
+        </mxCell>
+        <mxCell id="field" value="&lt;b&gt;Verificação em placa / pendente nas docs&lt;/b&gt;&lt;br&gt;&lt;br&gt;GPS ausente • transições de modo&lt;br&gt;Hotspot/download e remoção do SD&lt;br&gt;Captura Serial com versão do firmware&lt;br&gt;Foco HTTP impede detecção de movimento&lt;br&gt;Sem aquisição ou novas linhas GPS no foco" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#FFF2D9;strokeColor=#A36A15;strokeWidth=1.5;fontColor=#17324F;fontFamily=Noto Sans;fontSize=17;align=left;verticalAlign=middle;spacingLeft=18;spacingRight=18;spacingTop=12;spacingBottom=12;" vertex="1" parent="1">
+          <mxGeometry as="geometry" x="835" y="735" width="700" height="200" />
+        </mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="events" target="metrics">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="panel" target="recover">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e3" value="validar comportamento" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#354D6B;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="metrics" target="host">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+        <mxCell id="e4" value="validar comportamento físico" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=1.7;strokeColor=#A36A15;fontFamily=Noto Sans;fontSize=13;fontColor=#17324F;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="recover" target="field">
+          <mxGeometry as="geometry" relative="1" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

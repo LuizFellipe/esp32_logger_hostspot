@@ -4386,15 +4386,15 @@
     "semantic_hash": ""
   },
   "docs/GRAPHIFY.md": {
-    "mtime": 1791252727.0717285,
-    "seen": 1791252794.6863744,
-    "ast_hash": "cc527820fef8fef5891eac3c793dc1db",
+    "mtime": 1791292123.104555,
+    "seen": 1791292298.4894485,
+    "ast_hash": "d51e6bd8d29578fcdc2f3a107dc32194",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791252836.9457407,
-    "seen": 1791252883.830717,
-    "ast_hash": "64ab8e397239bd79a3b521c02182f1c6",
+    "mtime": 1791292123.098797,
+    "seen": 1791292298.486804,
+    "ast_hash": "287eeeece3d5b971415b821c5843c4f0",
     "semantic_hash": ""
   },
   "archive/archive_tests/SD/README.md": {
@@ -4764,21 +4764,21 @@
     "semantic_hash": ""
   },
   "docs/wiki/README.md": {
-    "mtime": 1791253842.0364773,
-    "seen": 1791254913.6098046,
-    "ast_hash": "13ac5cf168cac624b75e6df99166890d",
+    "mtime": 1791292123.1027358,
+    "seen": 1791292298.4894528,
+    "ast_hash": "fa82abeb4aeb926ec1431c8aa5b25eb7",
     "semantic_hash": ""
   },
   "docs/wiki/arquitetura-logger.md": {
-    "mtime": 1791252727.0720427,
-    "seen": 1791252794.6864781,
-    "ast_hash": "5a115190c868eb4cb7c8f2b99f2a31f4",
+    "mtime": 1791292123.1001604,
+    "seen": 1791292298.4894545,
+    "ast_hash": "b656a0bdda8aa364bd41ae91a7380a6b",
     "semantic_hash": ""
   },
   "docs/wiki/dados-hardware.md": {
-    "mtime": 1791248129.550167,
-    "seen": 1791248693.0728464,
-    "ast_hash": "26d893acfaa6ced02a1a8de77a3200cf",
+    "mtime": 1791292123.1006522,
+    "seen": 1791292298.4894578,
+    "ast_hash": "b2542bb4f6063055f304ffd2739d966b",
     "semantic_hash": ""
   },
   "docs/wiki/inventario.md": {
@@ -4788,15 +4788,15 @@
     "semantic_hash": ""
   },
   "docs/wiki/variantes.md": {
-    "mtime": 1791252727.0591984,
-    "seen": 1791252794.694928,
-    "ast_hash": "f8146090986a6853560ec38ec8c3dce9",
+    "mtime": 1791292123.1039596,
+    "seen": 1791292298.4895127,
+    "ast_hash": "6c722076dbd2f60c2d1e42f24655c836",
     "semantic_hash": ""
   },
   "docs/wiki/visao-geral.md": {
-    "mtime": 1791252727.0633886,
-    "seen": 1791252794.694931,
-    "ast_hash": "a02123dd9a5cac3b5f61f0c4583bf361",
+    "mtime": 1791292123.1032207,
+    "seen": 1791292298.4895146,
+    "ast_hash": "b8462975de53b7dcd0e9f91774e0b726",
     "semantic_hash": ""
   },
   "archive/archive_tests/SdFat/images/SdioSpi.jpg": {
@@ -6198,9 +6198,9 @@
     "semantic_hash": ""
   },
   "docs/README.md": {
-    "mtime": 1791252727.0643885,
-    "seen": 1791252794.6863787,
-    "ast_hash": "779750299223d9da8a223d2fec2df497",
+    "mtime": 1791292156.2174938,
+    "seen": 1791292298.4894505,
+    "ast_hash": "0295ab427e89a3f5c145139a33ff33fa",
     "semantic_hash": ""
   },
   "esp32gpsd_v2/analisecores.md": {
@@ -6504,21 +6504,135 @@
     "semantic_hash": ""
   },
   "esp32gpsd_v3/README.md": {
-    "mtime": 1791254759.6691647,
-    "seen": 1791254913.6102529,
-    "ast_hash": "2807e0b610327fbd4d4236992170350c",
-    "semantic_hash": ""
-  },
-  "esp32gpsd_v3/hotspot.md": {
-    "mtime": 1791251133.8262696,
-    "seen": 1791252794.6952305,
-    "ast_hash": "064390d5c76157194186b5f899b7e9e2",
+    "mtime": 1791291619.3686104,
+    "seen": 1791292298.4896994,
+    "ast_hash": "50d5fcbebdf6e79ba6b75e721ebfdeb8",
     "semantic_hash": ""
   },
   "docs/wiki/compilacao-arduino-cli.md": {
-    "mtime": 1791254759.6687255,
-    "seen": 1791254913.6098647,
-    "ast_hash": "71b90cbc0cf5d98c70bcdc2b7f675576",
+    "mtime": 1791292156.2177603,
+    "seen": 1791292298.4894564,
+    "ast_hash": "504f93d3560155772bebc337aea5445b",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/gerar_diagramas.py": {
+    "mtime": 1791291865.898957,
+    "seen": 1791292298.4283066,
+    "ast_hash": "d13e249ebc8d223629aa2330c5cb5f58",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/tests/test_serial.py": {
+    "mtime": 1791260021.5855398,
+    "seen": 1791292298.4283097,
+    "ast_hash": "9badd48bb5ac9398183d3745f2398b17",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1791255729.6273003,
+    "seen": 1791292298.486758,
+    "ast_hash": "c92f69d9cbe4afe0c32ad7e91ea2d7f2",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/README.md": {
+    "mtime": 1791291667.0695996,
+    "seen": 1791292298.4897013,
+    "ast_hash": "49ed313407ac6cc240fe37401a462baa",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/serial.md": {
+    "mtime": 1791260087.4113824,
+    "seen": 1791292298.4897037,
+    "ast_hash": "7d5472d22ca7382cce81d531d57b9c58",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/01-visao-geral.png": {
+    "mtime": 1791291873.7074766,
+    "seen": 1791292298.49347,
+    "ast_hash": "ef6a6015e4a45c4ec16fd78ec41544d9",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/02-hardware.png": {
+    "mtime": 1791291796.879654,
+    "seen": 1791292298.4934723,
+    "ast_hash": "ad62ecda1d4100c446053f41e9aacd82",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/03-inicializacao.png": {
+    "mtime": 1791291799.121707,
+    "seen": 1791292298.4934742,
+    "ast_hash": "247b92896783b1d34464286800ef2e7f",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/04-loop.png": {
+    "mtime": 1791291875.780526,
+    "seen": 1791292298.493476,
+    "ast_hash": "5664437fa65ff0d4098e9c13242039ea",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/05-maquina-estados.png": {
+    "mtime": 1791291803.214804,
+    "seen": 1791292298.4934773,
+    "ast_hash": "c736c1d13f144ed7cd60945ae6590102",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/06-aquisicao.png": {
+    "mtime": 1791291805.3228538,
+    "seen": 1791292298.493479,
+    "ast_hash": "eaade7a0df185b8cf327981a4d29c864",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/07-ciclo-radio.png": {
+    "mtime": 1791291807.3899028,
+    "seen": 1791292298.4934802,
+    "ast_hash": "b547719b8139560ecbfa79c494b56cbf",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/08-deduplicacao.png": {
+    "mtime": 1791291809.4489515,
+    "seen": 1791292298.4934816,
+    "ast_hash": "de6bf986c679eb7366eed793e64d867c",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/09-armazenamento.png": {
+    "mtime": 1791291811.5150006,
+    "seen": 1791292298.493483,
+    "ast_hash": "de131be05e30c72e42be1494bc31efd2",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/10-concorrencia.png": {
+    "mtime": 1791291878.092581,
+    "seen": 1791292298.4934845,
+    "ast_hash": "5162f20f5e866456ec6789c24c3a929c",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/11-hotspot.png": {
+    "mtime": 1791291816.2441125,
+    "seen": 1791292298.493486,
+    "ast_hash": "9a1887e6a7898bda7ddf751bcd3224f7",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/12-download.png": {
+    "mtime": 1791291818.4271643,
+    "seen": 1791292298.4934871,
+    "ast_hash": "85f333bdedec545d3e2c113e08b6708d",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/13-dados-csv.png": {
+    "mtime": 1791291820.77222,
+    "seen": 1791292298.4934883,
+    "ast_hash": "d774569e0089fe5760296ecc7e8d9e24",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/14-build.png": {
+    "mtime": 1791291880.4666374,
+    "seen": 1791292298.4934897,
+    "ast_hash": "3ec8749c72faf65f1f005f046946254b",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/docs/diagramas/15-diagnostico.png": {
+    "mtime": 1791291825.0143204,
+    "seen": 1791292298.4934912,
+    "ast_hash": "7e216b216588ed6c2d079e2b45988526",
     "semantic_hash": ""
   }
 }

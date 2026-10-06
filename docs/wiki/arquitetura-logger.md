@@ -1,61 +1,75 @@
 # Arquitetura do GPS Logger
 
-## Fluxo de execução
+Esta página descreve a **v3** (`serial-2026-10-06-painel2`, snapshot 06/10/2026). Fonte: [firmware](../../esp32gpsd_v3/esp32gpsd_v3.ino) e [README v3](../../esp32gpsd_v3/README.md). Diferenças de outras versões estão em [Variantes](variantes.md).
 
-Na linha principal, `setup()` inicializa periféricos, buffers e armazenamento; a configuração do BLE cria o scanner e a fila de consumo. O `loop()` alimenta o parser GPS e amostra sensores. Quando há atualização de posição, `processarDadosGPS()` atualiza o modo, compõe telemetria e direciona novas linhas aos buffers.
+[Atlas DrawIO editável](../../esp32gpsd_v3/docs/diagramas/esp32gpsd-v3.drawio) · [Índice dos 15 diagramas](../../esp32gpsd_v3/docs/diagramas/README.md)
 
-```mermaid
-flowchart LR
-  GPS[GPS UART / TinyGPS] --> Process[processarDadosGPS]
-  DHT[DHT22] --> Process
-  IMU[MPU6050 opcional] --> Process
-  Process --> State[Movimento / parado]
-  State --> Orchestrator[Ciclo de rádio]
-  WiFi[Scan WiFi] --> WBuf[Buffer circular WiFi]
-  BLE[Callback NimBLE] --> Queue[FreeRTOS Queue]
-  Queue --> Consumer[bleConsumerTask]
-  Consumer --> BBuf[Buffer circular BLE]
-  Process --> LBuf[Buffer circular GPS/sensores]
-  WBuf --> Flush[flushBuffers]
-  BBuf --> Flush
-  LBuf --> Flush
-  Flush --> SD[microSD via SdFat]
-```
+## Fluxo integrado
 
-## Modos e rádio
+Aquisição GPS/DHT/IMU e scans WiFi/BLE alimentam três buffers circulares. `loopTask` controla modos, drena fila BLE e grava no SD. `Hotspot_HTTP` lê arquivos pelo AP local enquanto parado; `sdMutex` serializa o armazenamento.
 
-O estado em RAM alterna entre movimento, sono parado e verificação parada. Em movimento, os ciclos WiFi/BLE se repetem segundo `RADIO_SCAN_INTERVAL_MS`; parado, há intervalo sem scan e depois um ciclo de verificação. Um retorno de velocidade acima do limiar leva de volta ao modo movimento. Constantes efetivas ficam no topo do sketch.
+![Arquitetura integrada da v3](../../esp32gpsd_v3/docs/diagramas/01-visao-geral.png)
 
-Na v1, o BLE usa callback no contexto da pilha, uma fila FreeRTOS de ponteiros e a tarefa `bleConsumerTask`. Na v2, `drenarFilaBLE()` consome essa fila na `loopTask`, sem tarefa separada. A fila desacopla o callback da formatação/armazenamento; se não houver espaço, o registro pode ser descartado para não bloquear a pilha. A deduplicação por ciclo e as caches de hashes reduzem repetições.
+## Inicialização e ciclo principal
 
-## Armazenamento
+`setup()` prepara UART/buffers/sensores, espera montar SD, configura watchdog, registra boot e cria fila BLE/HTTP. MPU ausente e falha da tarefa HTTP permitem operação reduzida; falha de buffers/fila impede loop. SD inicial tenta montagem indefinidamente.
 
-Os três buffers circulares acumulam linhas até o flush. Se um buffer encher, ele libera espaço descartando a entrada mais antiga. `flushBuffers()` grava os arquivos de forma agrupada. A v1 adquire `sdMutex`; na v2, buffers e objeto SdFat são usados pela `loopTask`, sem esse mutex. A implementação principal também adia gravações durante scans de rádio e tenta remontar o cartão após falhas.
+![Sequência de inicialização v3](../../esp32gpsd_v3/docs/diagramas/03-inicializacao.png)
 
-| Arquivo | Conteúdo |
-|---|---|
-| `/log.txt` | Posição, data/hora, velocidade, direção, DHT22 e campos IMU; cabeçalho na inicialização quando o arquivo ainda não existe. |
-| `/wifi.txt` | Redes WiFi observadas, intensidade, canal e segurança. |
-| `/ble.txt` | MAC, nome se anunciado, RSSI e TX power BLE se anunciado. |
+Aquisição normal dura ≈1 s. MPU é amostrado a cada 100 ms; DHT, no mínimo a cada 2 s. Em seguida vêm composição, `servicoModo()`, eventos HTTP, retry SD e resumo. Foco HTTP tem retorno antecipado e não executa essas etapas.
 
-O log em RAM ainda não gravado pode se perder numa interrupção abrupta de energia. Consulte o código para limites e política atuais.
+![Ciclo principal e foco HTTP v3](../../esp32gpsd_v3/docs/diagramas/04-loop.png)
 
-## Concorrência e limites
+## Modos e histerese
 
-A v1 usa uma tarefa FreeRTOS para consumo BLE; a v2 concentra esse consumo na `loopTask`, que também realiza flush. A v2 retira o consumidor concorrente dos buffers e usa o filtro nativo de duplicatas do NimBLE, sem vetor compartilhado ou reinício em callback. A alternativa `esp32gpsd_dualcore` tem arquitetura diferente, com tarefas dedicadas a sensores e a WiFi/SD; ela não deve ser confundida com a linha principal. Veja [variantes](variantes.md).
+RMC com velocidade válida chama `atualizarModo()` dentro de `receberGPS()`. Movimento → CHECK ocorre com ≤2 km/h; qualquer estado parado → movimento exige >5 km/h em 5 RMCs válidos consecutivos. Leitura ≤5 zera contador. Sem velocidade nova, modo é mantido.
 
-## Hotspot na v3 (em teste)
+CHECK fecha ciclo final e tenta flush antes do AP. AP sem atividade HTTP por 5 min, sem download, vai ao SONO. Sono lógico dura 5 min, sem deep sleep; depois inicia CHECK. `servicoModo()` atende temporizadores sem depender de fix novo, exceto quando o loop está em foco HTTP.
 
-A v3 mantém a aquisição e o consumo BLE da v2 na `loopTask`, e adiciona
-`MODO_PARADO_HOTSPOT` depois do check WiFi/BLE e da tentativa de flush.
-A tarefa `Hotspot_HTTP` atende página e downloads no core 1. O SD volta a usar
-`sdMutex` para serializar leituras HTTP e escrita/remount; os buffers continuam
-pertencendo à `loopTask`. Enquanto um download está aberto, flush/remount são
-adiados. Inatividade HTTP de 5 min fecha o AP e inicia o sono; movimento
-confirmado pela histerese fecha o AP e interrompe downloads. Temporizadores
-e fechamento dos scans são atendidos por `servicoModo()` sem depender de fix
-GPS novo. Consulte o [README da v3](../../esp32gpsd_v3/README.md).
+![Estados e transições da v3](../../esp32gpsd_v3/docs/diagramas/05-maquina-estados.png)
+
+## Rádio e consumo BLE
+
+BLE inicia em `iniciarCicloRadio()`; WiFi é disparado/pollado por `servicoModo()`. Ciclo termina quando ambos concluíram ou reportaram falha. Em movimento, novo ciclo exige RMC válido e ≥30 s desde fim anterior; parado, ocorre no CHECK. BLE ativo dura 5 s; duração WiFi depende de resultado real.
+
+![Coordenação dos scans v3](../../esp32gpsd_v3/docs/diagramas/07-ciclo-radio.png)
+
+Callback BLE aloca registro e tenta enviar ponteiro para fila de 10 entradas, sem bloquear. Fila cheia/alocação falha incrementam perdas. `drenarFilaBLE()` na `loopTask` compõe CSV com última posição/hora e libera registro. Dedup usa FNV-1a 32 bits, 500 hashes de SSID e 500 de MAC; hash é inserido antes da confirmação no SD.
+
+![Fila e deduplicação v3](../../esp32gpsd_v3/docs/diagramas/08-deduplicacao.png)
+
+## Armazenamento e recuperação
+
+Buffers: GPS 150×160 bytes; WiFi/BLE 50×256 bytes cada. Cheio descarta linha mais antiga. Flush é solicitado por capacidade e entradas HOTSPOT/SONO; adiado durante scan ou download. Escrita exige tamanho completo, `sync()` e `close()`; confirmação é por arquivo, sem transação dos três logs. Falha retém lote incerto, tenta remount e mantém retry pendente; retry pode duplicar linhas. Dez remounts falhos seguidos reiniciam ESP32.
+
+![Buffers, confirmação SD e recuperação v3](../../esp32gpsd_v3/docs/diagramas/09-armazenamento.png)
+
+## Concorrência e ownership
+
+`loopTask` e `Hotspot_HTTP` rodam no core 1. HTTP: prioridade 2, stack 8192 bytes. Afinidade interna das pilhas depende do core/IDF. Buffers/caches pertencem à `loopTask`; HTTP não os modifica. `sdMutex` protege operações SdFat; `downloadAtivo` sob mutex impede flush/remount com arquivo aberto. Snapshots da página são `volatile`; estado/métricas HTTP são atômicos.
+
+![Responsabilidades e exclusão mútua v3](../../esp32gpsd_v3/docs/diagramas/10-concorrencia.png)
+
+## Hotspot e prioridade HTTP
+
+Antes do AP, tentativa de flush → drenar fila → desinicializar NimBLE para liberar heap. Próximo scan reinicializa BLE. Página `http://192.168.4.1/` mostra últimos scans/DHT e arquivos; HTML/CSS sem JS/API, enviada em chunks e atualizada manualmente. Abrir/atualizar/baixar renova atividade; só conectar ao AP não renova.
+
+**Limitação atual:** download ou HTTP nos últimos 8 s ativa foco: UART GPS descartada, sensores/SD/modos/painel pausados, apenas watchdog e delay. Movimento não é detectado enquanto foco estiver ativo. A descrição de fechamento por velocidade exige que processamento GPS tenha retomado.
+
+![Hotspot e pausa da aquisição v3](../../esp32gpsd_v3/docs/diagramas/11-hotspot.png)
+
+## Download dos logs
+
+Allowlist: `log.txt`, `wifi.txt`, `ble.txt`. SD é lido em blocos de até 2048 bytes sob mutex, liberado no envio TCP. Falha SD, desconexão, AP fechado ou 15 s sem progresso abortam. Acima de 4.294.967.295 bytes é recusado. Sucesso exige todos os bytes e `close()` confirmado. HTTP publica resultado; loop imprime e libera estado para próxima transferência.
+
+![Streaming e tratamento de falhas v3](../../esp32gpsd_v3/docs/diagramas/12-download.png)
 
 ## Construção e diagnóstico
 
-O README do logger registra dependências Arduino e configuração de partição necessárias para combinar WiFi e NimBLE. Ajustes de SPI, watchdog, cache e buffers estão documentados no sketch e em [`esp32gpsd/README.md`](../../esp32gpsd/README.md). Para sinais de execução, consulte o dashboard serial e os registros gravados no cartão.
+[Compilação](compilacao-arduino-cli.md) detalha bibliotecas sincronizadas e partição `no_ota`. Console: 115200 baud, resumo 5 s/30 s com AP, mudo em download; eventos somente na `loopTask`. Testes host usam TinyGPS real e SD simulado; não substituem validação em placa.
+
+![Observabilidade e validação v3](../../esp32gpsd_v3/docs/diagramas/15-diagnostico.png)
+
+## Outras versões
+
+V1 usa `bleConsumerTask`; v2 concentra consumo BLE/SD na `loopTask` sem mutex SD; v3 adiciona HTTP e restaura `sdMutex`. Variante dual-core sem BLE tem tarefas distintas. Estes gráficos representam somente v3; consulte [histórico e variantes](variantes.md).

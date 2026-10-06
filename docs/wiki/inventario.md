@@ -5,6 +5,7 @@
 | `esp32gpsd/` | Firmware principal do logger GPS/sensores/WiFi/BLE e seu README. |
 | `esp32gpsd_v2/` | Variante de teste do logger, com sketch e README. |
 | `esp32gpsd_v3/` | v2 com hotspot HTTP implementado, em teste; sketch, README e plano histórico. |
+| `esp32gpsd_v3/docs/diagramas/` | [Atlas v3](../../esp32gpsd_v3/docs/diagramas/README.md): 15 PNGs com fonte embutida, DrawIO editável, gerador e índice de exportação. |
 | `archive/esp32gpsd_dualcore/` | Logger alternativo multi-tarefa, sem BLE. |
 | `archive/esp32_gsm_gps/` | Protótipos GSM/GPRS, GPS, DHT, exemplos de bibliotecas e backend PHP/SQL. |
 | `archive/ble_scanner_poc/` | Prova de conceito e notas históricas de BLE. |

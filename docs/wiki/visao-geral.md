@@ -18,6 +18,14 @@ Este repositório reúne experimentos e firmwares Arduino para ESP32. A linha ma
 
 O firmware principal lê NMEA do GPS pela UART, coleta DHT22 e MPU6050 opcional, e executa scans WiFi/BLE. O cartão SD recebe arquivos separados para telemetria periódica e achados de rádio. A descrição dos ciclos e da coordenação está em [Arquitetura do logger](arquitetura-logger.md); o formato das saídas está em [Dados e hardware](dados-hardware.md).
 
+## Visão integrada da v3
+
+[Atlas DrawIO editável](../../esp32gpsd_v3/docs/diagramas/esp32gpsd-v3.drawio) · [Índice dos 15 diagramas](../../esp32gpsd_v3/docs/diagramas/README.md)
+
+Logger com aquisição, rádio, SD e hotspot. BLE é desinicializado antes do AP; foco HTTP pausa sensores e GPS. Consulte arquitetura ilustrada para estados, tarefas e limites.
+
+![Arquitetura integrada da v3](../../esp32gpsd_v3/docs/diagramas/01-visao-geral.png)
+
 ## Protótipo celular
 
 `archive/esp32_gsm_gps/` contém sketches com SIM800L/TinyGSM, arquivos PHP e SQL. É uma arquitetura distinta do logger em SD. O README existente descreve a integração planejada; confira o sketch concreto para saber o que está implementado em cada variante.

@@ -23,7 +23,9 @@ três logs. Depois do check parado e da tentativa de flush, abre o AP; após
 usa a histerese da v2 e fecha o AP. `servicoModo()` trata temporizadores e
 ciclos de rádio mesmo sem fix novo. A tarefa `Hotspot_HTTP` roda no core 1;
 `sdMutex` protege o SD, e downloads adiam flush/remount. Arquivos acima de
-4.294.967.295 bytes são recusados. Consulte o [README da v3](../../esp32gpsd_v3/README.md).
+4.294.967.295 bytes são recusados. BLE é desinicializado antes do AP e reinicializado no próximo scan. Foco HTTP pausa aquisição e descarta UART GPS: não há detecção de movimento nesse período. Consulte o [README da v3](../../esp32gpsd_v3/README.md).
+
+[Atlas DrawIO editável](../../esp32gpsd_v3/docs/diagramas/esp32gpsd-v3.drawio) · [Índice dos 15 diagramas](../../esp32gpsd_v3/docs/diagramas/README.md)
 
 ## `archive/esp32gpsd_dualcore/` — variante FreeRTOS sem BLE
 
