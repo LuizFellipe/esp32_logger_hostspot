@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_libraries_nimble_arduino_src_nimble_porting_nimble_include_log_common_ignore_h", "label": "ignore.h", "file_type": "code", "source_file": "libraries/NimBLE-Arduino/src/nimble/porting/nimble/include/log_common/ignore.h", "source_location": "L1"}], "edges": [], "raw_calls": [], "parse_errors": {"first_error_line": 60, "multiline_error": false}}

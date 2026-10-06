@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_libraries_nimble_arduino_src_nimble_nimble_host_mesh_include_mesh_heartbeat_h", "label": "heartbeat.h", "file_type": "code", "source_file": "libraries/NimBLE-Arduino/src/nimble/nimble/host/mesh/include/mesh/heartbeat.h", "source_location": "L1"}], "edges": [], "raw_calls": [], "parse_errors": {"first_error_line": 116, "multiline_error": false}}

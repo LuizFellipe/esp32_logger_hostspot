@@ -9,13 +9,12 @@
 #include <Wire.h>
 #include "esp_task_wdt.h"
 #include <NimBLEDevice.h>
-#include <BluetoothSerial.h>
 #include <vector>
 #include <string>
 #include <atomic>
 
 // Arduino IDE -> Tools -> Partition Scheme -> "No OTA (Large APP)" —
-// necessario pra WiFi + BluetoothSerial + NimBLE juntos nao estourar a Flash.
+// necessario pra WiFi + NimBLE juntos nao estourar a Flash.
 
 // Configuração SdFat
 const uint8_t SD_CS_PIN = 5;
@@ -37,38 +36,37 @@ const uint8_t SD_CS_PIN = 5;
 #define LOG_BUFFER_MAX    150    // Linhas de log GPS acumuladas antes de flush
 #define WIFI_BUFFER_MAX   100    // Linhas de log WiFi acumuladas antes de flush
 #define BLE_BUFFER_MAX    100    // Linhas de log BLE acumuladas antes de flush
-#define BT_BUFFER_MAX     100    // Linhas de log BT Clássico acumuladas antes de flush
 #define SSID_CACHE_MAX    500    // Máx SSIDs rastreadas para deduplicação (guarda hash, não string)
-#define BLE_CACHE_MAX     200    // Máx MACs BLE rastreadas para deduplicação
-#define BT_CACHE_MAX      200    // Máx MACs BT Clássico rastreadas para deduplicação
+#define BLE_CACHE_MAX     500    // Máx MACs BLE rastreadas para deduplicação
 
 // Watchdog: se o loop() não "alimentar" o watchdog nesse tempo, o ESP32
 // assume que travou (SD/I2C pendurado etc.) e reseta sozinho.
-#define WDT_TIMEOUT_S 15
+#define WDT_TIMEOUT_S 60
 
 // Se o remount do SD falhar essa quantidade de vezes seguidas, reinicia
 // o ESP32 inteiro (na esperança de que um boot limpo destrave o hardware).
 #define SD_REMOUNT_MAX_FALHAS 10
 
-// Sono do WiFi: parado (abaixo desse km/h) e sem SSID novo -> desliga o
-// rádio WiFi por WIFI_SLEEP_MS pra evitar scan (pico de corrente) coincidindo
-// com escrita no SD, que já causou brownout/travamento em campo.
-// Reaproveitado também como intervalo da fase WiFi: a cada WIFI_SLEEP_MS a
-// fase WiFi cede o rádio pra uma excursão de BLE/BT (ver RF Phase Sequencer).
-#define WIFI_SLEEP_KMH_THRESHOLD 2.0
-#define WIFI_SLEEP_MS            (5UL * 60UL * 1000UL)
-
 // ─────────────────────────────────────────────────────────────────────────────
-// RF Phase Sequencer — WiFi é a fase "padrão" de longa duração; BLE e BT são
-// excursões curtas fora dela. Ciclo: WIFI(~5min) -> BLE(30s) -> BT(15s) -> WIFI.
+// Modo Movimento/Parado — sem restart: WiFi e BLE coexistem no mesmo boot e
+// nunca são desligados (energia não é mais economizada, só o cartão SD via
+// cadência de scan). Os dois rádios sempre escaneiam juntos, em ciclos:
+// em Movimento, um ciclo a cada RADIO_SCAN_INTERVAL_MS; parado, dorme
+// PARKED_SLEEP_MS sem escanear, acorda, faz 1 ciclo WiFi+BLE e volta a dormir.
+// Volta pro modo Movimento imediatamente se a velocidade subir de novo.
 // ─────────────────────────────────────────────────────────────────────────────
-#define PHASE_WIFI  0
-#define PHASE_BLE   1
-#define PHASE_BT    2
+#define PARKED_KMH_THRESHOLD 2.0
+#define PARKED_SLEEP_MS       (5UL * 60UL * 1000UL)  // sono entre checks
+#define RADIO_SCAN_INTERVAL_MS 30000UL  // cadência do ciclo WiFi+BLE em movimento
 
-#define PHASE_BLE_MS   30000UL
-#define PHASE_BT_MS    15000UL
-#define BT_INQUIRY_MS  (PHASE_BT_MS - 3000UL)  // margem de 3s pra flush/encerrar
+// Cadência de gravação do log.txt no buffer: em movimento, mais espaçada
+// (menos desgaste de flash); parado, ainda mais espaçada (nada muda).
+#define LOG_ADD_MOVING_MS  10000UL
+#define LOG_ADD_PARKED_MS  30000UL
+
+#define MODO_MOVIMENTO      0
+#define MODO_PARADO_SONO    2
+#define MODO_PARADO_CHECK   3
 
 TinyGPS gps;
 DHT dht(DHTPIN, DHTTYPE);
@@ -95,7 +93,6 @@ struct WifiStats {
 const char* logFileName  = "/log.txt";
 const char* wifiFileName = "/wifi.txt";
 const char* bleFileName  = "/ble.txt";
-const char* btFileName   = "/bt.txt";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Buffers em RAM comum — circulares por linha, mesma lógica pros 4 arquivos.
@@ -112,68 +109,66 @@ char (*bleBuffer)[256];
 int  bleBufferHead  = 0;
 int  bleBufferCount = 0;
 
-char (*btBuffer)[256];
-int  btBufferHead  = 0;
-int  btBufferCount = 0;
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Estado persistente em RTC Slow Memory (.rtc.bss). As variáveis abaixo NÃO
 // têm inicializador (nem "= 0") de propósito: com inicializador o C-startup
-// as recopia da flash a cada soft reset (currentPhase/caches voltariam a 0
-// a cada esp_restart()/deep sleep), sem inicializador ficam em .rtc.bss e
-// sobrevivem — só apagam em power-off real.
-RTC_DATA_ATTR uint8_t  currentPhase;
-RTC_DATA_ATTR uint32_t phaseCount;
+// as recopia da flash a cada soft reset (o cache voltaria a 0), sem
+// inicializador ficam em .rtc.bss e sobrevivem — só apagam em power-off real.
 
-// Cache de SSIDs já gravadas — nunca reseta enquanto a placa ficar ligada.
-// Precisa estar em RTC porque agora há restarts programados (RF Phase
-// Sequencer) a cada poucos minutos; em RAM comum voltaria a duplicar toda
-// SSID a cada ciclo. Guarda hash FNV-1a de 32 bits em vez da string.
+// Cache de SSIDs já gravadas — nunca reseta enquanto a placa ficar ligada
+// (sobrevive a resets do watchdog etc.). Guarda hash FNV-1a de 32 bits em
+// vez da string.
 RTC_DATA_ATTR uint32_t ssidCacheHash[SSID_CACHE_MAX];
 RTC_DATA_ATTR int      ssidCacheCount;
 RTC_DATA_ATTR uint32_t bleCacheHash[BLE_CACHE_MAX];
 RTC_DATA_ATTR int      bleCacheCount;
-RTC_DATA_ATTR uint32_t btCacheHash[BT_CACHE_MAX];
-RTC_DATA_ATTR int      btCacheCount;
+
+// Contador de boot — incrementado a cada setup(). Serve pra diagnosticar
+// resets espúrios (watchdog/brownout) no meio de um ciclo: se ele mudar sem
+// a placa ter ficado sem energia de verdade, houve reset silencioso.
+RTC_DATA_ATTR uint32_t bootCount;
 
 bool ssidCacheCheioAvisado = false;  // evita spam do aviso de cache cheio
 bool bleCacheCheioAvisado  = false;
-bool btCacheCheioAvisado   = false;
 
-// Estado do sono do WiFi (ver WIFI_SLEEP_KMH_THRESHOLD / WIFI_SLEEP_MS)
-bool wifiDormindo = false;
-unsigned long wifiSleepStart = 0;
+// Estado do modo Movimento/Parado (ver defines PARKED_* acima) — RAM comum,
+// não precisa sobreviver a reset (volta a MODO_MOVIMENTO, seguro por padrão).
+uint8_t modoAtual   = MODO_MOVIMENTO;
+unsigned long modoInicio  = 0;  // millis() de quando entrou no modo/substado atual
+unsigned long lastLogAddMs = 0; // último millis() em que log.txt foi ao buffer
 
-// Início da fase WiFi atual — usado só dentro do boot corrente (a fase WiFi
-// nunca reinicia no meio de si mesma), não precisa ser RTC.
-unsigned long wifiPhaseStart = 0;
+// Ciclo de scan WiFi+BLE simultâneo — usado tanto em Movimento (repetido a
+// cada RADIO_SCAN_INTERVAL_MS) quanto em Parado/Check (disparado uma vez ao
+// acordar). Substitui a antiga alternância de turnos (turnoBLE).
+bool radioCicloAtivo     = false;
+bool radioCicloWifiDone  = false;
+bool radioCicloBleDone   = false;
+unsigned long radioCicloInicio = 0;
+unsigned long ultimoCicloFim   = 0;
 
-// Timer próprio do log.txt (desacoplado do timer do WiFi acima, pra não
-// interferir na lógica de despertar dele) — enquanto parado, log.txt só
-// grava em rajada a cada WIFI_SLEEP_MS; 0 = não está no modo "parado".
-unsigned long logParadoStart = 0;
-
-// true enquanto um rádio (scan WiFi assíncrono, scan BLE ou inquiry BT) está
+// true enquanto um rádio (scan WiFi assíncrono ou scan BLE) está
 // em andamento — global pra flushBuffers() poder checar antes de gravar no
 // SD e evitar coincidir escrita física com o pico de corrente do rádio.
-bool scanEmAndamento = false;
+volatile bool scanEmAndamento = false;
+volatile bool bleScanAtivo    = false;
 
 // Última posição/hora conhecida do GPS — consumida pelas consumer tasks de
-// BLE/BT (rodam no Core 0, fora do fluxo de processarDadosGPS) pra rotular
+// BLE (roda no Core 0, fora do fluxo de processarDadosGPS) pra rotular
 // os achados de rádio com a posição do veículo no momento da detecção.
 char lastTimeStamp[25] = "---";
 long lastLat = 0;
 long lastLon = 0;
+float lastKmh = 0.0;
 
 // Protege o acesso ao objeto `sd` entre o loop() (Core 1, flush por
-// cadência normal) e as orchestrator tasks de BLE/BT (Core 0, flush antes
+// cadência normal) e a orchestrator task de BLE (Core 0, flush antes
 // de trocar de fase) — sem isso, as duas escritas concorrentes correm risco
 // de corromper o SdFat.
 SemaphoreHandle_t sdMutex = nullptr;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Hash FNV-1a de 32 bits e cache de deduplicação genéricos — usados pra
-// SSID, MAC BLE e MAC BT, guardando 4 bytes por entrada em vez da string.
+// SSID e MAC BLE, guardando 4 bytes por entrada em vez da string.
 uint32_t hashString(const char* s) {
   uint32_t hash = 2166136261u;
   for (const char* p = s; *p; p++) {
@@ -288,21 +283,22 @@ void adicionarLinhaCircular(char* buf, int rows, int lineLen, int &head, int &co
   destino[lineLen - 1] = '\0';
 }
 
-// Flush: grava os 4 buffers no SD. Retorna true só se todos os buffers com
-// dados foram gravados com sucesso — usado pelo RF Phase Sequencer pra só
-// trocar de fase (e disparar o restart) depois de confiar que nada ficou
-// pra trás. Em caso de falha parcial, os dados não escritos ficam retidos
-// no buffer circular e o SD é remontado, para o próximo ciclo tentar de novo.
+// Flush: grava os 3 buffers no SD. Retorna true só se todos os buffers com
+// dados foram gravados com sucesso. Em caso de falha parcial, os dados não
+// escritos ficam retidos no buffer circular e o SD é remontado, para a
+// próxima tentativa.
 bool flushBuffers() {
-  // Não grava no SD com um rádio em andamento (WiFi scan, BLE scan, BT
-  // inquiry): os dois picos de corrente juntos (rádio + escrita física) já
-  // causaram brownout/travamento em campo. Adia pro próximo ciclo.
-  if (scanEmAndamento) {
+  // Não grava no SD com rádio (WiFi ou BLE) em andamento — evita coincidir
+  // escrita física com o pico de corrente do scan.
+  if (scanEmAndamento || bleScanAtivo) {
     Serial.println(F("Flush adiado: radio em andamento."));
     return false;
   }
 
-  xSemaphoreTake(sdMutex, portMAX_DELAY);
+  if (xSemaphoreTake(sdMutex, pdMS_TO_TICKS(2000)) != pdTRUE) {
+    Serial.println(F("Flush adiado: sdMutex ocupado."));
+    return false;
+  }
 
   Serial.println(F(">> GRAVANDO SD... NAO DESLIGAR! <<"));
   bool falhaAlgum = false;
@@ -321,10 +317,10 @@ bool flushBuffers() {
     { logFileName,  &logBuffer[0][0],  LOG_BUFFER_MAX,  160, &logBufferHead,  &logBufferCount,  "log.txt"  },
     { wifiFileName, &wifiBuffer[0][0], WIFI_BUFFER_MAX, 256, &wifiBufferHead, &wifiBufferCount, "wifi.txt" },
     { bleFileName,  &bleBuffer[0][0],  BLE_BUFFER_MAX,  256, &bleBufferHead,  &bleBufferCount,  "ble.txt"  },
-    { btFileName,   &btBuffer[0][0],   BT_BUFFER_MAX,   256, &btBufferHead,   &btBufferCount,   "bt.txt"   },
   };
 
   for (auto &b : buffers) {
+    esp_task_wdt_reset();
     if (*b.count > 0) {
       Serial.printf("  %s: %d linhas... ", b.label, *b.count);
       int escritas = appendLinhasCirculares(b.path, b.buf, b.rows, b.lineLen, *b.head, *b.count);
@@ -379,23 +375,14 @@ const char* obterTipoCriptografia(wifi_auth_mode_t encryptionType) {
   }
 }
 
-// Nome legível da fase atual, pro Serial/dashboard
-const char* faseNome(uint8_t fase) {
-  switch (fase) {
-    case PHASE_WIFI: return "WIFI";
-    case PHASE_BLE:  return "BLE";
-    case PHASE_BT:   return "BT";
-    default:         return "?";
+// Nome legível do modo atual, pro Serial/dashboard
+const char* modoNome(uint8_t modo) {
+  switch (modo) {
+    case MODO_MOVIMENTO:    return "MOVIMENTO";
+    case MODO_PARADO_SONO:  return "PARADO (sono)";
+    case MODO_PARADO_CHECK: return "PARADO (check)";
+    default:                return "?";
   }
-}
-
-// Restart garantido preservando RTC_DATA_ATTR — deep sleep de 10ms em vez de
-// esp_restart() puro, mesmo efeito de limpeza de RAM/rádio, mas o bootloader
-// garante a preservação do RTC_DATA_ATTR no wakeup.
-void triggerRestart() {
-  Serial.flush();
-  esp_sleep_enable_timer_wakeup(10000ULL);
-  esp_deep_sleep_start();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -405,7 +392,8 @@ void exibirDashboard(const char* timeStamp, long lat, long lon,
                      float umidade, float tempDHT,
                      DadosMPU mediaMPU, WifiStats wifi, bool temFix) {
 
-  // Monta barra de progresso do buffer
+  // Se o buffer Serial estiver cheio (host desconectado/lento), não bloqueia a loopTask
+  if (Serial.availableForWrite() < 128) return;
   char barra[LOG_BUFFER_MAX + 1];
   for (int i = 0; i < LOG_BUFFER_MAX; i++) {
     barra[i] = (i < logBufferCount) ? '#' : '-';
@@ -441,52 +429,54 @@ void exibirDashboard(const char* timeStamp, long lat, long lon,
     Serial.println(F("  MPU   --- Indisponivel ---"));
   }
 
-  // Linha FASE (RF Phase Sequencer)
-  Serial.printf("  FASE  %s (ciclo %lu)\n", faseNome(currentPhase), (unsigned long)phaseCount);
+  // Linha MODO (Movimento/Parado)
+  Serial.printf("  MODO  %s\n", modoNome(modoAtual));
 
-  // Linha WiFi + sono: só fazem sentido na fase WiFi (nas fases BLE/BT o
-  // rádio WiFi está desligado por definição)
-  if (currentPhase == PHASE_WIFI) {
-    if (temFix) {
-      Serial.printf("  WiFi  %d redes | %d novas | %d dup\n",
-                    wifi.total, wifi.novas, wifi.dup);
-    } else {
-      Serial.println(F("  WiFi  --- (sem fix GPS) ---"));
+  if (temFix) {
+    Serial.printf("  WiFi  %d redes | %d novas | %d dup\n",
+                  wifi.total, wifi.novas, wifi.dup);
+  } else {
+    Serial.println(F("  WiFi  --- (sem fix GPS) ---"));
+  }
+
+  switch (modoAtual) {
+    case MODO_MOVIMENTO: {
+      long remSeg = (long)(RADIO_SCAN_INTERVAL_MS - (millis() - ultimoCicloFim)) / 1000;
+      if (radioCicloAtivo) {
+        Serial.println(F("  RF    ciclo WiFi+BLE em andamento"));
+      } else {
+        if (remSeg < 0) remSeg = 0;
+        Serial.printf("  RF    proximo ciclo WiFi+BLE em %lds\n", remSeg);
+      }
+      break;
     }
-
-    if (wifiDormindo) {
-      long remSeg = (long)(WIFI_SLEEP_MS - (millis() - wifiSleepStart)) / 1000;
+    case MODO_PARADO_SONO: {
+      long remSeg = (long)(PARKED_SLEEP_MS - (millis() - modoInicio)) / 1000;
       if (remSeg < 0) remSeg = 0;
-      Serial.printf("  RF    WiFi:OFF (dormindo)  acorda em %lds ou ao mover\n", remSeg);
-    } else {
-      Serial.println(F("  RF    WiFi:ON"));
+      Serial.printf("  RF    dormindo (sem scan)  acorda em %lds ou ao mover\n", remSeg);
+      break;
     }
-  } else {
-    Serial.printf("  RF    %s ativo (WiFi volta ao fim da fase)\n", faseNome(currentPhase));
+    case MODO_PARADO_CHECK:
+      Serial.println(F("  RF    check unico WiFi+BLE em andamento"));
+      break;
   }
 
-  // Linha estado do log.txt parado (rajada a cada WIFI_SLEEP_MS)
-  if (logParadoStart != 0) {
-    long remSeg = (long)(WIFI_SLEEP_MS - (millis() - logParadoStart)) / 1000;
-    if (remSeg < 0) remSeg = 0;
-    Serial.printf("  LOG   Parado: gravacao em rajada em %lds\n", remSeg);
-  } else {
-    Serial.println(F("  LOG   Em movimento: gravacao normal (por buffer)"));
-  }
+  // Linha cadência do log.txt (10s em movimento, 30s parado)
+  Serial.printf("  LOG   gravacao no buffer a cada %lus\n",
+                (modoAtual == MODO_MOVIMENTO ? LOG_ADD_MOVING_MS : LOG_ADD_PARKED_MS) / 1000);
 
   // Linha Buffer/SD
   Serial.printf("  SD    [%s] %d/%d\n", barra, logBufferCount, LOG_BUFFER_MAX);
 
   // Linha buffers de todas as fontes + caches de deduplicação
-  Serial.printf("  BUF   log:%d/%d  wifi:%d/%d  ble:%d/%d  bt:%d/%d\n",
+  Serial.printf("  BUF   log:%d/%d  wifi:%d/%d  ble:%d/%d\n",
                 logBufferCount, LOG_BUFFER_MAX,
                 wifiBufferCount, WIFI_BUFFER_MAX,
-                bleBufferCount, BLE_BUFFER_MAX,
-                btBufferCount, BT_BUFFER_MAX);
-  Serial.printf("  CACHE ssid:%d/%d  ble:%d/%d  bt:%d/%d\n",
+                bleBufferCount, BLE_BUFFER_MAX);
+  Serial.printf("  CACHE ssid:%d/%d  ble:%d/%d  boot:%lu\n",
                 ssidCacheCount, SSID_CACHE_MAX,
                 bleCacheCount, BLE_CACHE_MAX,
-                btCacheCount, BT_CACHE_MAX);
+                (unsigned long)bootCount);
 
   Serial.println(F("================================================"));
 }
@@ -496,25 +486,6 @@ void exibirDashboard(const char* timeStamp, long lat, long lon,
 // Retorna as estatísticas do scan anterior se um novo estiver em andamento.
 WifiStats varrerWiFi(const char* timeStamp, long lat, long lon, float kmh) {
   static WifiStats lastStats = {0, 0, 0};
-
-  // Sono: WiFi desligado enquanto o veículo está parado e sem redes novas.
-  // Acorda se voltar a se mover ou se o tempo de sono estourar.
-  if (wifiDormindo) {
-    bool voltouAMover = kmh >= WIFI_SLEEP_KMH_THRESHOLD;
-    bool tempoEsgotado = millis() - wifiSleepStart >= WIFI_SLEEP_MS;
-    if (voltouAMover || tempoEsgotado) {
-      WiFi.mode(WIFI_STA);
-      WiFi.disconnect();
-      wifiDormindo = false;
-      // ssidCache NÃO reseta aqui de propósito: se o scan ao acordar não
-      // achar rede nova, nada é gravado e ele volta a dormir (sem duplicar
-      // nome de rede já visto antes do sono).
-      Serial.println(voltouAMover ? "WiFi acordado: veiculo em movimento."
-                                   : "WiFi acordado: tempo de sono esgotado.");
-    } else {
-      return lastStats; // continua dormindo
-    }
-  }
 
   // Se não há scan rodando, inicia um novo de forma assíncrona (true, true para show_hidden e passive)
   if (!scanEmAndamento) {
@@ -552,7 +523,7 @@ WifiStats varrerWiFi(const char* timeStamp, long lat, long lon, float kmh) {
     char dadosWifi[256];
     snprintf(dadosWifi, sizeof(dadosWifi), "%s, %ld, %ld, %s, %ld, %d, %s\n",
              timeStamp, lat, lon, ssid, WiFi.RSSI(i),
-             WiFi.channel(i), obterTipoCriptografia(WiFi.encryptionType(i)));
+             (int)WiFi.channel(i), obterTipoCriptografia(WiFi.encryptionType(i)));
 
     // Acumula no buffer circular WiFi (descarta a linha mais antiga se cheio)
     adicionarLinhaCircular(&wifiBuffer[0][0], WIFI_BUFFER_MAX, 256, wifiBufferHead, wifiBufferCount, dadosWifi);
@@ -562,20 +533,11 @@ WifiStats varrerWiFi(const char* timeStamp, long lat, long lon, float kmh) {
   WiFi.scanDelete();
   scanEmAndamento = false; // Pronto para o próximo ciclo
   lastStats = stats;
-
-  // Parado e nenhuma rede nova nesta varredura -> dorme
-  if (kmh < WIFI_SLEEP_KMH_THRESHOLD && stats.novas == 0) {
-    WiFi.mode(WIFI_OFF);
-    wifiDormindo = true;
-    wifiSleepStart = millis();
-    Serial.println("WiFi dormindo: veiculo parado, sem redes novas.");
-  }
-
   return stats;
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// PHASE_BLE — NimBLE-Arduino v2.x, scan ativo com deduplicação por MAC
+// BLE — NimBLE-Arduino v2.x, scan ativo com deduplicação por MAC
 // ═════════════════════════════════════════════════════════════════════════════
 #define BLE_SCAN_DURATION_MS       5000   // Duração de cada ciclo interno de scan
 #define BLE_QUEUE_DEPTH            10
@@ -599,9 +561,10 @@ struct BLEDeviceRecord {
 };
 
 QueueHandle_t            bleQueue = nullptr;
+TaskHandle_t             hBLEConsumer = nullptr;
 NimBLEScan*               pBLEScan = nullptr;
 std::vector<std::string>  seenInCycleBLE;
-std::atomic<bool>         blePhaseEnding{false}; // Guarda race entre onScanEnd e orchestrator
+std::atomic<bool>         bleParar{true}; // true = não reiniciar o scan ao terminar um ciclo interno
 
 // Consumer Task (Core 1): recebe BLEDeviceRecord da fila, dedup persistente
 // e acumula no bleBuffer
@@ -662,13 +625,13 @@ class BLEScanCallbacks : public NimBLEScanCallbacks {
     }
 
     if (xQueueSend(bleQueue, &rec, 0) != pdTRUE) {
-      free(rec); // Queue cheia: descarta sem bloquear o BT stack
+      free(rec); // Queue cheia: descarta sem bloquear o BLE stack
     }
   }
 
   void onScanEnd(const NimBLEScanResults& results, int reason) override {
-    // Se o orchestrator sinalizou fim de fase, NÃO reinicia o scan
-    if (blePhaseEnding) return;
+    // Se o modo pediu parada, NÃO reinicia o scan
+    if (bleParar) return;
 
     seenInCycleBLE.clear();
     pBLEScan->clearResults();
@@ -677,35 +640,9 @@ class BLEScanCallbacks : public NimBLEScanCallbacks {
 
 } bleScanCallbacks;
 
-// Orchestrator Task BLE (Core 0): aguarda PHASE_BLE_MS, flush confirmado e
-// só então avança de fase
-void bleOrchestratorTask(void* pvParameters) {
-  (void)pvParameters;
-
-  vTaskDelay(pdMS_TO_TICKS(PHASE_BLE_MS));
-
-  // Sinaliza fim de fase ANTES de parar o scan para evitar race com onScanEnd
-  blePhaseEnding = true;
-  vTaskDelay(pdMS_TO_TICKS(10));
-
-  pBLEScan->stop();
-  vTaskDelay(pdMS_TO_TICKS(300));
-  NimBLEDevice::deinit(true);
-  vTaskDelay(pdMS_TO_TICKS(100));
-
-  scanEmAndamento = false;
-  while (!flushBuffers()) {
-    vTaskDelay(pdMS_TO_TICKS(500)); // SD indisponível: tenta de novo antes de trocar de fase
-  }
-
-  currentPhase = PHASE_BT;
-  triggerRestart();
-}
-
-void initBLEPhase() {
-  Serial.printf("=== PHASE_BLE | ciclo %lu ===\n", (unsigned long)phaseCount);
-  scanEmAndamento = true;
-
+// Inicializa o controller BLE e a consumer task uma única vez no boot.
+// Não inicia scan aqui — quem liga/desliga o scan é o state machine de modo.
+void setupBLE() {
   bleQueue = xQueueCreate(BLE_QUEUE_DEPTH, sizeof(BLEDeviceRecord*));
   if (bleQueue == nullptr) {
     Serial.println(F("ERRO: falha ao criar bleQueue"));
@@ -720,130 +657,114 @@ void initBLEPhase() {
   pBLEScan->setWindow(100);
   pBLEScan->setMaxResults(0);
 
-  xTaskCreatePinnedToCore(bleConsumerTask,     "BLE_Consumer",
-                          BLE_CONSUMER_STACK,     nullptr,
-                          BLE_CONSUMER_PRIORITY,  nullptr, 1);
+  xTaskCreatePinnedToCore(bleConsumerTask, "BLE_Consumer",
+                          BLE_CONSUMER_STACK, nullptr,
+                          BLE_CONSUMER_PRIORITY, &hBLEConsumer, 1);
+}
 
-  xTaskCreatePinnedToCore(bleOrchestratorTask, "BLE_Orch",
-                          BLE_ORCHESTRATOR_STACK,     nullptr,
-                          BLE_ORCHESTRATOR_PRIORITY,  nullptr, 0);
-
+// Liga o rádio BLE (turno BLE do modo parado)
+void bleScanLigar() {
+  bleParar = false;
+  seenInCycleBLE.clear();
+  bleScanAtivo = true;
   pBLEScan->start(BLE_SCAN_DURATION_MS);
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-// PHASE_BT — BluetoothSerial, inquiry ativo de dispositivos Bluetooth Clássico
-// ═════════════════════════════════════════════════════════════════════════════
-#define BT_QUEUE_DEPTH              10
-#define BT_CONSUMER_STACK           3072
-#define BT_CONSUMER_PRIORITY        1
-#define BT_ORCHESTRATOR_STACK       4096
-#define BT_ORCHESTRATOR_PRIORITY    1
-#define BT_DEVICE_NAME_LEN          65
-
-// BT Device Record — alocado no heap via malloc, transportado por fila.
-// Class of Device do PoC foi descartada: sem consumidor hoje.
-struct BTDeviceRecord {
-  char     address[18];
-  char     name[BT_DEVICE_NAME_LEN];
-  bool     hasName;
-  int8_t   rssi;
-  bool     hasRSSI;
-  uint32_t timestamp;
-};
-
-BluetoothSerial SerialBT;
-QueueHandle_t   btQueue = nullptr;
-
-// Callback do inquiry — chamado pelo BT stack para cada dispositivo encontrado
-void btDeviceFoundCB(BTAdvertisedDevice* pDevice) {
-  BTDeviceRecord* rec = (BTDeviceRecord*)malloc(sizeof(BTDeviceRecord));
-  if (rec == nullptr) return;
-  memset(rec, 0, sizeof(BTDeviceRecord));
-
-  rec->timestamp = (uint32_t)millis();
-  strncpy(rec->address, pDevice->getAddress().toString().c_str(), sizeof(rec->address) - 1);
-
-  if (pDevice->haveName()) {
-    rec->hasName = true;
-    strncpy(rec->name, pDevice->getName().c_str(), sizeof(rec->name) - 1);
-  }
-  if (pDevice->haveRSSI()) {
-    rec->hasRSSI = true;
-    rec->rssi    = (int8_t)pDevice->getRSSI();
-  }
-
-  if (xQueueSend(btQueue, &rec, 0) != pdTRUE) {
-    free(rec); // Queue cheia: descarta
-  }
+// Desliga o rádio BLE
+void bleScanDesligar() {
+  bleParar = true;
+  pBLEScan->stop();
+  bleScanAtivo = false;
 }
 
-// Consumer Task (Core 1): recebe BTDeviceRecord da fila, dedup persistente
-// e acumula no btBuffer
-void btConsumerTask(void* pvParameters) {
-  (void)pvParameters;
-  BTDeviceRecord* rec = nullptr;
+// ═════════════════════════════════════════════════════════════════════════════
+// State machine Movimento/Parado — sem restart, rádios nunca desligam, só
+// variam a cadência de scan (economia é só de cartão SD, não de energia)
+// ═════════════════════════════════════════════════════════════════════════════
 
-  for (;;) {
-    if (xQueueReceive(btQueue, &rec, portMAX_DELAY) == pdTRUE && rec != nullptr) {
-      if (!hashJaVisto(btCacheHash, btCacheCount, rec->address)) {
-        adicionarHashCache(btCacheHash, btCacheCount, BT_CACHE_MAX, rec->address, btCacheCheioAvisado, "BT");
+// Dispara um novo ciclo de scan WiFi+BLE simultâneo. WiFi é disparado pelo
+// scanWifiAtivo em processarDadosGPS(); BLE começa aqui.
+void iniciarCicloRadio() {
+  radioCicloAtivo    = true;
+  radioCicloWifiDone = false;
+  radioCicloBleDone  = false;
+  radioCicloInicio   = millis();
+  scanEmAndamento    = false;
+  bleScanLigar();
+}
 
-        char dadosBT[256];
-        snprintf(dadosBT, sizeof(dadosBT), "%s, %ld, %ld, %s, %s, %d\n",
-                 lastTimeStamp, lastLat, lastLon, rec->address,
-                 rec->hasName ? rec->name : "",
-                 rec->hasRSSI ? (int)rec->rssi : 0);
-        adicionarLinhaCircular(&btBuffer[0][0], BT_BUFFER_MAX, 256, btBufferHead, btBufferCount, dadosBT);
-      }
-      free(rec);
-      rec = nullptr;
+// Chamado a cada fix de GPS enquanto radioCicloAtivo — fecha o ciclo quando
+// WiFi e BLE terminaram, e volta a dormir se estava no check parado.
+void atualizarCicloRadio() {
+  if (!radioCicloAtivo) return;
+  unsigned long agora = millis();
+
+  if (!radioCicloWifiDone && !scanEmAndamento && (agora - radioCicloInicio > 500)) {
+    radioCicloWifiDone = true;
+  }
+  if (!radioCicloBleDone && (agora - radioCicloInicio >= BLE_SCAN_DURATION_MS)) {
+    bleScanDesligar();
+    radioCicloBleDone = true;
+  }
+
+  if (radioCicloWifiDone && radioCicloBleDone) {
+    radioCicloAtivo = false;
+    ultimoCicloFim = agora;
+    if (modoAtual == MODO_PARADO_CHECK) {
+      entrarModoParadoSono();
     }
   }
 }
 
-// Orchestrator Task Classic BT (Core 0): conduz inquiry, flush confirmado e
-// só então avança de fase
-void btOrchestratorTask(void* pvParameters) {
-  (void)pvParameters;
-
-  SerialBT.discoverAsync(btDeviceFoundCB);
-  vTaskDelay(pdMS_TO_TICKS(BT_INQUIRY_MS));
-
-  SerialBT.discoverClear();
-  vTaskDelay(pdMS_TO_TICKS(2000)); // drena a fila antes de encerrar
-
-  SerialBT.end();
-  vTaskDelay(pdMS_TO_TICKS(100));
-
-  scanEmAndamento = false;
-  while (!flushBuffers()) {
-    vTaskDelay(pdMS_TO_TICKS(500)); // SD indisponível: tenta de novo antes de trocar de fase
-  }
-
-  currentPhase = PHASE_WIFI;
-  triggerRestart();
+void entrarModoMovimento() {
+  modoAtual = MODO_MOVIMENTO;
+  modoInicio = millis();
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
 }
 
-void initBTPhase() {
-  Serial.printf("=== PHASE_BT | ciclo %lu ===\n", (unsigned long)phaseCount);
-  scanEmAndamento = true;
+void entrarModoParadoSono() {
+  modoAtual = MODO_PARADO_SONO;
+  modoInicio = millis();
+  Serial.println(F("Parado: dormindo (sem scan) por 5 min..."));
+}
 
-  btQueue = xQueueCreate(BT_QUEUE_DEPTH, sizeof(BTDeviceRecord*));
-  if (btQueue == nullptr) {
-    Serial.println(F("ERRO: falha ao criar btQueue"));
-    while (1) vTaskDelay(pdMS_TO_TICKS(1000));
+void entrarModoParadoCheck() {
+  modoAtual = MODO_PARADO_CHECK;
+  modoInicio = millis();
+  Serial.println(F("Acordou: checando WiFi + BLE juntos..."));
+  iniciarCicloRadio();
+}
+
+// Atualiza o modo com base na velocidade atual — chamado a cada fix de GPS
+void atualizarModo(float kmh) {
+  bool parado = kmh <= PARKED_KMH_THRESHOLD;
+
+  if (!parado) {
+    if (modoAtual != MODO_MOVIMENTO) entrarModoMovimento();
+    atualizarCicloRadio();
+    if (!radioCicloAtivo && (millis() - ultimoCicloFim >= RADIO_SCAN_INTERVAL_MS)) {
+      iniciarCicloRadio();
+    }
+    return;
+  }
+  if (modoAtual == MODO_MOVIMENTO) {
+    entrarModoParadoSono();
+    return;
   }
 
-  SerialBT.begin("ESP32_GPSD_BT");
+  unsigned long agora = millis();
+  switch (modoAtual) {
+    case MODO_PARADO_SONO:
+      if (agora - modoInicio >= PARKED_SLEEP_MS) {
+        entrarModoParadoCheck();
+      }
+      break;
 
-  xTaskCreatePinnedToCore(btConsumerTask,     "BT_Consumer",
-                          BT_CONSUMER_STACK,     nullptr,
-                          BT_CONSUMER_PRIORITY,  nullptr, 1);
-
-  xTaskCreatePinnedToCore(btOrchestratorTask, "BT_Orch",
-                          BT_ORCHESTRATOR_STACK,     nullptr,
-                          BT_ORCHESTRATOR_PRIORITY,  nullptr, 0);
+    case MODO_PARADO_CHECK:
+      atualizarCicloRadio();
+      break;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -903,11 +824,12 @@ void processarDadosGPS(DadosMPU mediaMPU) {
            t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min, t.tm_sec);
 
   // Atualiza a última posição/hora conhecida — consumida pelas consumer
-  // tasks de BLE/BT (Core 0), que rodam fora deste fluxo.
+  // task de BLE (Core 0), que roda fora deste fluxo.
   strncpy(lastTimeStamp, timeStamp, sizeof(lastTimeStamp) - 1);
   lastTimeStamp[sizeof(lastTimeStamp) - 1] = '\0';
   lastLat = lat;
   lastLon = lon;
+  lastKmh = kmh;
 
   // Monta linha do CSV
   char logData[160];
@@ -924,13 +846,24 @@ void processarDadosGPS(DadosMPU mediaMPU) {
              timeStamp, lat, lon, sat, hdop, kmh, direcao, umidade, tempDHT);
   }
 
-  // Acumula no buffer circular de log (descarta a linha mais antiga se cheio)
-  adicionarLinhaCircular(&logBuffer[0][0], LOG_BUFFER_MAX, 160, logBufferHead, logBufferCount, logData);
+  // Atualiza o modo Movimento/Parado com base na velocidade atual
+  atualizarModo(kmh);
 
-  // Scan WiFi só roda na fase WiFi (nas fases BLE/BT o rádio WiFi está
-  // desligado — ver RF Phase Sequencer)
+  // Acumula no buffer circular de log — 10s em movimento, 30s parado
+  // (leitura/dashboard continuam a cada segundo, só o append é espaçado)
+  unsigned long cadenciaLog = (modoAtual == MODO_MOVIMENTO) ? LOG_ADD_MOVING_MS : LOG_ADD_PARKED_MS;
+  if (millis() - lastLogAddMs >= cadenciaLog) {
+    adicionarLinhaCircular(&logBuffer[0][0], LOG_BUFFER_MAX, 160, logBufferHead, logBufferCount, logData);
+    lastLogAddMs = millis();
+  }
+
+  // Scan WiFi só roda enquanto há um ciclo de scan WiFi+BLE em andamento e o
+  // WiFi ainda não terminou a parte dele nesse ciclo (ver iniciarCicloRadio/
+  // atualizarCicloRadio) — vale tanto pra Movimento (ciclo a cada 30s) quanto
+  // pro check parado (ciclo único ao acordar).
   WifiStats wifiStats = {0, 0, 0};
-  if (currentPhase == PHASE_WIFI) {
+  bool scanWifiAtivo = radioCicloAtivo && !radioCicloWifiDone;
+  if (scanWifiAtivo) {
     wifiStats = varrerWiFi(timeStamp, lat, lon, kmh);
   }
 
@@ -938,28 +871,9 @@ void processarDadosGPS(DadosMPU mediaMPU) {
   exibirDashboard(timeStamp, lat, lon, sat, hdop, kmh, direcao,
                   umidade, tempDHT, mediaMPU, wifiStats, true);
 
-  // Flush do log.txt: cadência normal (por contagem) em movimento; parado,
-  // vira rajada única a cada WIFI_SLEEP_MS (mesma regra do sono do WiFi,
-  // timer próprio pra não interferir no wifiSleepStart). Nas transições
-  // (parar / voltar a mover) faz flush do que está em buffer, para não
-  // perder dados de viagem enquanto o buffer circular espera a rajada.
-  if (kmh > WIFI_SLEEP_KMH_THRESHOLD) {
-    if (logParadoStart != 0) {
-      flushBuffers();          // voltou a mover: grava o buffer da parada
-      logParadoStart = 0;
-    }
-    if (logBufferCount >= LOG_BUFFER_MAX) {
-      flushBuffers();          // cadência normal em movimento
-    }
-  } else {
-    if (logParadoStart == 0) {
-      flushBuffers();          // acabou de parar: grava dados da viagem
-      logParadoStart = millis(); // inicia a janela de 5 min
-    } else if (millis() - logParadoStart >= WIFI_SLEEP_MS) {
-      flushBuffers();
-      logParadoStart = millis(); // reinicia o ciclo de 5 min
-    }
-    // senão: parado e ainda dentro da janela de 5 min, não grava
+  // Flush do buffer de log por capacidade
+  if (logBufferCount >= LOG_BUFFER_MAX) {
+    flushBuffers();
   }
 }
 
@@ -974,12 +888,11 @@ void setup() {
     while (1) delay(1000);
   }
 
-  // Aloca os 4 buffers circulares no heap (antes eram arrays estáticos)
+  // Aloca os 3 buffers circulares no heap (antes eram arrays estáticos)
   logBuffer  = (char(*)[160])malloc((size_t)LOG_BUFFER_MAX  * 160);
   wifiBuffer = (char(*)[256])malloc((size_t)WIFI_BUFFER_MAX * 256);
   bleBuffer  = (char(*)[256])malloc((size_t)BLE_BUFFER_MAX  * 256);
-  btBuffer   = (char(*)[256])malloc((size_t)BT_BUFFER_MAX   * 256);
-  if (!logBuffer || !wifiBuffer || !bleBuffer || !btBuffer) {
+  if (!logBuffer || !wifiBuffer || !bleBuffer) {
     Serial.println(F("ERRO CRITICO: falha ao alocar buffers de log. Travando."));
     while (1) delay(1000);
   }
@@ -987,10 +900,10 @@ void setup() {
   // Inicialização do DHT22
   dht.begin();
 
-  Serial.println(F("\n--- ESP32 GPS Logger com SD, DHT22, MPU6050, WiFi, BT e BLE ---"));
-  Serial.printf("Buffer log:%d wifi:%d ble:%d bt:%d | Cache ssid:%d ble:%d bt:%d\n",
-                LOG_BUFFER_MAX, WIFI_BUFFER_MAX, BLE_BUFFER_MAX, BT_BUFFER_MAX,
-                SSID_CACHE_MAX, BLE_CACHE_MAX, BT_CACHE_MAX);
+  Serial.println(F("\n--- ESP32 GPS Logger com SD, DHT22, MPU6050, WiFi e BLE ---"));
+  Serial.printf("Buffer log:%d wifi:%d ble:%d | Cache ssid:%d ble:%d\n",
+                LOG_BUFFER_MAX, WIFI_BUFFER_MAX, BLE_BUFFER_MAX,
+                SSID_CACHE_MAX, BLE_CACHE_MAX);
 
   // Inicialização do MPU6050 (I2C padrão: SDA=21, SCL=22)
   if (!mpu.begin()) {
@@ -1034,7 +947,6 @@ void setup() {
   Serial.printf("Arquivo %s: %s\n", logFileName,  sd.exists(logFileName)  ? "encontrado" : "sera criado na primeira gravacao");
   Serial.printf("Arquivo %s: %s\n", wifiFileName, sd.exists(wifiFileName) ? "encontrado" : "sera criado na primeira gravacao");
   Serial.printf("Arquivo %s: %s\n", bleFileName,  sd.exists(bleFileName)  ? "encontrado" : "sera criado na primeira gravacao");
-  Serial.printf("Arquivo %s: %s\n", btFileName,   sd.exists(btFileName)   ? "encontrado" : "sera criado na primeira gravacao");
 
   // Watchdog: se loop() travar por mais de WDT_TIMEOUT_S sem "alimentar"
   // o watchdog, o ESP32 reseta sozinho. Cobre travamentos de qualquer
@@ -1051,28 +963,23 @@ void setup() {
 #endif
   esp_task_wdt_add(NULL);
   Serial.printf("Watchdog ativado: %ds\n", WDT_TIMEOUT_S);
+  int resetReason = (int)esp_reset_reason();
+  Serial.printf("Reset reason: %d\n", resetReason);
 
-  // RF Phase Sequencer: roteia pra fase correta após cada restart.
-  // Fallback de segurança caso a memória RTC corrompa.
-  if (currentPhase > PHASE_BT) currentPhase = PHASE_WIFI;
-  phaseCount++;
+  // Contador de boot (RTC, sobrevive a soft-reset/watchdog) — grava um
+  // marcador em log.txt pra diagnosticar reset espúrio no meio de um ciclo
+  // sem precisar de captura serial ao vivo.
+  bootCount++;
+  Serial.printf("Boot count: %lu\n", (unsigned long)bootCount);
+  char bootMarker[64];
+  snprintf(bootMarker, sizeof(bootMarker), "# BOOT bootCount=%lu reset_reason=%d\n",
+           (unsigned long)bootCount, resetReason);
+  appendFile(logFileName, bootMarker);
 
-  Serial.printf("Fase atual: %s | Ciclo: %lu | Reset reason: %d\n",
-                faseNome(currentPhase), (unsigned long)phaseCount, (int)esp_reset_reason());
-
-  switch (currentPhase) {
-    case PHASE_WIFI:
-      WiFi.mode(WIFI_STA);
-      WiFi.disconnect();
-      wifiPhaseStart = millis();
-      break;
-    case PHASE_BLE:
-      initBLEPhase();
-      break;
-    case PHASE_BT:
-      initBTPhase();
-      break;
-  }
+  // BLE inicializado uma única vez no boot (fica pronto, só liga/desliga
+  // scan conforme o modo Movimento/Parado); WiFi começa ligado (movimento).
+  setupBLE();
+  entrarModoMovimento();
 
   Serial.println(F("Aguardando fix do GPS...\n"));
 }
@@ -1080,18 +987,6 @@ void setup() {
 // ─────────────────────────────────────────────────────────────────────────────
 void loop() {
   esp_task_wdt_reset(); // alimenta o watchdog a cada volta do loop
-
-  // Fase WiFi esgotou seu tempo: cede o rádio pra excursão BLE/BT. Só
-  // avança de fase depois de flush confirmado (não perde dados por causa
-  // só do timing do restart) — se falhar, tenta de novo no próximo loop.
-  if (currentPhase == PHASE_WIFI && (millis() - wifiPhaseStart >= WIFI_SLEEP_MS)) {
-    WiFi.mode(WIFI_OFF);
-    scanEmAndamento = false;
-    if (flushBuffers()) {
-      currentPhase = PHASE_BLE;
-      triggerRestart();
-    }
-  }
 
   bool newData = false;
 
@@ -1102,6 +997,7 @@ void loop() {
 
   // Analisa dados do GPS por 1 segundo, amostrando o MPU a cada 100ms
   for (unsigned long start = millis(); millis() - start < 1000;) {
+    esp_task_wdt_reset();
     while (Serial2.available()) {
       char c = Serial2.read();
       if (gps.encode(c)) {
@@ -1146,3 +1042,4 @@ void loop() {
                     umidade, tempDHT, mediaMPU, semWifi, false);
   }
 }
+

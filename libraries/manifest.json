@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "baseline_date": "2026-10-05",
+  "baseline_source": "Arduino IDE libraries, verified builds on ESP32 core 3.3.12",
+  "source_of_truth": "project",
+  "default_ide_directory": "~/Arduino/libraries",
+  "core": {
+    "id": "esp32:esp32",
+    "version": "3.3.12",
+    "fqbn": "esp32:esp32:esp32:PartitionScheme=no_ota"
+  },
+  "libraries": [
+    {
+      "directory": "Adafruit_BusIO",
+      "name": "Adafruit BusIO",
+      "version": "1.17.4",
+      "compiled_by_active_firmware": true,
+      "declared_dependencies": ""
+    },
+    {
+      "directory": "Adafruit_GFX_Library",
+      "name": "Adafruit GFX Library",
+      "version": "1.12.6",
+      "compiled_by_active_firmware": false,
+      "declared_dependencies": "Adafruit BusIO"
+    },
+    {
+      "directory": "Adafruit_MPU6050",
+      "name": "Adafruit MPU6050",
+      "version": "2.2.9",
+      "compiled_by_active_firmware": true,
+      "declared_dependencies": " Adafruit BusIO, Adafruit Unified Sensor, Adafruit GFX Library, Adafruit SSD1306"
+    },
+    {
+      "directory": "Adafruit_SSD1306",
+      "name": "Adafruit SSD1306",
+      "version": "2.5.17",
+      "compiled_by_active_firmware": false,
+      "declared_dependencies": "Adafruit GFX Library"
+    },
+    {
+      "directory": "Adafruit_Unified_Sensor",
+      "name": "Adafruit Unified Sensor",
+      "version": "1.1.15",
+      "compiled_by_active_firmware": true,
+      "declared_dependencies": ""
+    },
+    {
+      "directory": "DHT_sensor_library",
+      "name": "DHT sensor library",
+      "version": "1.4.7",
+      "compiled_by_active_firmware": true,
+      "declared_dependencies": "Adafruit Unified Sensor"
+    },
+    {
+      "directory": "NimBLE-Arduino",
+      "name": "NimBLE-Arduino",
+      "version": "2.5.0",
+      "compiled_by_active_firmware": true,
+      "declared_dependencies": ""
+    },
+    {
+      "directory": "SdFat",
+      "name": "SdFat",
+      "version": "2.3.0",
+      "compiled_by_active_firmware": true,
+      "declared_dependencies": ""
+    },
+    {
+      "directory": "TinyGPS",
+      "name": "TinyGPS",
+      "version": "13.0.0",
+      "compiled_by_active_firmware": true,
+      "declared_dependencies": ""
+    }
+  ]
+}

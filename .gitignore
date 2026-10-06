@@ -1,0 +1,15 @@
+# Runtime output stays local. Graphify output is intentionally versioned.
+/log/
+/build/
+/.cache/
+/.pio/
+/.serena/cache/
+/.serena/logs/
+/.serena/project.local.yml
+/.tokensave/*.db
+/.tokensave/*.db-*
+/.claude/settings.local.json
+/.claude/.headroom_wrap_*.json
+/.claude/.headroom_wrap_*.lock
+__pycache__/
+*.pyc

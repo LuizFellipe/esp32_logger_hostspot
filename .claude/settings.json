@@ -1,7 +1,7 @@
 {
   "enabledPlugins": {
-    "andrej-karpathy-skills@karpathy-skills": true,
     "drawio@365-skills": true,
-    "ponytail@ponytail": true
+    "ponytail@ponytail": true,
+    "security-guidance@claude-plugins-official": true
   }
 }
