@@ -2,22 +2,20 @@
 
 ## Base verificada
 
-V3 atual: **1.348 linhas**, página HTML/CSS com atualização manual, sem `/api`. Decisões mantidas: resumo **5 s**, eventos imediatos, ASCII, GPS antigo mantém modo, lote SD incerto fica retido para retry.
+V3 atual: página HTML/CSS com atualização manual, sem `/api`. Decisões mantidas: resumo compacto (5 s; 30 s com hotspot; mudo em download), eventos imediatos, ASCII, GPS antigo mantém modo, lote SD incerto fica retido para retry.
 
 ## Console (legível, sem subsistema novo)
 
-- Resumo a cada 5 s, gerado após processamento do modo, em bloco ASCII curto (~60 col), alinhado, uma linha por grupo:
+- Resumo compacto de 3 a 4 linhas, sem moldura, gerado após o processamento do modo. Intervalo de **5 s**; **30 s** com o hotspot aberto; **mudo** durante download (não disputa CPU/heap com a tarefa HTTP):
 
 ```
-+-- 00:05:10 | modo=MOVE | ciclo=42 ---------------------+
-| GPS  ok  lat=-23.550520 lon=-46.633308 vel=12.3 idade=1s
-| AMB  DHT 24.5C 51% | MPU 0.02 m/s2 0.00 rad/s
-| RF   WiFi f=12 buf=10 dup=2 | BLE dren=30 buf=25 dup=5
-| MEM  heap=182k | perdidos=0
-| SD   ok buf=35 | HOT off
-+-------------------------------------------------------+
+[00:05:10] PARADO (hotspot) | 0.5 km/h | loop #310 1001ms
+  GPS -15.82641,-47.98718 | 26.2C 58% | az=10.8
+  RF #3 wifi=19 ble=10 | SD ok 10/150 0/50 0/50 | heap=76KB max=41KB perdas=0
+  WEB ESP32GPS-Logs clientes=1 fecha 00:04:40 | pag=5 dl=0 ok=0 erro=0
 ```
 
+  A linha `WEB` só aparece com o hotspot aberto. `heap`/`max` = heap livre e maior bloco contíguo (diagnóstico de falta de RAM).
 - Eventos (boot, scan falho, SD falho, download início/fim) em linha única com prefixo `[EVT]`, `[ERR]`, `[OK ]`.
 - Impressão direta com `Serial.printf` só na `loopTask`; a tarefa `Hotspot_HTTP` e callbacks BLE só atualizam flags/contadores atômicos. Sem fila.
 - Contadores: WiFi encontrados/bufferizados/duplicados; BLE drenados (`dashBle` atual) e `perdidos` global (alocação, fila, sobrescrita). Cache cheio: conhecidos deduplicados, novos IDs não entram.
@@ -32,7 +30,7 @@ V3 atual: **1.348 linhas**, página HTML/CSS com atualização manual, sem `/api
 - **SD:** confirmar tamanho escrito, `sync()` e `close()`. Remover lote só com confirmação completa; falha mantém lote e loga a etapa.
 - **Retry:** preservar flush adiado; retomar após scan/download. Manter laço e limite atual de 10 falhas de remount.
 - **Boot:** cabeçalho, marcador e watchdog só anunciam sucesso após conferir retornos.
-- **Download:** a tarefa HTTP grava um estado atômico (`iniciado`/`concluido`/`erro`); a `loopTask` imprime na transição `[EVT] Download iniciado`, `[OK ] Download concluido` ou `[ERR] Download erro`. Sem bytes, duração ou motivo.
+- **Download:** a tarefa HTTP grava um estado atômico (`iniciado`/`concluido`/`erro`); a `loopTask` imprime na transição `[EVT] Download iniciado`, `[OK ] Download concluido` ou `[ERR] Download erro`. A linha final traz bytes, duração, `motivo` do aborto, esperas de TCP (`stalls`), `heap` e `maxblk`.
 
 ## Compatibilidade e documentação
 
@@ -50,5 +48,5 @@ V3 atual: **1.348 linhas**, página HTML/CSS com atualização manual, sem `/api
 ## Observações verificadas
 
 - `server.handleClient()` roda na tarefa `Hotspot_HTTP` (core 1, `esp32gpsd_v3.ino:1160,1172`), não na `loopTask`; SD já protegido por `sdMutex` (`:95`); `dashTemp`/`dashUmid`/`dashBle` são `volatile` (`:175-178`).
-- Decisão: sem debug detalhado de HTTP (fila, bytes, duração, motivo). Só estados `Download iniciado`, `Download concluido`, `Download erro`, impressos pela `loopTask`.
+- Decisão revista: o download imprime motivo, stalls, heap e maior bloco no fim (diagnóstico da falha de heap). Estados `Download iniciado`, `Download concluido`, `Download erro`, impressos pela `loopTask`.
 - Serial só escrita pela `loopTask`, para não intercalar quadros do resumo.
