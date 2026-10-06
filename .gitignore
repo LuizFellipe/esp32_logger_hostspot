@@ -13,3 +13,7 @@
 /.claude/.headroom_wrap_*.lock
 __pycache__/
 *.pyc
+
+# Lock temporário de reconstrução; grafo e relatório continuam versionados.
+/graphify-out/.rebuild.lock
+esp32gpsd_v3/build/

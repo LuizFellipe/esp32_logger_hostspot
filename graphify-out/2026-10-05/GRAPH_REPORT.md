@@ -1,17 +1,17 @@
 # Graph Report - esp32  (2026-10-05)
 
 ## Corpus Check
-- 986 files · ~1,483,985 words
+- 988 files · ~1,490,647 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 340 file(s) not represented in the graph (top: .ino 223, .ttf 54, (none) 19)
+- Unclassified: 341 file(s) not represented in the graph (top: .ino 224, .ttf 54, (none) 19)
 
 ## Summary
-- 14492 nodes · 32610 edges · 501 communities (400 shown, 101 thin omitted)
-- Extraction: 76% EXTRACTED · 24% INFERRED · 0% AMBIGUOUS · INFERRED: 7974 edges (avg confidence: 0.85)
+- 14563 nodes · 32692 edges · 527 communities (424 shown, 103 thin omitted)
+- Extraction: 76% EXTRACTED · 24% INFERRED · 0% AMBIGUOUS · INFERRED: 7976 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `57b19573`
+- Built from commit: `096f5996`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -21,7 +21,7 @@
 - syscfg
 - os_mbuf_free_chain
 - shell.c
-- stdint
+- nrf5340_ble_hci.c
 - FatFile
 - FatFile
 - ble_att_svr.c
@@ -35,15 +35,15 @@
 - ble_ll_ctrl.c
 - ble_ll_hci_le_cmd_proc
 - bt_hex
-- ble_ll_sched.c
-- ble_ll_sync.c
+- net.c
+- ble_transport_alloc_evt
 - lpn.c
 - ble_ll_adv.c
 - access.c
-- ble_hs_conn_find
+- ble_l2cap_sig.c
 - NimBLEDevice.cpp
-- ble_ll_conn.c
-- libraries/SdFat/extras/cpplint.py
+- ble_ll_sched.c
+- CheckStyle
 - ExFatFile
 - ble_store_config.c
 - NimBLEExtAdvertising.cpp
@@ -60,48 +60,48 @@
 - NimBLEStream.cpp
 - ble_gattc_cache_conn.c
 - ExFatFile
+- ble_hs_hci.c
+- model_srv.c
 - ble_hs_priv.h
-- cfg_srv.c
-- inttypes
 - ble_ll_iso_big.c
 - FatPartition
 - nrf5x/src/ble_phy.c
 - archive_tests/SdFat/src/SdCard/Rp2040Sdio/PioSdioCard.cpp
 - Adafruit_GFX
-- os_mbuf.c
+- ble_ll_conn.c
 - archive_tests/SdFat/src/SdCard/TeensySdio/TeensySdio.cpp
 - ble_hs_adv_fields
 - os_mempool_init
-- stddef
+- archive_tests/SdFat/src/common/SysCall.h
 - libraries/SdFat/src/SdCard/TeensySdio/TeensySdio.cpp
 - NimBLEService.cpp
-- String
+- NimBLEDevice.h
 - archive_tests/SdFat/src/DigitalIO/DigitalPin.h
-- cfg.c
+- mesh/src/transport.c
 - StdioStream
-- ble_ll.c
+- stdint
 - ble_att_cmd.c
 - libraries/SdFat/src/DigitalIO/DigitalPin.h
 - NimBLEScan
-- esp_nimble_hci.c
+- WiFi.h
 - mesh/access.h
 - NimBLERemoteCharacteristic
 - ble_ll_scan.c
 - NimBLE2904
 - NimBLEAdvertising
-- nrf5340_ble_hci.c
+- os_memblock_put
 - NimBLEHIDDevice
-- ble_hs.c
+- ble_hs_unlock
 - getLe16
 - istream
-- nrf51/src/ble_phy.c
+- hal_timer.c
 - live-browser.js
 - FatPartition
 - NestingState
 - NimBLECharacteristic.cpp
-- getLe16
+- ExFatFormatter
 - FsBaseFile
-- NimBLERemoteValueAttribute
+- NimBLEUtils.h
 - ble_gattc_cache.c
 - FsBaseFile
 - FatFormatter
@@ -114,16 +114,16 @@
 - esp32_gsm_gps/src/sd_diskio.cpp
 - design-parser.mjs
 - live-server.mjs
-- CheckStyle
+- CloseExpression
 - Adafruit_GFX.cpp
 - NimBLERemoteService
 - NimBLEAdvertisementData
-- ESP32 GPS Logger com SD Card e DHT22
+- ESP32 Logger Hotspot
 - Process
 - setup-matt-pocock-skills/SKILL.md
 - Triage
-- constants.h
-- libraries/SdFat/src/common/SysCall.h
+- ble_ll_sync.c
+- FatFormatter
 - Adafruit_SPITFT.cpp
 - NestingState
 - libraries/SdFat/src/SdCard/Rp2040Sdio/PioSdioCard.cpp
@@ -136,26 +136,26 @@
 - fstream
 - fstream
 - NimBLEBondMigration.h
-- os_trace_api.h
+- nrf51/src/ble_phy.c
 - Adafruit_SSD1306
-- Adafruit_MPU6050.cpp
-- Stream
+- Adafruit_BusIO_Register
+- ArduinoOutStream
 - 4. SdFat, arquivos grandes e sincronização
 - pb_adv.c
 - nimble/README.md
 - archive_tests/SdFat/src/FsLib/FsVolume.h
 - SD/src/SD.cpp
-- NimBLEBeacon
-- ParseArguments
-- libraries/SdFat/src/FatLib/FatFile.h
+- nimconfig.h
+- libraries/SdFat/extras/cpplint.py
+- StreamFile
 - SdBase
 - update
-- bt_mesh_dev_capabilities
+- bt_mesh_prov
 - critique-storage.mjs
 - ble_hs_adv.c
 - SdBase
 - ble_store_nvs.c
-- NimBLEAttValue.h
+- NimBLEAttValue
 - document.md
 - live.mjs
 - resumeSession
@@ -164,7 +164,7 @@
 - Glossário de Termos
 - na_hci_driver.c
 - index.md
-- NimBLEDescriptor
+- NimBLEDescriptor.cpp
 - ESP32 + SIM800L + DHT22 - Estação Meteorológica IoT
 - ios_base
 - onboard.md
@@ -177,7 +177,7 @@
 - FatVolume
 - ESP32 GPS Logger — Documentação Completa
 - SdioCard
-- WiFiClass
+- na_hci_transport.c
 - The Toolkit
 - NimBLEUUID.cpp
 - ExFatVolume
@@ -188,24 +188,24 @@
 - Polish Systematically
 - impeccable-paths.mjs
 - Print
-- archive_tests/SdFat/src/ExFatLib/ExFatFile.h
-- pgmspace
+- archive_tests/SdFat/src/common/FmtNumber.h
+- archive_tests/SdFat/extras/AvrPrintStimmer.cpp
 - NimBLEConnInfo
-- glue.h
+- bt_encrypt_be
 - libraries/SdFat/src/SdCard/Rp2040Sdio/DbgLog.h
-- Server API
+- Migrating from Bluedroid to NimBLE
 - NimBLEAddress.cpp
 - Delight Techniques
 - live-accept.mjs
 - barPaletteForTheme
 - archive_tests/SdFat/src/common/DebugMacros.h
 - FsVolume
-- ble_svc_gap.c
-- na_hci_transport.c
+- os_mbuf.c
+- os_trace_api.h
 - slist.h
 - colorize.md
 - live-inject.mjs
-- arduino
+- Adafruit_Sensor
 - SD/src/sd_diskio.cpp
 - RingBuf
 - ble_aes_ccm.c
@@ -215,11 +215,11 @@
 - updateBarContent
 - createLiveBrowserSessionState
 - SdSpiCard
-- libraries/SdFat/extras/AvrPrintStimmer.cpp
-- FatFormatter
+- pgmspace
+- archive_tests/SdFat/src/common/FsStructs.h
 - sds_t
-- Funções
-- Funções
+- CheckStyle
+- nrf52/phy.c
 - SdSpiCard
 - BleStoreValueSecV1
 - craft.md
@@ -228,11 +228,11 @@
 - UX Writing
 - _CppLintState
 - FsCache
-- ble_store_ram.c
+- nrf51/src/ble_hw.c
 - ble_store_config_conf.c
-- ble_eddystone.c
-- Adafruit_BusIO_Register
-- _copy
+- os.h
+- stddef
+- nrf5x/src/ble_hw.c
 - Implement Adaptations
 - Generate Report
 - Improve Copy Systematically
@@ -256,12 +256,12 @@
 - istream
 - archive_tests/SdFat/src/SdCard/SdSpiCard.cpp
 - Migrating from 1.x to 2.x
-- libraries/SdFat/src/common/FsDateTime.cpp
+- getLe16
 - libraries/SdFat/src/SdCard/SdSpiCard.cpp
 - Adafruit_I2CDevice
 - ErrorSuppressions
 - Adafruit_GenericDevice
-- Adafruit_MPU6050.h
+- app_keys.c
 - Diagnose
 - animate.md
 - ErrorSuppressions
@@ -269,11 +269,11 @@
 - Hardening Dimensions
 - Interaction Design
 - cleanup-deprecated.mjs
-- O que você deve fazer quando esta skill for invocada
+- /sync-docs
 - archive_tests/SdFat/src/SdCard/SdCardInfo.h
 - ostream
-- O que você deve fazer quando esta skill for invocada
-- ctr_prng.c
+- /sync-docs
+- esp_nimble_hci.c
 - libraries/SdFat/src/SdCard/SdCardInfo.h
 - Usage Tips
 - critique.md
@@ -291,7 +291,7 @@
 - Product register
 - Responsive Design
 - sync.py
-- libraries/SdFat/src/common/FsUtf.h
+- NimBLEScanResults
 - StreamBaseClass
 - libraries/SdFat/src/SdCard/SdSpiCard.h
 - SdSpiArduinoDriver
@@ -307,12 +307,12 @@
 - SdSpiArduinoDriver
 - StreamBaseClass
 - DHT
-- light_model.c
+- ble_ll_dtm.c
 - DHT
 - DHT
-- NimBLEStreamServer
+- ProcessFileData
 - Cognitive Load Assessment
-- StreamFile
+- ProcessFileData
 - live-poll.mjs
 - Dependency categories
 - Web Application Testing
@@ -326,17 +326,17 @@
 - Guia Técnico Avançado: Concorrência, Mutex e Dual-Core no ESP32
 - NimBLE Stream Echo Example
 - NimBLE Stream Server Example
-- ble_hs.h
-- ExFatFormatter
+- ble_gatts_lcl.c
+- 5. Alterações, observabilidade e validação
 - ADR Format
 - SdCardInterface
 - Process
 - BufferedPrint
 - PrintBasic
 - archive_tests/SdFat/src/FsLib/FsFile.cpp
-- ble_hs_adv.h
+- CheckLanguage
 - DHT_Unified
-- ble_l2cap_sig_priv.h
+- Funções
 - BufferedPrint
 - caveman/SKILL.md
 - Process
@@ -347,15 +347,15 @@
 - CleansedLines
 - ble_ll_sched.h
 - archive_tests/SdFat/src/iostream/iostream.h
-- Migrating from Bluedroid to NimBLE
+- ESP32 GPS Logger — Documentação Completa
 - hitl-loop.template.sh
 - Heuristics Scoring Guide
 - CleansedLines
-- archive_tests/SdFat/examples/examplesV1/LowLatencyLoggerMPU6050/UserFunctions.cpp
+- CheckLanguage
 - archive_tests/SdFat/src/SpiDriver/SdSpiDue.cpp
-- ble_store_config_write
+- os_cputime.c
 - libraries/SdFat/src/iostream/iostream.h
-- ArduinoOutStream
+- Stream
 - libraries/SdFat/src/SpiDriver/SdSpiDue.cpp
 - bt_mesh_model_pub
 - [1.0.1] - 2020-09-02
@@ -365,12 +365,12 @@
 - [1.4.0] - 2022-07-10
 - [1.4.1] - 2022-10-23
 - libraries/SdFat/src/SdCard/Rp2040Sdio/PioSdioCard.pio.h
-- printFatDir
+- ble_npl_event_get_arg
 - DHT-1.4.6/DHT_U.cpp
-- [1.3.2] - 2021-11-20
+- Funções
 - [1.3.6] - 2022-01-18
 - MigrationStats
-- NimBLEStreamClient
+- Funções
 - _IncludeState
 - _FunctionState
 - cid_t
@@ -379,13 +379,13 @@
 - RELEASE_NOTES.md
 - esp32_gsm_gps/DHT_sensor_library/DHT_U.cpp
 - libraries/DHT_sensor_library/DHT_U.cpp
-- bt_mesh_prov
+- archive_tests/SdFat/examples/examplesV1/LowLatencyLoggerMPU6050/UserFunctions.cpp
 - _FunctionState
 - cid_t
 - ios
 - scr_t
 - Análise da distribuição de tarefas entre os cores
-- NimBLECharacteristicCallbacks
+- ble_l2cap_coc.c
 - scr_t
 - archive_tests/SdFat/src/SdCard/SdioCard.h
 - manifest.json
@@ -393,19 +393,19 @@
 - libraries/SdFat/src/SdCard/SdioCard.h
 - SdioConfig
 - Adafruit Unified Sensor Driver #
-- GFXcanvas8
+- NimBLELocalValueAttribute.h
 - Adafruit Unified Sensor Driver #
 - tc_aes_encrypt
-- _ShouldPrintError
+- ProcessLine
 - SdioConfig
 - SdSpiBaseClass
 - archive_tests/SdFat/src/SpiDriver/SdSpiParticle.cpp
 - Cronologia das Tentativas
-- ff_sd_read
-- ccm_mode.c
+- GFXcanvas8
+- NimBLEAttValue.h
 - Contributing
-- NimBLE-Arduino/README.md
-- MinimumSerial
+- NimBLERemoteDescriptor.h
+- ProcessLine
 - SdSpiBaseClass
 - libraries/SdFat/src/SpiDriver/SdSpiParticle.cpp
 - FsFormatter
@@ -418,7 +418,7 @@
 - Adafruit Community Code of Conduct
 - Adafruit Community Code of Conduct
 - Adafruit Community Code of Conduct
-- libraries/SdFat/examples/examplesV1/LowLatencyLoggerADXL345/UserFunctions.cpp
+- archive_tests/SdFat/src/common/FsDateTime.h
 - FsFormatter
 - libraries/SdFat/src/SpiDriver/SdSpiArtemis.cpp
 - libraries/SdFat/src/SpiDriver/SdSpiAvr.h
@@ -427,36 +427,37 @@
 - libraries/SdFat/src/SpiDriver/SdSpiSTM32Core.cpp
 - libraries/SdFat/src/SpiDriver/SdSpiTeensy3.cpp
 - SdFile
-- fontconvert.c
+- NimBLEStream::ByteRingBuffer
 - Variantes, protótipos e histórico
-- NimBLE2904.h
+- CheckForNonConstReference
+- String
 - bt_mesh_elem
 - SdFile
-- 📊 Dados Coletados
+- archive_tests/SdFat/src/SdCard/Rp2040Sdio/PioSdioCard.pio.h
 - Timeout
 - SdioConfig
 - esp32_gsm_gps/DHT_sensor_library/README.md
 - Arquitetura do GPS Logger
 - A short guide to use fontconvert.c to create your own fonts using MinGW.
 - libraries/DHT_sensor_library/README.md
-- bt_mesh_comp
+- _IncludeState
 - Timeout
 - SdioConfig
 - SD library
 - Hardware, configuração e dados
 - Visão geral
-- NimBLETaskData
-- 🔌 Conexões (Pinout)
+- NimBLEScan.h
+- vector
 - AcquireSPI
-- 🗄️ Configuração do Banco de Dados
+- GFXcanvas1
 - AcquireSPI
 - Graphify do repositório
 - Adafruit_GFX_Library/README.md
 - Adafruit_SSD1306 [![Build Status](https://github.com/adafruit/Adafruit_SSD1306/workflows/Arduino%20Library%20CI/badge.svg)](https://github.com/adafruit/Adafruit_SSD1306/actions)[![Documentation](https://github.com/adafruit/ci-arduino/blob/master/assets/doxygen_badge.svg)](http://adafruit.github.io/Adafruit_SSD1306/html/index.html)
-- Wiki do projeto ESP32
-- [1.3.5] - 2022-01-14
-- [1.3.8] - 2022-04-27
-- [1.4.3] 2024-11-27
+- GetHeaderGuardCPPVariable
+- 4. SdFat, arquivos grandes e sincronização
+- hci_h4.c
+- NimBLE-Arduino/README.md
 - cpplint.sh script
 - archive_tests/SdFat/README.md
 - esp32_gsm_gps/DHT_sensor_library/CONTRIBUTING.md
@@ -464,15 +465,39 @@
 - Adafruit_BusIO/README.md
 - makefonts.sh
 - libraries/DHT_sensor_library/CONTRIBUTING.md
+- ble_hs_id_copy_addr
+- ChrCallbacks
+- arduino
+- 3. Tarefas, configuração e interface HTTP
+- MinimumSerial
+- cpplint.sh script
+- libraries/SdFat/README.md
+- libraries/TinyGPS/README.md
+- 2. Máquina de estados e integração com os scans
+- 2. Máquina de estados e integração com os scans
+- Adafruit_Sensor
+- archive_tests/SdFat/examples/examplesV1/LowLatencyLoggerADXL345/UserFunctions.cpp
+- NimBLECharacteristic.h
+- NimBLE2904Data
+- _IncludeError
+- bt_mesh_comp
+- getServiceUUID
+- begin
+- getPayloadByType
+- NimBLECharacteristic::NimBLECharacteristic
+- isLegacyAdvertisement
+- NimBLEHIDDevice.h
+- Wiki do projeto ESP32
+- [1.3.2] - 2021-11-20
+- [1.3.5] - 2022-01-14
+- [1.3.8] - 2022-04-27
+- [1.4.3] 2024-11-27
 - [1.0.2] - 2020-09-13
 - [1.3.1] - 2021-08-04
 - [1.3.3] - 2021-11-24
 - [1.3.4] - 2022-01-09
 - [1.3.7] - 2022-02-15
 - NimBLEHIDDevice::NimBLEHIDDevice
-- cpplint.sh script
-- libraries/SdFat/README.md
-- libraries/TinyGPS/README.md
 
 ## God Nodes (most connected - your core abstractions)
 1. `os_mbuf_free_chain()` - 193 edges
@@ -495,173 +520,173 @@
   esp32gpsd_v2/README.md → libraries/Adafruit_MPU6050/Adafruit_MPU6050.h
 - `Objetos e Estado Globais` --references--> `Adafruit_MPU6050`  [INFERRED]
   esp32gpsd_v2/README.md → libraries/Adafruit_MPU6050/Adafruit_MPU6050.h
-- `Variables and Macros` --references--> `_t()`  [INFERRED]
-  libraries/NimBLE-Arduino/src/nimble/CODING_STANDARDS.md → .agents/skills/impeccable/scripts/modern-screenshot.umd.js
+- `Bibliotecas Utilizadas` --references--> `Adafruit_MPU6050`  [INFERRED]
+  esp32gpsd_v3/README.md → libraries/Adafruit_MPU6050/Adafruit_MPU6050.h
 
 ## Import Cycles
 - None detected.
 
-## Communities (501 total, 101 thin omitted)
+## Communities (527 total, 103 thin omitted)
 
 ### Community 0 - "ble_gattc.c"
 Cohesion: 0.02
-Nodes (222): gatt_send(), ble_att_clt_parse_find_type_value_hinfo(), ble_att_clt_parse_read_group_type_adata(), ble_att_clt_rx_error(), ble_att_clt_rx_exec_write(), ble_att_clt_rx_find_info(), ble_att_clt_rx_find_type_value(), ble_att_clt_rx_indicate() (+214 more)
+Nodes (227): gatt_send(), ble_att_clt_parse_find_info_entry(), ble_att_clt_rx_exec_write(), ble_att_clt_rx_find_info(), ble_att_clt_rx_find_type_value(), ble_att_clt_rx_indicate(), ble_att_clt_rx_read(), ble_att_clt_rx_read_blob() (+219 more)
 
 ### Community 1 - "ble_gap.c"
-Cohesion: 0.02
-Nodes (241): adv_start(), bt_mesh_adv_start(), ble_adv_conf_adv_instance(), bt_le_adv_start(), ble_att_set_default_bearer_using_cid(), ble_gap_accept_master_conn(), ble_gap_accept_slave_conn(), ble_gap_add_dev_to_periodic_adv_list() (+233 more)
+Cohesion: 0.03
+Nodes (203): ble_adv_conf_adv_instance(), bt_le_adv_start(), ble_gap_accept_master_conn(), ble_gap_accept_slave_conn(), ble_gap_add_dev_to_periodic_adv_list(), ble_gap_adv_active(), ble_gap_adv_active_instance(), ble_gap_adv_dflt_itvls() (+195 more)
 
 ### Community 2 - "syscfg"
 Cohesion: 0.03
-Nodes (123): find_lsb_set(), find_msb_set(), ble_adv_gap_mesh_cb(), app_get(), app_key_alloc(), app_key_del(), app_key_evt(), app_key_revoke() (+115 more)
+Nodes (70): ble_adv_gap_mesh_cb(), bt_mesh_adv_start(), bt_mesh_msg_ctx, bt_mesh_net_rx, bt_mesh_subnet, auth_match(), bt_mesh_beacon_create(), bt_mesh_beacon_update() (+62 more)
 
 ### Community 3 - "os_mbuf_free_chain"
-Cohesion: 0.05
-Nodes (147): k_sem_take(), bt_mesh_model_send(), bt_mesh_app_keys_get(), beacon_status(), bt_mesh_cfg_app_key_add(), bt_mesh_cfg_app_key_del(), bt_mesh_cfg_app_key_get(), bt_mesh_cfg_app_key_update() (+139 more)
+Cohesion: 0.04
+Nodes (184): k_sem_take(), NET_BUF_SIMPLE(), bt_mesh_model_elem(), bt_mesh_model_send(), publish_transmit(), bt_mesh_relay_retransmit_get(), beacon_status(), bt_mesh_cfg_app_key_add() (+176 more)
 
 ### Community 4 - "shell.c"
 Cohesion: 0.02
-Nodes (129): settings_load(), bt_mesh_comp_get(), addr_is_free(), bt_mesh_cdb_app_key_alloc(), bt_mesh_cdb_app_key_del(), bt_mesh_cdb_app_key_get(), bt_mesh_cdb_app_key_store(), bt_mesh_cdb_clear() (+121 more)
+Nodes (127): settings_load(), bt_mesh_comp_get(), addr_is_free(), bt_mesh_cdb_app_key_alloc(), bt_mesh_cdb_app_key_del(), bt_mesh_cdb_app_key_get(), bt_mesh_cdb_app_key_store(), bt_mesh_cdb_clear() (+119 more)
 
-### Community 5 - "stdint"
-Cohesion: 0.02
-Nodes (39): na_hci_transport_host_callback_register(), ble_ll_get_addr_type(), ble_ll_adv_can_chg_whitelist(), ble_ll_rand_init(), ble_ll_rand_start(), ble_ll_scan_can_chg_whitelist(), ble_ll_sync_parse_biginfo_to_ev(), ble_ll_whitelist_add() (+31 more)
+### Community 5 - "nrf5340_ble_hci.c"
+Cohesion: 0.11
+Nodes (23): ble_transport_to_hs_iso_impl(), hci_ipc_copy_to_buf(), hci_ipc_copy_to_hdr(), hci_ipc_frame(), hci_ipc_has_hdr(), hci_ipc_init(), hci_ipc_rx(), ble_transport_to_hs_acl() (+15 more)
 
 ### Community 6 - "FatFile"
 Cohesion: 0.03
-Nodes (102): FatFile, addCluster, addDirCluster, cacheDirEntry, close, cmpName, contiguousRange, createContiguous (+94 more)
+Nodes (102): isFatFileOrSubdir(), FatFile, addCluster, addDirCluster, cacheDirEntry, close, cmpName, contiguousRange (+94 more)
 
 ### Community 7 - "FatFile"
 Cohesion: 0.03
-Nodes (100): isFatFileOrSubdir(), FatFile, addCluster, addDirCluster, cacheDirEntry, close, cmpName, contiguousRange (+92 more)
+Nodes (100): FatFile, addCluster, addDirCluster, cacheDirEntry, close, cmpName, contiguousRange, createContiguous (+92 more)
 
 ### Community 8 - "ble_att_svr.c"
-Cohesion: 0.04
-Nodes (115): ble_ll_tx_mbuf_pducb(), ble_svc_gatt_access(), ble_svc_gatt_csf_handle(), ble_att_chan_mtu(), ble_att_conn_chan_find(), ble_att_conn_chan_find_by_psm(), ble_att_inc_rx_stat(), ble_att_inc_tx_stat() (+107 more)
+Cohesion: 0.08
+Nodes (75): ble_svc_gatt_csf_handle(), ble_att_conn_chan_find(), ble_att_mtu_by_cid(), ble_att_cmd_prepare(), ble_att_svr_build_find_info_rsp(), ble_att_svr_build_find_type_value_rsp(), ble_att_svr_build_indicate_rsp(), ble_att_svr_build_mtu_rsp() (+67 more)
 
 ### Community 9 - "ble_sm.c"
-Cohesion: 0.03
-Nodes (135): ble_ll_hci_le_encrypt(), ble_gap_conn_find(), ble_gap_security_initiate(), ble_gattc_signed_write(), ble_hs_hci_util_rand(), ble_hs_log_flat_buf(), ble_hs_pvcy_our_irk(), ble_hs_rand_prand_get() (+127 more)
+Cohesion: 0.04
+Nodes (112): ble_att_clt_parse_find_type_value_hinfo(), ble_att_clt_parse_read_group_type_adata(), ble_att_clt_rx_error(), ble_att_clt_rx_prep_write(), ble_att_clt_rx_read_group_type(), ble_gap_repeat_pairing_event(), ble_gap_security_initiate(), ble_hs_conn_addrs() (+104 more)
 
 ### Community 10 - "proxy.c"
-Cohesion: 0.03
-Nodes (106): net_buf_simple_init(), bt_mesh_msg_send(), adv_send_start(), adv_send(), mesh_adv_thread(), beacon_send(), bt_mesh_beacon_enable(), unprovisioned_beacon_send() (+98 more)
+Cohesion: 0.04
+Nodes (99): net_buf_simple_init(), bt_mesh_msg_send(), adv_send_start(), bt_conn_get_info(), k_work_submit(), bt_mesh_is_provisioned(), bt_mesh_pb_gatt_disable(), bt_mesh_pb_gatt_enable() (+91 more)
 
 ### Community 11 - "ble_hs_resolv.c"
 Cohesion: 0.05
-Nodes (58): ble_dtm_rx_start(), ble_dtm_stop(), ble_dtm_tx_start(), ble_hs_hci_evt_le_conn_complete(), ble_hs_hci_evt_le_enh_conn_complete(), ble_hs_hci_util_set_random_addr(), ble_hs_id_addr(), ble_hs_id_addr_type_usable() (+50 more)
+Nodes (56): ble_gap_duplicate_exception_list(), ble_hs_hci_evt_le_conn_complete(), ble_hs_hci_evt_le_enh_conn_complete(), ble_hs_is_rpa(), ble_hs_get_rpa_timeout(), ble_hs_pvcy_add_entry(), ble_hs_pvcy_add_entry_hci(), ble_hs_pvcy_clear_entries() (+48 more)
 
 ### Community 12 - "atomic_test_bit"
 Cohesion: 0.04
-Nodes (120): sys_memcpy_swap(), bt_mesh_adv_send_start(), ble_mesh_ext_adv_event_handler(), bt_mesh_adv_buf_ready(), bt_mesh_adv_start(), bt_mesh_adv_update(), buf_send(), schedule_send() (+112 more)
+Nodes (101): find_msb_set(), sys_memcpy_swap(), atomic_set_bit(), atomic_test_and_clear_bit(), atomic_test_bit(), bt_mesh_cdb_subnet_flags(), bt_mesh_aes_cmac_one(), bt_mesh_beacon_key() (+93 more)
 
 ### Community 13 - "NimBLEClient"
 Cohesion: 0.04
-Nodes (80): setScanResponseData, stop, Config, asyncConnect, connectFailRetries, deleteCallbacks, deleteOnConnectFail, deleteOnDisconnect (+72 more)
+Nodes (80): ble_gap_conn_rssi(), ble_hs_hci_util_read_rssi(), Config, asyncConnect, connectFailRetries, deleteCallbacks, deleteOnConnectFail, deleteOnDisconnect (+72 more)
 
 ### Community 14 - "ble_store.c"
-Cohesion: 0.07
-Nodes (46): ble_svc_gatt_cl_sup_feat_access(), ble_gap_enc_event(), ble_gap_unpair_oldest_peer(), ble_gattc_cache_conn_bonding_established(), ble_gattc_cache_conn_bonding_restored(), ble_gatts_bonding_restored(), ble_gatts_clt_cfg_access(), ble_gatts_clt_cfg_access_locked() (+38 more)
+Cohesion: 0.11
+Nodes (32): ble_svc_gatt_cl_sup_feat_access(), ble_gatts_peer_cl_sup_feat_update(), ble_hs_pvcy_set_default_irk(), ble_sm_incr_our_sign_counter(), ble_store_clear(), ble_store_delete(), ble_store_delete_cccd(), ble_store_delete_csfc() (+24 more)
 
 ### Community 15 - "archive_tests/SdFat/extras/cpplint.py"
-Cohesion: 0.02
-Nodes (76): _AddFilters(), _BackupFilters(), CheckCasts(), CheckCStyleCast(), CheckForBadCharacters(), CheckForCopyright(), CheckForFunctionLengths(), CheckForHeaderGuard() (+68 more)
+Cohesion: 0.05
+Nodes (34): _AddFilters(), _BackupFilters(), CheckForNamespaceIndentation(), CheckItemIndentationInNamespace(), Error(), _ExpandDirectories(), _FilterExcludedFiles(), _Filters() (+26 more)
 
 ### Community 16 - "ble_ll_ctrl.c"
-Cohesion: 0.05
-Nodes (89): ble_ll_adv_periodic_send_sync_ind(), ble_ll_adv_put_syncinfo(), ble_ll_read_supp_features(), ble_ll_conn_enqueue_pkt(), ble_ll_conn_get_anchor(), ble_ll_conn_subrate_req_llcp(), ble_ll_conn_tx_connect_ind_pducb(), ble_ll_conn_hci_le_ltk_reply() (+81 more)
+Cohesion: 0.07
+Nodes (71): ble_ll_read_supp_features(), ble_ll_conn_tx_connect_ind_pducb(), ble_ll_calc_session_key(), ble_ll_ctrl_chanmap_req_make(), ble_ll_ctrl_chk_proc_start(), ble_ll_ctrl_cis_create(), ble_ll_ctrl_conn_param_pdu_make(), ble_ll_ctrl_conn_param_pdu_proc() (+63 more)
 
 ### Community 17 - "ble_ll_hci_le_cmd_proc"
 Cohesion: 0.03
-Nodes (104): ble_ll_adv_enabled(), ble_ll_adv_read_txpwr(), ble_ll_adv_set_adv_params(), ble_ll_hw_err_timer_cb(), ble_ll_hw_error(), ble_ll_is_busy(), ble_ll_read_supp_states(), ble_ll_set_random_addr() (+96 more)
+Nodes (121): ble_ll_conn_rem_feature_check(), ble_ll_adv_clear_all(), ble_ll_adv_enabled(), ble_ll_adv_periodic_send_sync_ind(), ble_ll_adv_periodic_set_info_transfer(), ble_ll_adv_read_txpwr(), ble_ll_set_random_addr(), ble_ll_conn_central_init() (+113 more)
 
 ### Community 18 - "bt_hex"
 Cohesion: 0.08
-Nodes (57): k_sem_give(), bt_mesh_msg_ack_ctx_rx(), get_opcode(), bt_mesh_scan_cb(), bt_mesh_beacon_recv(), cache_add(), secure_beacon_recv(), unprovisioned_beacon_recv() (+49 more)
+Nodes (78): k_sem_give(), bt_mesh_msg_ack_ctx_rx(), bt_mesh_elem_find(), bt_mesh_model_extensions_walk(), bt_mesh_model_find_group(), bt_mesh_model_sub_store(), get_opcode(), bt_mesh_scan_cb() (+70 more)
 
-### Community 19 - "ble_ll_sched.c"
-Cohesion: 0.05
-Nodes (73): ble_ll_rfmgmt_enable_now(), ble_ll_tmr_add(), ble_ll_tmr_add_u(), ble_ll_tmr_get(), ble_ll_tmr_stop(), ble_ll_tmr_sub(), ble_ll_tmr_t2u(), ble_ll_tmr_u2t() (+65 more)
+### Community 19 - "net.c"
+Cohesion: 0.07
+Nodes (53): bt_mesh_lpn_waiting_update(), bt_mesh_iv_update(), bt_mesh_net_create(), bt_mesh_net_decode(), bt_mesh_net_header_parse(), bt_mesh_net_iv_update(), bt_mesh_net_pending_iv_store(), bt_mesh_net_pending_net_store() (+45 more)
 
-### Community 20 - "ble_ll_sync.c"
-Cohesion: 0.06
-Nodes (86): ble_ll_adv_get_peer_rpa(), ble_ll_adv_send_conn_comp_ev(), ble_ll_conn_chk_csm_flags(), ble_ll_conn_cth_flow_error_fn(), ble_ll_conn_subrate_set(), ble_ll_auth_pyld_tmo_event_send(), ble_ll_conn_comp_event_send(), ble_ll_conn_hci_cancel_conn_complete_event() (+78 more)
+### Community 20 - "ble_transport_alloc_evt"
+Cohesion: 0.09
+Nodes (57): ble_ll_adv_get_peer_rpa(), ble_ll_adv_send_conn_comp_ev(), ble_ll_conn_chk_csm_flags(), ble_ll_conn_cth_flow_error_fn(), ble_ll_conn_subrate_set(), ble_ll_auth_pyld_tmo_event_send(), ble_ll_conn_comp_event_send(), ble_ll_conn_hci_cancel_conn_complete_event() (+49 more)
 
 ### Community 21 - "lpn.c"
-Cohesion: 0.07
-Nodes (62): bt_mesh_comp_register(), bt_mesh_model_foreach(), bt_mesh_model_settings_commit(), bt_mesh_primary_addr(), bt_mesh_scan_disable(), bt_mesh_scan_enable(), bt_mesh_beacon_disable(), bt_mesh_cfg_default_set() (+54 more)
+Cohesion: 0.04
+Nodes (108): bt_mesh_primary_addr(), bt_mesh_scan_disable(), bt_mesh_scan_enable(), beacon_send(), bt_mesh_beacon_disable(), bt_mesh_beacon_enable(), update_beacon_observation(), bt_mesh_beacon_enabled() (+100 more)
 
 ### Community 22 - "ble_ll_adv.c"
 Cohesion: 0.04
-Nodes (136): ble_ll_tmr_u2t_up(), ble_ll_trace_u32(), ble_ll_trace_u32x2(), ble_ll_trace_u32x3(), ble_ll_adv_active_chanset_clear(), ble_ll_adv_active_chanset_is_pri(), ble_ll_adv_active_chanset_is_sec(), ble_ll_adv_active_chanset_set_pri() (+128 more)
+Nodes (128): ble_ll_tmr_u2t_up(), ble_ll_adv_active_chanset_clear(), ble_ll_adv_active_chanset_is_pri(), ble_ll_adv_active_chanset_is_sec(), ble_ll_adv_active_chanset_set_pri(), ble_ll_adv_active_chanset_set_sec(), ble_ll_adv_aux_calculate(), ble_ll_adv_aux_calculate_payload() (+120 more)
 
 ### Community 23 - "access.c"
 Cohesion: 0.05
-Nodes (64): bt_mesh_comp_provision(), bt_mesh_comp_unprovision(), bt_mesh_elem_count(), bt_mesh_elem_find_group(), bt_mesh_model_data_store(), bt_mesh_model_elem(), bt_mesh_model_get(), bt_mesh_model_has_key() (+56 more)
+Nodes (60): bt_mesh_comp_provision(), bt_mesh_comp_register(), bt_mesh_comp_unprovision(), bt_mesh_elem_count(), bt_mesh_elem_find_group(), bt_mesh_model_bind_store(), bt_mesh_model_data_store(), bt_mesh_model_find() (+52 more)
 
-### Community 24 - "ble_hs_conn_find"
-Cohesion: 0.05
-Nodes (91): ble_att_create_chan(), ble_att_set_preferred_mtu(), ble_gap_log_update(), ble_gap_update_params(), ble_gap_validate_conn_params(), ble_hs_conn_alloc(), ble_hs_conn_chan_exist(), ble_hs_conn_chan_find_by_dcid() (+83 more)
+### Community 24 - "ble_l2cap_sig.c"
+Cohesion: 0.06
+Nodes (69): ble_att_create_chan(), ble_att_set_preferred_mtu(), ble_gap_conn_foreach_handle(), ble_gap_rx_l2cap_update_req(), ble_hs_conn_alloc(), ble_hs_conn_chan_exist(), ble_hs_conn_chan_find_by_dcid(), ble_hs_conn_chan_find_by_scid() (+61 more)
 
 ### Community 25 - "NimBLEDevice.cpp"
 Cohesion: 0.03
-Nodes (69): Added, k_sleep(), ble_npl_time_delay(), nimble_cpp_assert(), NimBLEDevice, NimBLEDevice::createClient(), NimBLEDevice::createL2CAPServer(), NimBLEDevice::createServer() (+61 more)
+Nodes (66): Added, nimble_cpp_assert(), NimBLEDevice, NimBLEDevice::createClient(), NimBLEDevice::createL2CAPServer(), NimBLEDevice::createServer(), defaultDeviceCallbacks, deinit (+58 more)
 
-### Community 26 - "ble_ll_conn.c"
-Cohesion: 0.03
-Nodes (102): ble_ll_conn_rem_feature_add(), ble_ll_conn_rem_feature_check(), ble_ll_phy_to_phy_mode(), ble_ll_pdu_max_tx_octets_get(), ble_ll_conn_adjust_pyld_len(), ble_ll_conn_auth_pyld_timer_cb(), ble_ll_conn_auth_pyld_timer_start(), ble_ll_conn_calc_dci() (+94 more)
+### Community 26 - "ble_ll_sched.c"
+Cohesion: 0.07
+Nodes (43): ble_ll_rfmgmt_enable_now(), ble_ll_tmr_get(), ble_ll_tmr_start(), ble_ll_tmr_stop(), ble_ll_tmr_sub(), ble_ll_state_get(), ble_ll_conn_get_ce_end_time(), ble_ll_rfmgmt_disable() (+35 more)
 
-### Community 27 - "libraries/SdFat/extras/cpplint.py"
-Cohesion: 0.02
-Nodes (77): CheckAltTokens(), CheckBraces(), CheckBracesSpacing(), CheckCasts(), CheckCheck(), CheckCommaSpacing(), CheckComment(), CheckCStyleCast() (+69 more)
+### Community 27 - "CheckStyle"
+Cohesion: 0.06
+Nodes (20): CheckAltTokens(), CheckBraces(), CheckBracesSpacing(), CheckCheck(), CheckCommaSpacing(), CheckComment(), CheckParenthesisSpacing(), CheckRedundantVirtual() (+12 more)
 
 ### Community 28 - "ExFatFile"
 Cohesion: 0.03
-Nodes (82): lfnReservedChar(), ExFatFile, addCluster, addDirCluster, close, cmpName, contiguousRange, dirCache (+74 more)
+Nodes (78): ExFatFile, addCluster, addDirCluster, close, cmpName, contiguousRange, dirCache, fgetpos (+70 more)
 
 ### Community 29 - "ble_store_config.c"
-Cohesion: 0.15
-Nodes (29): ble_store_config_delete(), ble_store_config_delete_cccd(), ble_store_config_delete_csfc(), ble_store_config_delete_ead(), ble_store_config_delete_local_irk(), ble_store_config_delete_obj(), ble_store_config_delete_our_sec(), ble_store_config_delete_peer_sec() (+21 more)
+Cohesion: 0.06
+Nodes (73): ble_hs_log_flat_buf(), ble_store_key_from_value(), ble_store_key_from_value_cccd(), ble_store_key_from_value_csfc(), ble_store_key_from_value_ead(), ble_store_key_from_value_local_irk(), ble_store_key_from_value_rpa_rec(), ble_store_key_from_value_sec() (+65 more)
 
 ### Community 30 - "NimBLEExtAdvertising.cpp"
 Cohesion: 0.05
-Nodes (64): About extended advertising, Bluetooth 5.x features, Enabling extended advertising, NimBLEExtAdvertisement, addData, addServiceUUID, addTxPower, clearData (+56 more)
+Nodes (62): NimBLEExtAdvertisement, addData, addServiceUUID, addTxPower, clearData, enableScanRequestCallback, getDataLocation, getDataSize (+54 more)
 
 ### Community 31 - "NimBLEServer.cpp"
 Cohesion: 0.05
-Nodes (47): ble_att_mtu(), getMTU, gattRegisterCallbackArgs, pChar, pSvc, NimBLEServer, addService, advertiseOnDisconnect (+39 more)
+Nodes (49): ble_att_mtu(), ble_gatts_lcl_svc_foreach(), ble_gatts_show_local(), getMTU, gattRegisterCallbackArgs, pChar, pSvc, NimBLEServer (+41 more)
 
 ### Community 32 - "friend.c"
-Cohesion: 0.04
-Nodes (125): k_mem_slab_num_free_get(), net_buf_id(), net_buf_simple_restore(), net_buf_simple_save(), bt_mesh_has_addr(), bt_mesh_adv_create(), bt_mesh_adv_create_from_pool(), bt_mesh_app_key_find() (+117 more)
+Cohesion: 0.05
+Nodes (95): net_buf_id(), net_buf_simple_restore(), net_buf_simple_save(), bt_mesh_has_addr(), bt_mesh_adv_create(), bt_mesh_adv_create_from_pool(), bt_mesh_adv_send(), secure_beacon_send() (+87 more)
 
 ### Community 33 - "NimBLEAdvertisedDevice"
-Cohesion: 0.07
-Nodes (53): NimBLEAdvertisedDevice, begin, end, findAdvField, findServiceData, getAddressType, getAdvFlags, getAdvInterval (+45 more)
+Cohesion: 0.09
+Nodes (38): NimBLEAdvertisedDevice, findAdvField, getAddressType, getAdvFlags, getAdvInterval, getAdvLength, getAdvType, getAppearance (+30 more)
 
 ### Community 34 - "bt_mesh_init"
-Cohesion: 0.06
-Nodes (40): bt_mesh_model_in_primary(), k_sem_init(), bt_mesh_msg_ack_ctx_init(), bt_mesh_access_init(), bt_mesh_vnd_mod_msg_cid_check(), mod_init(), bt_mesh_app_key_init(), bt_mesh_beacon_init() (+32 more)
+Cohesion: 0.07
+Nodes (39): bt_mesh_model_in_primary(), k_sem_init(), bt_mesh_msg_ack_ctx_init(), bt_mesh_access_init(), bt_mesh_vnd_mod_msg_cid_check(), mod_init(), bt_mesh_adv_init(), bt_mesh_adv_init() (+31 more)
 
 ### Community 35 - "nimble_npl_os.h"
-Cohesion: 0.05
-Nodes (64): Fixed, esp_nimble_hci_deinit(), ble_ll_task(), k_sem_reset(), k_fifo_is_empty(), ble_gap_deinit(), ble_gap_preempt_done(), ble_hs_deinit() (+56 more)
+Cohesion: 0.02
+Nodes (142): ble_ll_hw_err_timer_cb(), ble_ll_ctrl_init_conn_sm(), ble_ll_hci_cmd_fake_dual_mode_inquiry(), ble_ll_resolv_set_rpa_tmo(), k_fifo_is_empty(), k_sleep(), ble_gap_deinit(), ble_gap_event_listener_register() (+134 more)
 
 ### Community 36 - "Changelog"
 Cohesion: 0.04
-Nodes (54): [1.0.0] - 2020-08-22, [2.1.0] 2024-12-14, [2.1.1] 2024-12-16, [2.1.2] 2024-12-21, [2.1.3] 2025-01-05, [2.2.0] 2025-01-12, [2.2.1] 2025-01-26, [2.2.2] 2025-02-24 (+46 more)
+Nodes (55): [1.0.0] - 2020-08-22, [2.1.0] 2024-12-14, [2.1.1] 2024-12-16, [2.1.2] 2024-12-21, [2.1.3] 2025-01-05, [2.2.0] 2025-01-12, [2.2.1] 2025-01-26, [2.2.2] 2025-02-24 (+47 more)
 
 ### Community 37 - "ble_l2cap.c"
-Cohesion: 0.03
-Nodes (66): ble_att_get_default_bearer_cid(), ble_eatt_alloc(), ble_eatt_find(), ble_eatt_find_by_conn_handle(), ble_eatt_find_by_conn_handle_and_busy_op(), ble_eatt_find_not_busy(), ble_eatt_free(), ble_eatt_gap_event() (+58 more)
+Cohesion: 0.04
+Nodes (50): ble_att_chan_mtu(), ble_eatt_init(), ble_l2cap_append_rx(), ble_l2cap_connect(), ble_l2cap_create_server(), ble_l2cap_disconnect(), ble_l2cap_enhanced_connect(), ble_l2cap_get_conn_handle() (+42 more)
 
 ### Community 38 - "ble_hs_hci_evt.c"
 Cohesion: 0.04
-Nodes (84): ble_gap_authorize_event(), ble_gap_call_conn_event_cb(), ble_gap_call_event_cb(), ble_gap_conn_broken(), ble_gap_eatt_event(), ble_gap_end_test_evt(), ble_gap_event_connect_call(), ble_gap_event_listener_call() (+76 more)
+Nodes (66): ble_gap_authorize_event(), ble_gap_call_conn_event_cb(), ble_gap_eatt_event(), ble_gap_end_test_evt(), ble_gap_event_connect_call(), ble_gap_event_listener_call(), ble_gap_mtu_event(), ble_gap_npl_sync_lost() (+58 more)
 
 ### Community 39 - "ecc.c"
 Cohesion: 0.11
-Nodes (56): apply_z(), cond_set(), uECC_make_key(), uECC_make_key_with_d(), uECC_shared_secret(), double_jacobian_default(), bits2int(), smax() (+48 more)
+Nodes (57): apply_z(), cond_set(), uECC_make_key(), uECC_make_key_with_d(), uECC_shared_secret(), double_jacobian_default(), bits2int(), smax() (+49 more)
 
 ### Community 40 - "modern-screenshot.umd.js"
 Cohesion: 0.07
@@ -669,47 +694,51 @@ Nodes (66): ae(), be(), bt(), Ce(), s(), Ct(), de(), dt() (+58 more)
 
 ### Community 41 - "NimBLEStream.cpp"
 Cohesion: 0.05
-Nodes (41): os_msys_num_free(), Guard, _locked, NimBLEStream, available, availableForWrite, begin, NimBLEStream::ByteRingBuffer (+33 more)
+Nodes (42): NimBLEStream, available, availableForWrite, drainTx, m_coInitialized, m_eventInitialized, m_rxBuf, m_rxBufSize (+34 more)
 
 ### Community 42 - "ble_gattc_cache_conn.c"
 Cohesion: 0.08
-Nodes (66): bt_mesh_adv_update(), attention_off(), proxy_sar_timeout(), proxy_sar_timeout(), ble_gap_update_entry_alloc(), ble_gattc_cache_conn_broken(), ble_gattc_cache_conn_cache_peer(), ble_gattc_cache_conn_chr_add() (+58 more)
+Nodes (61): bt_mesh_adv_update(), ble_gattc_cache_check_hash(), ble_gattc_cache_conn_cache_peer(), ble_gattc_cache_conn_chr_add(), ble_gattc_cache_conn_chr_disced(), ble_gattc_cache_conn_chr_end_handle(), ble_gattc_cache_conn_chr_find(), ble_gattc_cache_conn_chr_find_prev() (+53 more)
 
 ### Community 43 - "ExFatFile"
 Cohesion: 0.03
-Nodes (79): ExFatFile, addCluster, addDirCluster, close, cmpName, contiguousRange, dirCache, fgetpos (+71 more)
+Nodes (81): FS_DATE(), FS_TIME(), lfnReservedChar(), ExFatFile, addCluster, addDirCluster, close, cmpName (+73 more)
 
-### Community 44 - "ble_hs_priv.h"
-Cohesion: 0.03
-Nodes (72): ble_svc_gatt_changed_handle(), ble_svc_gatt_srv_sup_feat_access(), ble_gap_conn_rssi(), ble_gap_dtm_enh_rx_start(), ble_gap_dtm_enh_tx_start(), ble_gap_dtm_rx_start(), ble_gap_dtm_stop(), ble_gap_dtm_tx_start() (+64 more)
+### Community 44 - "ble_hs_hci.c"
+Cohesion: 0.04
+Nodes (54): ble_gap_dtm_enh_rx_start(), ble_gap_dtm_enh_tx_start(), ble_gap_dtm_rx_start(), ble_gap_dtm_stop(), ble_gap_dtm_tx_start(), ble_gap_read_sugg_def_data_len(), ble_gap_set_data_related_addr_change_param(), ble_gap_write_sugg_def_data_len() (+46 more)
 
-### Community 45 - "cfg_srv.c"
+### Community 45 - "model_srv.c"
+Cohesion: 0.18
+Nodes (9): gen_level_get(), gen_level_set(), gen_level_set_unack(), gen_onoff_get(), gen_onoff_set(), gen_onoff_set_unack(), light_lightness_get(), light_lightness_set() (+1 more)
+
+### Community 46 - "ble_hs_priv.h"
 Cohesion: 0.05
-Nodes (88): NET_BUF_SIMPLE(), bt_mesh_elem_find(), bt_mesh_model_bind_store(), bt_mesh_model_extensions_walk(), bt_mesh_model_find(), bt_mesh_model_find_group(), bt_mesh_model_find_vnd(), bt_mesh_model_sub_store() (+80 more)
+Nodes (7): net_buf_simple_push_be16(), STATS_SECT_ENTRY(), ble_eatt_init(), ble_hs_shutdown(), ble_ibeacon_set_adv_data(), ble_l2cap_coc_create_server(), put_be16()
 
 ### Community 47 - "ble_ll_iso_big.c"
 Cohesion: 0.05
-Nodes (64): ble_ll_adv_sync_big_add(), ble_ll_adv_sync_big_remove(), ble_ll_hci_le_rand(), ble_ll_hci_supp_cmd_get(), ble_ll_iso_big_biginfo_len(), ble_ll_iso_big_calculate_iv(), ble_ll_iso_big_control_pdu_cb(), ble_ll_iso_big_control_tx() (+56 more)
+Nodes (61): ble_ll_adv_sync_big_add(), ble_ll_adv_sync_big_remove(), ble_transport_to_ll_iso_impl(), ble_ll_hci_iso_rx(), ble_ll_iso_big_biginfo_copy(), ble_ll_iso_big_biginfo_len(), ble_ll_iso_big_calculate_iv(), ble_ll_iso_big_chan_map_update_complete() (+53 more)
 
 ### Community 48 - "FatPartition"
 Cohesion: 0.04
 Nodes (36): FatFile::dmpFile(), FatPartition::dmpDirSector(), FatPartition::dmpFat(), FatPartition::dmpRootDir(), FatPartition::dmpSector(), getLfnChar(), printFatDir(), printHex() (+28 more)
 
 ### Community 49 - "nrf5x/src/ble_phy.c"
-Cohesion: 0.03
-Nodes (33): ble_ll_pdu_syncword_us(), ble_phy_disable(), ble_phy_disable_dtm(), ble_phy_disable_irq_and_ppi(), ble_phy_get_ccm_datarate(), ble_phy_get_cur_phy(), ble_phy_get_cur_rx_phy_mode(), ble_phy_mode_apply() (+25 more)
+Cohesion: 0.05
+Nodes (29): ble_ll_pdu_syncword_us(), ble_phy_disable(), ble_phy_disable_irq_and_ppi(), ble_phy_get_ccm_datarate(), ble_phy_get_cur_phy(), ble_phy_get_cur_rx_phy_mode(), ble_phy_isr(), ble_phy_mode_apply() (+21 more)
 
 ### Community 50 - "archive_tests/SdFat/src/SdCard/Rp2040Sdio/PioSdioCard.cpp"
 Cohesion: 0.05
-Nodes (42): logmsgln(), gpioStatus(), pioRegs(), pioSmRegs(), cardAcmd(), cardCmd(), CmdRsp_t, idx (+34 more)
+Nodes (31): logmsgln(), gpioStatus(), pioRegs(), pioSmRegs(), cardAcmd(), cardCmd(), CmdRsp_t, idx (+23 more)
 
 ### Community 51 - "Adafruit_GFX"
 Cohesion: 0.03
-Nodes (14): Adafruit_GFX, cursor_x, cursor_y, drawPixel, gfxFont, invertDisplay, rotation, setRotation (+6 more)
+Nodes (16): Adafruit_GFX, charBounds, cursor_x, cursor_y, drawPixel, getTextBounds, gfxFont, invertDisplay (+8 more)
 
-### Community 52 - "os_mbuf.c"
-Cohesion: 0.07
-Nodes (48): ble_gatts_clt_cfg_free(), ble_l2cap_prepend_hdr(), hci_ipc_alloc(), ble_transport_to_hs_evt_impl(), ble_transport_acl_put(), ble_transport_alloc_acl_from_hs(), ble_transport_alloc_acl_from_ll(), ble_transport_alloc_cmd() (+40 more)
+### Community 52 - "ble_ll_conn.c"
+Cohesion: 0.05
+Nodes (63): ble_ll_conn_rem_feature_add(), ble_ll_trace_u32(), ble_ll_trace_u32x2(), ble_ll_trace_u32x3(), ble_ll_phy_to_phy_mode(), ble_ll_pdu_max_tx_octets_get(), ble_ll_rx_end(), ble_ll_rx_pdu_in() (+55 more)
 
 ### Community 53 - "archive_tests/SdFat/src/SdCard/TeensySdio/TeensySdio.cpp"
 Cohesion: 0.06
@@ -721,39 +750,39 @@ Nodes (54): ble_hs_adv_fields, adv_itvl, adv_itvl_is_present, adv_itvl_long, adv
 
 ### Community 55 - "os_mempool_init"
 Cohesion: 0.06
-Nodes (49): esp_nimble_hci_init(), ble_hw_rng_init(), ble_phy_init(), ble_hw_rng_init(), ble_phy_init(), bt_mesh_adv_init(), bt_mesh_adv_init(), ble_att_init() (+41 more)
+Nodes (51): esp_nimble_hci_deinit(), esp_nimble_hci_init(), nimble_platform_mem_calloc(), ble_phy_init(), ble_phy_init(), ble_att_init(), ble_att_svr_init(), ble_gap_init() (+43 more)
 
-### Community 56 - "stddef"
-Cohesion: 0.04
-Nodes (28): isWriteMode(), FS_DATE(), FS_TIME(), DirPos_t, cluster, isContiguous, position, ExFatFile (+20 more)
+### Community 56 - "archive_tests/SdFat/src/common/SysCall.h"
+Cohesion: 0.03
+Nodes (38): PrintFile, StreamFile, atEnd(), FsName, begin, end, next, get16() (+30 more)
 
 ### Community 57 - "libraries/SdFat/src/SdCard/TeensySdio/TeensySdio.cpp"
 Cohesion: 0.06
 Nodes (45): stopTransmission, baseClock(), cardAcmd(), cardACMD13(), cardACMD51(), cardCommand(), enableDmaIrs(), enableGPIO() (+37 more)
 
 ### Community 58 - "NimBLEService.cpp"
-Cohesion: 0.11
-Nodes (23): bt_mesh_proxy_svcs_register(), bt_mesh_proxy_svcs_register(), ble_svc_gap_init(), ble_svc_gatt_init(), ble_gatts_add_svcs(), ble_gatts_count_cfg(), resetGATT, NimBLEService (+15 more)
+Cohesion: 0.10
+Nodes (24): bt_mesh_proxy_svcs_register(), bt_mesh_proxy_svcs_register(), ble_svc_gap_init(), ble_svc_gatt_init(), ble_gatts_add_svcs(), ble_gatts_count_cfg(), NimBLELocalAttribute, m_removed (+16 more)
 
-### Community 59 - "String"
-Cohesion: 0.04
-Nodes (42): ble_ibeacon_set_adv_data(), put_be16(), getManufacturerData(), getServiceData(), NimBLEScan, NimBLEUUID, NimBLE2904, NimBLEDescriptor (+34 more)
+### Community 59 - "NimBLEDevice.h"
+Cohesion: 0.09
+Nodes (16): NimBLEAddress, NimBLEAdvertising, NimBLEClient, NimBLEConnInfo, NimBLEExtAdvertising, NimBLEL2CAPServer, NimBLEScan, NimBLEServer (+8 more)
 
 ### Community 60 - "archive_tests/SdFat/src/DigitalIO/DigitalPin.h"
 Cohesion: 0.05
 Nodes (24): badPinCheck(), ddrReg(), DigitalPin, fastBitWriteSafe(), fastDdrWrite(), fastDigitalRead(), fastDigitalToggle(), fastDigitalWrite() (+16 more)
 
-### Community 61 - "cfg.c"
-Cohesion: 0.11
-Nodes (38): bt_mesh_model_pub_store(), bt_mesh_beacon_enabled(), bt_mesh_beacon_set(), bt_mesh_cfg_pending_store(), bt_mesh_default_ttl_get(), bt_mesh_default_ttl_set(), bt_mesh_fixed_group_match(), bt_mesh_friend_get() (+30 more)
+### Community 61 - "mesh/src/transport.c"
+Cohesion: 0.08
+Nodes (49): find_lsb_set(), k_mem_slab_num_free_get(), bt_mesh_default_ttl_get(), bt_mesh_app_decrypt(), bt_mesh_app_encrypt(), create_app_nonce(), k_mem_slab_alloc(), k_mem_slab_free() (+41 more)
 
 ### Community 62 - "StdioStream"
 Cohesion: 0.08
-Nodes (31): fmtHex(), print(), println(), StdioStream, fclose, fflush, fgets, fillBuf (+23 more)
+Nodes (30): print(), println(), StdioStream, fclose, fflush, fgets, fillBuf, fillGet (+22 more)
 
-### Community 63 - "ble_ll.c"
-Cohesion: 0.04
-Nodes (50): ble_ll_tmr_init(), ble_ll_acl_data_in(), ble_ll_assert(), ble_ll_count_rx_adv_pdus(), ble_ll_count_rx_stats(), ble_ll_data_buffer_overflow(), ble_ll_event_comp_pkts(), ble_ll_event_dbuf_overflow() (+42 more)
+### Community 63 - "stdint"
+Cohesion: 0.02
+Nodes (93): ble_ll_get_addr_type(), ble_ll_resolv_get_idx(), ble_ll_tmr_init(), ble_ll_adv_can_chg_whitelist(), ble_ll_adv_set_adv_params(), ble_ll_acl_data_in(), ble_ll_addr_subtype(), ble_ll_assert() (+85 more)
 
 ### Community 64 - "ble_att_cmd.c"
 Cohesion: 0.08
@@ -764,12 +793,12 @@ Cohesion: 0.05
 Nodes (24): badPinCheck(), ddrReg(), DigitalPin, fastBitWriteSafe(), fastDdrWrite(), fastDigitalRead(), fastDigitalToggle(), fastDigitalWrite() (+16 more)
 
 ### Community 66 - "NimBLEScan"
-Cohesion: 0.04
-Nodes (58): **Breaking changes**, Advertised Device, Scan, ble_npl_hw_enter_critical(), ble_npl_hw_exit_critical(), indicate(), notify(), NimBLEAddress (+50 more)
+Cohesion: 0.09
+Nodes (31): ble_npl_hw_enter_critical(), ble_npl_hw_exit_critical(), NimBLEScan, addWaitingDevice, clearResults, clearWaitingList, isScanning, m_maxResults (+23 more)
 
-### Community 67 - "esp_nimble_hci.c"
-Cohesion: 0.04
-Nodes (26): Changed, ble_hci_rx_acl(), ble_hci_trans_cfg_hs(), ble_hci_trans_hs_acl_tx(), ble_hci_trans_hs_cmd_tx(), ble_hci_trans_ll_acl_tx(), ble_hci_trans_ll_evt_tx(), bt_record_hci_data() (+18 more)
+### Community 67 - "WiFi.h"
+Cohesion: 0.09
+Nodes (5): WiFiClass, enableProv, isProvEnabled, printDiag, prov_enable
 
 ### Community 68 - "mesh/access.h"
 Cohesion: 0.12
@@ -780,8 +809,8 @@ Cohesion: 0.08
 Nodes (34): NimBLEDescriptorFilter, dsc, taskData, uuid, NimBLERemoteCharacteristic, begin, canBroadcast, canIndicate (+26 more)
 
 ### Community 70 - "ble_ll_scan.c"
-Cohesion: 0.04
-Nodes (102): ble_ll_resolv_get_idx(), ble_ll_tmr_start(), ble_ll_adv_get_local_rpa(), ble_ll_addr_subtype(), ble_ll_get_our_devaddr(), ble_ll_is_our_devaddr(), ble_ll_is_rpa(), ble_ll_rx_gain() (+94 more)
+Cohesion: 0.05
+Nodes (92): ble_ll_adv_get_local_rpa(), ble_ll_get_our_devaddr(), ble_ll_is_rpa(), ble_ll_conn_create_set_params(), ble_ll_conn_prepare_connect_ind(), ble_ll_conn_send_connect_req(), ble_ll_conn_send_connect_req_cancel(), ble_ll_rx_gain() (+84 more)
 
 ### Community 71 - "NimBLE2904"
 Cohesion: 0.06
@@ -789,71 +818,71 @@ Nodes (36): NimBLE2904, FORMAT_BOOLEAN, FORMAT_FLOAT32, FORMAT_FLOAT64, FORMAT_I
 
 ### Community 72 - "NimBLEAdvertising"
 Cohesion: 0.08
-Nodes (34): NimBLEAdvertising, addServiceUUID, addTxPower, clearData, enableScanResponse, handleGapEvent, isAdvertising, m_advCompCb (+26 more)
+Nodes (36): NimBLEAdvertising, addServiceUUID, addTxPower, clearData, enableScanResponse, handleGapEvent, isAdvertising, m_advCompCb (+28 more)
 
-### Community 73 - "nrf5340_ble_hci.c"
-Cohesion: 0.08
-Nodes (27): ble_hs_tx_data(), ble_transport_to_hs_iso_impl(), hci_ipc_get(), hci_ipc_put(), hci_ipc_copy_to_buf(), hci_ipc_copy_to_hdr(), hci_ipc_frame(), hci_ipc_has_hdr() (+19 more)
+### Community 73 - "os_memblock_put"
+Cohesion: 0.07
+Nodes (45): ble_gattc_cache_conn_broken(), ble_gattc_cache_conn_chr_delete(), ble_gattc_cache_conn_svc_delete(), ble_hs_event_rx_hci_ev(), ble_hs_hci_frag_alloc(), ble_hs_mbuf_acl_pkt(), ble_hs_mbuf_bare_pkt(), ble_hs_mbuf_gen_pkt() (+37 more)
 
 ### Community 74 - "NimBLEHIDDevice"
-Cohesion: 0.09
-Nodes (37): Changed, Changed, NimBLECharacteristic, NimBLEHIDDevice, getBatteryLevel, getBatteryService, getBootInput, getBootOutput (+29 more)
+Cohesion: 0.10
+Nodes (34): Changed, Changed, NimBLEHIDDevice, getBatteryLevel, getBatteryService, getBootInput, getBootOutput, getDeviceInfoService (+26 more)
 
-### Community 75 - "ble_hs.c"
-Cohesion: 0.06
-Nodes (47): ble_gap_slave_set_timer(), ble_gattc_proc_set_exp_timer(), ble_hs_clear_rx_queue(), ble_hs_event_reset(), ble_hs_event_rx_data(), ble_hs_event_start_stage1(), ble_hs_event_start_stage2(), ble_hs_hw_error() (+39 more)
+### Community 75 - "ble_hs_unlock"
+Cohesion: 0.05
+Nodes (96): ble_att_set_default_bearer_using_cid(), ble_att_clt_rx_mtu(), ble_gap_conn_broken(), ble_gap_conn_find(), ble_gap_conn_find_handle_by_addr(), ble_gap_dev_authorization(), ble_gap_enc_event(), ble_gap_extract_conn_cb() (+88 more)
 
 ### Community 76 - "getLe16"
 Cohesion: 0.07
-Nodes (43): getLe16(), getLe32(), getLe64(), map16, base, count, off, pair16 (+35 more)
+Nodes (41): getLe16(), getLe32(), getLe64(), map16, base, count, off, pair16 (+33 more)
 
 ### Community 77 - "istream"
 Cohesion: 0.13
 Nodes (17): istream, get, getBool, getch, getChar, getDouble, getNumber, getpos (+9 more)
 
-### Community 78 - "nrf51/src/ble_phy.c"
-Cohesion: 0.04
-Nodes (55): ble_phy_trace_u32x2(), ble_rng_isr(), ble_phy_disable(), ble_phy_disable_irq_and_ppi(), ble_phy_isr(), ble_phy_mode_pdu_start_off(), ble_phy_restart_rx(), ble_phy_rx() (+47 more)
+### Community 78 - "hal_timer.c"
+Cohesion: 0.13
+Nodes (25): ble_rng_isr(), ble_rng_isr(), os_trace_isr_enter(), os_trace_isr_exit(), hal_rtc_timer_irq_handler(), hal_timer_chk_queue(), hal_timer_delay(), hal_timer_irq_handler() (+17 more)
 
 ### Community 79 - "live-browser.js"
 Cohesion: 0.11
 Nodes (36): buildCollapsible(), buildColorModels(), buildListHtml(), buildRadiiModels(), buildTypographyModels(), copyToClipboard(), cssSafe(), escapeHtml() (+28 more)
 
 ### Community 80 - "FatPartition"
-Cohesion: 0.05
-Nodes (28): FatPartition::dmpRootDir(), fatCachePrepare(), FatPartition, allocateCluster, allocContiguous, fatGet, fatPut, freeChain (+20 more)
+Cohesion: 0.04
+Nodes (36): FatFile::dmpFile(), FatPartition::dmpDirSector(), FatPartition::dmpFat(), FatPartition::dmpRootDir(), FatPartition::dmpSector(), getLfnChar(), printFatDir(), printHex() (+28 more)
 
 ### Community 81 - "NestingState"
-Cohesion: 0.04
-Nodes (8): _BlockInfo, _ClassInfo, _ExternCInfo, GetIndentLevel(), _IncludeState, _NamespaceInfo, NestingState, _PreprocessorInfo
+Cohesion: 0.05
+Nodes (7): _BlockInfo, _ClassInfo, _ExternCInfo, GetIndentLevel(), _NamespaceInfo, NestingState, _PreprocessorInfo
 
 ### Community 82 - "NimBLECharacteristic.cpp"
-Cohesion: 0.15
-Nodes (20): ble_gattc_indicate_custom(), ble_gattc_notify_custom(), NimBLECharacteristic, addDescriptor, create2904, createDescriptor, getDescriptorByHandle, getDescriptorByUUID (+12 more)
+Cohesion: 0.12
+Nodes (26): ble_gattc_indicate_custom(), ble_gattc_notify_custom(), NimBLECharacteristic, addDescriptor, create2904, createDescriptor, getCallbacks, getDescriptorByHandle (+18 more)
 
-### Community 83 - "getLe16"
+### Community 83 - "ExFatFormatter"
 Cohesion: 0.07
-Nodes (42): getLe16(), getLe32(), getLe64(), map16, base, count, off, pair16 (+34 more)
+Nodes (29): exFatChecksum(), setLe64(), map16, base, count, off, pair16, key (+21 more)
 
 ### Community 84 - "FsBaseFile"
 Cohesion: 0.04
 Nodes (5): FsBaseFile, m_fFile, m_fileMem, m_xFile, ls()
 
-### Community 85 - "NimBLERemoteValueAttribute"
-Cohesion: 0.07
-Nodes (18): NimBLEAttribute, m_handle, m_uuid, NimBLEClient, NimBLERemoteCharacteristic, NimBLERemoteDescriptor, getClient, getRemoteCharacteristic (+10 more)
+### Community 85 - "NimBLEUtils.h"
+Cohesion: 0.08
+Nodes (22): Changed, completeConnectEstablished, serviceDiscoveredCB, handleTxUnstalledEvent, NimBLERemoteValueAttribute, getClient, onReadCB, onWriteCB (+14 more)
 
 ### Community 86 - "ble_gattc_cache.c"
-Cohesion: 0.09
-Nodes (41): nimble_platform_mem_calloc(), nimble_platform_mem_free(), nimble_platform_mem_malloc(), ble_gattc_add_chr_from_cache(), ble_gattc_add_dsc_from_cache(), ble_gattc_add_inc_from_cache(), ble_gattc_add_svc_from_cache(), ble_gattc_cache_addr_save() (+33 more)
+Cohesion: 0.10
+Nodes (37): nimble_platform_mem_free(), nimble_platform_mem_malloc(), ble_att_svr_free_start_mem(), ble_att_svr_start(), ble_att_svr_stop(), ble_gattc_add_chr_from_cache(), ble_gattc_add_dsc_from_cache(), ble_gattc_add_inc_from_cache() (+29 more)
 
 ### Community 87 - "FsBaseFile"
 Cohesion: 0.04
 Nodes (5): FsBaseFile, m_fFile, m_fileMem, m_xFile, ls()
 
 ### Community 88 - "FatFormatter"
-Cohesion: 0.06
-Nodes (42): isFatFile(), isFatLongName(), isFatSubdir(), lbaToMbrChs(), setLe16(), setLe32(), sfnReservedChar(), makeSFN (+34 more)
+Cohesion: 0.11
+Nodes (23): lbaToMbrChs(), setLe16(), setLe32(), FatFormatter, format, initFatDir, initPbs, m_capacityMB (+15 more)
 
 ### Community 89 - "handleClick"
 Cohesion: 0.13
@@ -869,19 +898,19 @@ Nodes (49): TinyGPS, cardinal, course_to, crack_datetime, _date, distance_betwee
 
 ### Community 92 - "ExFatPartition"
 Cohesion: 0.05
-Nodes (26): ExFatPartition, bitmapFind, bitmapModify, chainSize, dirCache, dirSeek, fatGet, fatPut (+18 more)
+Nodes (27): ExFatPartition, bitmapFind, bitmapModify, chainSize, dirCache, dirSeek, fatGet, fatPut (+19 more)
 
 ### Community 93 - "ble_gatts.c"
-Cohesion: 0.06
-Nodes (53): resolve_svc_handles(), ble_att_svr_entry_alloc(), ble_att_svr_next_id(), ble_att_svr_register(), ble_gatts_add_clt_cfg(), ble_gatts_att_flags_from_chr_flags(), ble_gatts_chr_inc_val_stat(), ble_gatts_chr_is_sane() (+45 more)
+Cohesion: 0.07
+Nodes (52): ble_att_svr_entry_alloc(), ble_att_svr_next_id(), ble_att_svr_register(), ble_gatts_add_clt_cfg(), ble_gatts_add_dynamic_svcs(), ble_gatts_att_flags_from_chr_flags(), ble_gatts_chr_clt_cfg_allowed(), ble_gatts_chr_inc_val_stat() (+44 more)
 
 ### Community 94 - "ExFatPartition"
-Cohesion: 0.05
-Nodes (26): ExFatPartition, bitmapFind, bitmapModify, chainSize, dirCache, dirSeek, fatGet, fatPut (+18 more)
+Cohesion: 0.04
+Nodes (51): getLe32(), getLe64(), dmpDirData(), ExFatPartition::checkUpcase(), ExFatPartition::dmpBitmap(), ExFatPartition::dmpCluster(), ExFatPartition::dmpFat(), ExFatPartition::dmpSector() (+43 more)
 
 ### Community 95 - "esp32_gsm_gps/src/sd_diskio.cpp"
-Cohesion: 0.20
-Nodes (20): CRC16(), CRC7(), ff_sd_initialize(), ff_sd_ioctl(), ff_sd_status(), sdcard_mount(), sdcard_uninit(), sdCommand() (+12 more)
+Cohesion: 0.15
+Nodes (26): CRC16(), CRC7(), ff_sd_initialize(), ff_sd_ioctl(), ff_sd_read(), ff_sd_status(), ff_sd_write(), sd_read_raw() (+18 more)
 
 ### Community 96 - "design-parser.mjs"
 Cohesion: 0.16
@@ -891,25 +920,25 @@ Nodes (31): buildColor(), CANONICAL_SECTIONS, collectBullets(), collectColorValu
 Cohesion: 0.11
 Nodes (28): acknowledgePendingEvent(), annotRoot, args, broadcast(), CONTEXT_DIR, createRequestHandler(), { detectScript, sessionPath, livePath }, __dirname (+20 more)
 
-### Community 98 - "CheckStyle"
-Cohesion: 0.04
-Nodes (28): CheckAltTokens(), CheckBraces(), CheckBracesSpacing(), CheckCheck(), CheckCommaSpacing(), CheckComment(), CheckForNonConstReference(), CheckOperatorSpacing() (+20 more)
+### Community 98 - "CloseExpression"
+Cohesion: 0.07
+Nodes (15): CheckBracesSpacing(), CheckCheck(), CheckForNonConstReference(), CheckOperatorSpacing(), CheckRedundantVirtual(), CloseExpression(), FindCheckMacro(), FindEndOfExpressionInLine() (+7 more)
 
 ### Community 99 - "Adafruit_GFX.cpp"
-Cohesion: 0.09
-Nodes (44): charBounds, drawBitmap, drawChar, drawCircle, drawCircleHelper, drawEllipse, drawFastHLine, drawFastVLine (+36 more)
+Cohesion: 0.11
+Nodes (42): drawBitmap, drawChar, drawCircle, drawCircleHelper, drawEllipse, drawFastHLine, drawFastVLine, drawGrayscaleBitmap (+34 more)
 
 ### Community 100 - "NimBLERemoteService"
-Cohesion: 0.11
-Nodes (20): ble_gatt_svc, NimBLEAttValue, NimBLEClient, NimBLERemoteCharacteristic, NimBLERemoteService, begin, characteristicDiscCB, deleteCharacteristic (+12 more)
+Cohesion: 0.09
+Nodes (24): NimBLEAttribute, m_handle, m_uuid, ble_gatt_svc, NimBLEAttValue, NimBLEClient, NimBLERemoteCharacteristic, NimBLERemoteService (+16 more)
 
 ### Community 101 - "NimBLEAdvertisementData"
-Cohesion: 0.10
-Nodes (35): Added, Changed, Changed, Fixed, NimBLEAdvertisementData, addData, addServiceUUID, addTxPower (+27 more)
+Cohesion: 0.13
+Nodes (30): About extended advertising, Bluetooth 5.x features, Enabling extended advertising, NimBLEAdvertisementData, addData, addServiceUUID, addTxPower, clearData (+22 more)
 
-### Community 102 - "ESP32 GPS Logger com SD Card e DHT22"
-Cohesion: 0.09
-Nodes (22): 1. Cadência reduzida quando parado, 2. Gate de escrita no SD durante scan, Acesso ao cartão SD (SdFat), 📁 Arquivos de Saída, 📚 Bibliotecas Necessárias, ble.txt, 🚀 Como Usar, 📋 Componentes Utilizados (+14 more)
+### Community 102 - "ESP32 Logger Hotspot"
+Cohesion: 0.06
+Nodes (34): 1. Cadência reduzida quando parado, 1. Sensor DHT22, 2. Gate de escrita no SD durante scan, 2. Módulo GPS NEO-6M, 3. Sensor MPU6050 (opcional), 4. Scanner WiFi, 5. Scanner BLE (Bluetooth Low Energy), 6. Scanner Bluetooth Clássico — histórico (+26 more)
 
 ### Community 103 - "Process"
 Cohesion: 0.07
@@ -923,13 +952,13 @@ Nodes (25): Before exploring, read these, Domain Docs, File structure, Flag ADR 
 Cohesion: 0.06
 Nodes (28): Bad agent brief, Behavioral, not procedural, Complete acceptance criteria, Durability over precision, Examples, Explicit scope boundaries, Good agent brief (bug), Good agent brief (enhancement) (+20 more)
 
-### Community 106 - "constants.h"
-Cohesion: 0.21
-Nodes (4): tc_cbc_mode_decrypt(), tc_cbc_mode_encrypt(), _compare(), _double_byte()
-
-### Community 107 - "libraries/SdFat/src/common/SysCall.h"
+### Community 106 - "ble_ll_sync.c"
 Cohesion: 0.06
-Nodes (27): isWriteMode(), isFatFile(), isFatFileOrSubdir(), isFatLongName(), isFatSubdir(), lfnReservedChar(), sfnReservedChar(), lfnLegalChar() (+19 more)
+Nodes (61): ble_ll_tmr_add(), ble_ll_tmr_add_u(), ble_ll_tmr_t2u(), ble_ll_tmr_u2t(), ble_ll_tmr_u2t_r(), ble_ll_adv_aux_pdu_make(), ble_ll_adv_put_syncinfo(), ble_ll_adv_scheduled() (+53 more)
+
+### Community 107 - "FatFormatter"
+Cohesion: 0.06
+Nodes (40): isFatFile(), isFatLongName(), isFatSubdir(), lbaToMbrChs(), setLe16(), setLe32(), sfnReservedChar(), makeSFN (+32 more)
 
 ### Community 108 - "Adafruit_SPITFT.cpp"
 Cohesion: 0.05
@@ -941,19 +970,19 @@ Nodes (7): _BlockInfo, _ClassInfo, _ExternCInfo, GetIndentLevel(), _NamespaceInf
 
 ### Community 110 - "libraries/SdFat/src/SdCard/Rp2040Sdio/PioSdioCard.cpp"
 Cohesion: 0.06
-Nodes (26): cardAcmd(), cardCmd(), CmdRsp_t, idx, rsp, crc16(), CRC7(), pioConfig() (+18 more)
+Nodes (26): cardAcmd(), cardCmd(), CmdRsp_t, idx, rsp, crc16(), CRC7(), rd_data_patch_program() (+18 more)
 
 ### Community 111 - "libraries/SdFat/src/ExFatLib/ExFatFile.h"
-Cohesion: 0.06
-Nodes (19): fprintf(), mprintf(), vfprintf(), vmprintf(), fmtBase10(), fmtDouble(), fmtSigned(), fmtUnsigned() (+11 more)
+Cohesion: 0.11
+Nodes (16): fprintf(), mprintf(), vfprintf(), vmprintf(), fmtBase10(), fmtDouble(), fmtSigned(), fmtUnsigned() (+8 more)
 
 ### Community 112 - "StdioStream"
 Cohesion: 0.08
 Nodes (30): fmtHex(), print(), println(), StdioStream, fclose, fflush, fgets, fillBuf (+22 more)
 
 ### Community 113 - "NimBLEEddystoneTLM"
-Cohesion: 0.09
-Nodes (29): [1.4.2] 2024-06-17, Added, Fixed, BeaconData, advCount, frameType, temp, tmil (+21 more)
+Cohesion: 0.07
+Nodes (35): [1.4.2] 2024-06-17, Added, Added, Changed, Changed, Fixed, Fixed, nimble_port_freertos_get_hs_hwm() (+27 more)
 
 ### Community 114 - "live-session-store.mjs"
 Cohesion: 0.13
@@ -979,29 +1008,29 @@ Nodes (3): fstream, ifstream, ofstream
 Cohesion: 0.26
 Nodes (14): appendAddr(), appendCurrentRecord(), appendHex(), appendLine(), appendLocalIrkCurrentRecord(), appendLocalIrkV1Record(), appendV1Record(), BleStoreValueLocalIrkCurrent (+6 more)
 
-### Community 120 - "os_trace_api.h"
-Cohesion: 0.09
-Nodes (12): ble_phy_trace_init(), ble_phy_trace_u32(), ble_phy_trace_u32x3(), ble_phy_trace_void(), ble_ll_trace_module_send_desc(), ble_phy_trace_init(), ble_phy_trace_module_send_desc(), os_trace_api_u32() (+4 more)
+### Community 120 - "nrf51/src/ble_phy.c"
+Cohesion: 0.07
+Nodes (19): ble_phy_trace_u32x2(), ble_phy_disable(), ble_phy_disable_irq_and_ppi(), ble_phy_isr(), ble_phy_mode_pdu_start_off(), ble_phy_restart_rx(), ble_phy_rx(), ble_phy_rx_end_isr() (+11 more)
 
 ### Community 121 - "Adafruit_SSD1306"
-Cohesion: 0.09
-Nodes (34): Adafruit_SSD1306, Adafruit_SSD1306::Adafruit_SSD1306(), begin, buffer, clearDisplay, clkPin, contrast, csPin (+26 more)
+Cohesion: 0.08
+Nodes (36): Adafruit_SSD1306, Adafruit_SSD1306::Adafruit_SSD1306(), begin, buffer, clearDisplay, clkPin, contrast, csPin (+28 more)
 
-### Community 122 - "Adafruit_MPU6050.cpp"
-Cohesion: 0.12
-Nodes (30): Adafruit_BusIO_RegisterBits, _bits, read, _register, _shift, write, enableCycle, enableSleep (+22 more)
+### Community 122 - "Adafruit_BusIO_Register"
+Cohesion: 0.08
+Nodes (56): Adafruit_BusIO_Register, _address, _addrwidth, _buffer, _byteorder, _cached, _genericdevice, _i2cdevice (+48 more)
 
-### Community 123 - "Stream"
-Cohesion: 0.06
-Nodes (17): ArduinoInStream, m_hw, m_line, m_size, ArduinoOutStream, m_pr, Adafruit_BusIO_Register::print(), Adafruit_BusIO_Register::println() (+9 more)
+### Community 123 - "ArduinoOutStream"
+Cohesion: 0.10
+Nodes (6): ArduinoInStream, m_hw, m_line, m_size, ArduinoOutStream, m_pr
 
 ### Community 124 - "4. SdFat, arquivos grandes e sincronização"
-Cohesion: 0.05
-Nodes (39): 1. Objetivo, bibliotecas e comportamento, 2. Máquina de estados e integração com os scans, 3. Tarefas, configuração e interface HTTP, 4. SdFat, arquivos grandes e sincronização, 5. Alterações, observabilidade e validação, Acesso ao cartão, Algoritmo do download, Aquisição e recursos (+31 more)
+Cohesion: 0.08
+Nodes (24): 1. Objetivo, bibliotecas e comportamento, 4. SdFat, arquivos grandes e sincronização, 5. Alterações, observabilidade e validação, Acesso ao cartão, Algoritmo do download, Aquisição e recursos, Arquivos disponibilizados, Cenários na placa (+16 more)
 
 ### Community 125 - "pb_adv.c"
-Cohesion: 0.12
-Nodes (38): net_buf_simple_reset(), bt_mesh_adv_send(), k_uptime_get(), ack_pending(), adv_buf_create(), bearer_ctl_send(), bearer_ctl_send_unacked(), buf_sent() (+30 more)
+Cohesion: 0.06
+Nodes (71): net_buf_simple_reset(), bt_mesh_adv_send_start(), adv_start(), ble_mesh_ext_adv_event_handler(), bt_mesh_adv_buf_ready(), bt_mesh_adv_start(), bt_mesh_adv_update(), buf_send() (+63 more)
 
 ### Community 126 - "nimble/README.md"
 Cohesion: 0.07
@@ -1012,20 +1041,16 @@ Cohesion: 0.07
 Nodes (12): printField(), operator new(), chdir(), exists(), FsFile, mkdir(), remove(), rename() (+4 more)
 
 ### Community 128 - "SD/src/SD.cpp"
-Cohesion: 0.11
-Nodes (18): sd_write_raw(), sdcard_init(), sdcard_num_sectors(), sdcard_sector_size(), sdcard_type(), sdcard_unmount(), SDFS, begin (+10 more)
+Cohesion: 0.12
+Nodes (19): sdcard_init(), sdcard_num_sectors(), sdcard_sector_size(), sdcard_type(), sdcard_uninit(), sdcard_unmount(), SDFS, begin (+11 more)
 
-### Community 129 - "NimBLEBeacon"
-Cohesion: 0.11
-Nodes (22): BeaconData, major, manufacturerId, minor, proximityUUID, signalPower, subType, subTypeLength (+14 more)
+### Community 129 - "nimconfig.h"
+Cohesion: 0.05
+Nodes (34): Client API, Client callbacks, Client Security, Remote Characteristics, Remote Services, NimBLEUUID, BeaconData, major (+26 more)
 
-### Community 130 - "ParseArguments"
-Cohesion: 0.06
-Nodes (22): _AddFilters(), _BackupFilters(), _FilterExcludedFiles(), _IsParentOrSame(), main(), _OutputFormat(), ParseArguments(), PrintCategories() (+14 more)
-
-### Community 131 - "libraries/SdFat/src/FatLib/FatFile.h"
-Cohesion: 0.06
-Nodes (15): PrintFile, StreamFile, FatLfn_t, flags, len, seqPos, sfn, FatPos_t (+7 more)
+### Community 130 - "libraries/SdFat/extras/cpplint.py"
+Cohesion: 0.04
+Nodes (35): _AddFilters(), _BackupFilters(), CheckForNamespaceIndentation(), CheckItemIndentationInNamespace(), Error(), _ExpandDirectories(), _FilterExcludedFiles(), _Filters() (+27 more)
 
 ### Community 132 - "SdBase"
 Cohesion: 0.10
@@ -1035,17 +1060,17 @@ Nodes (10): errorHalt(), errorPrint(), initErrorHalt(), initErrorPrint(), SdBase
 Cohesion: 0.18
 Nodes (14): tc_hmac_prng_generate(), tc_hmac_prng_init(), tc_hmac_prng_reseed(), update(), rekey(), tc_hmac_final(), tc_hmac_init(), tc_hmac_set_key() (+6 more)
 
-### Community 134 - "bt_mesh_dev_capabilities"
-Cohesion: 0.15
-Nodes (10): bt_mesh_comp, bt_mesh_dev_capabilities, algorithms, elem_count, input_actions, input_size, output_actions, output_size (+2 more)
+### Community 134 - "bt_mesh_prov"
+Cohesion: 0.08
+Nodes (22): bt_mesh_comp, bt_mesh_dev_capabilities, algorithms, elem_count, input_actions, input_size, output_actions, output_size (+14 more)
 
 ### Community 135 - "critique-storage.mjs"
 Cohesion: 0.14
 Nodes (20): kebab(), listSnapshotsForSlug(), main(), nowFilenameStamp(), parseFrontmatter(), readLatestSnapshot(), readTrend(), serializeFrontmatter() (+12 more)
 
 ### Community 136 - "ble_hs_adv.c"
-Cohesion: 0.10
-Nodes (30): ble_resolve_adv_data(), ble_gattc_disc_svc_uuid_tx(), ble_gatts_chr_def_access(), ble_gatts_chr_properties(), ble_gatts_svc_access(), adv_set_fields(), ble_hs_adv_find_field(), ble_hs_adv_parse() (+22 more)
+Cohesion: 0.09
+Nodes (33): ble_svc_gatt_access(), ble_att_fill_database_info(), ble_att_get_database_size(), ble_att_svr_fill_info(), ble_att_svr_read_flat(), ble_att_svr_service_uuid(), ble_resolve_adv_data(), ble_gatts_calculate_hash() (+25 more)
 
 ### Community 137 - "SdBase"
 Cohesion: 0.10
@@ -1055,9 +1080,9 @@ Nodes (10): errorHalt(), errorPrint(), initErrorHalt(), initErrorPrint(), SdBase
 Cohesion: 0.24
 Nodes (23): ble_rpa_get_peer_dev_records(), ble_nvs_delete_value(), ble_nvs_restore_peer_records(), ble_nvs_restore_sec_keys(), ble_nvs_write_key_value(), ble_store_config_conf_init(), ble_store_config_persist_cccds(), ble_store_config_persist_csfcs() (+15 more)
 
-### Community 139 - "NimBLEAttValue.h"
-Cohesion: 0.06
-Nodes (22): adicionarLinhaCircular(), main(), montarBloco(), ble.txt, getTimeStamp(), getValue(), Has_c_str_length, Has_c_str_length<T, decltype(void(std::declval<T&>().c_str())), decltype(void(std::declval<T&>().length()))> (+14 more)
+### Community 139 - "NimBLEAttValue"
+Cohesion: 0.11
+Nodes (11): 2. Estrutura da Tabela, getValue(), NimBLEAttValue, deepCopy, m_attr_len, m_attr_max_len, m_attr_value, m_capacity (+3 more)
 
 ### Community 140 - "document.md"
 Cohesion: 0.08
@@ -1080,8 +1105,8 @@ Cohesion: 0.06
 Nodes (29): ios_base, adjustfield, app, ate, badbit, basefield, binary, boolalpha (+21 more)
 
 ### Community 145 - "Glossário de Termos"
-Cohesion: 0.10
-Nodes (20): APP_CPU (Core 1), BLE Deduplication (Deduplicação BLE), BLE Device Record (Registro de Dispositivo BLE), BLE Scan Queue, BLE Scanner, bootCount, Cache Genérica de Hash (hashString / hashJaVisto / adicionarHashCache), Circular Buffer (Buffer Circular) (+12 more)
+Cohesion: 0.08
+Nodes (24): adicionarLinhaCircular(), main(), montarBloco(), APP_CPU (Core 1), BLE Deduplication (Deduplicação BLE), BLE Device Record (Registro de Dispositivo BLE), BLE Scan Queue, BLE Scanner (+16 more)
 
 ### Community 146 - "na_hci_driver.c"
 Cohesion: 0.10
@@ -1091,13 +1116,13 @@ Nodes (4): hci_driver_vhci_controller_tx(), hci_driver_vhci_host_tx(), hci_drive
 Cohesion: 0.11
 Nodes (16): Arduino command line and platformio config options, Extended advertising settings, For use with ESP32C3, ESP32S3, ESP32H2 ONLY!, Acknowledgments, Arduino command line and platformio, Arduino installation, Examples, Overview, Platformio installation (+8 more)
 
-### Community 148 - "NimBLEDescriptor"
-Cohesion: 0.07
-Nodes (20): NimBLECharacteristic, NimBLEDescriptor, getCharacteristic, m_pCallbacks, m_pCharacteristic, readEvent, setCallbacks, setCharacteristic (+12 more)
+### Community 148 - "NimBLEDescriptor.cpp"
+Cohesion: 0.15
+Nodes (13): NimBLECharacteristic, NimBLEDescriptor, getCharacteristic, m_pCallbacks, m_pCharacteristic, readEvent, setCallbacks, setCharacteristic (+5 more)
 
 ### Community 149 - "ESP32 + SIM800L + DHT22 - Estação Meteorológica IoT"
-Cohesion: 0.05
-Nodes (36): 1. Criar o Banco de Dados, 1. Upload dos Arquivos PHP, 2. Configurar o Endpoint no ESP32, 2. Estrutura da Tabela, 3. Credenciais de Acesso, 3. Testar o Endpoint, Alimentação Recomendada, 🏗️ Arquitetura do Sistema (+28 more)
+Cohesion: 0.06
+Nodes (35): 1. Criar o Banco de Dados, 1. Upload dos Arquivos PHP, 2. Configurar o Endpoint no ESP32, 3. Credenciais de Acesso, 3. Testar o Endpoint, Alimentação Recomendada, 🏗️ Arquitetura do Sistema, Arquivo `utilities.h` (+27 more)
 
 ### Community 150 - "ios_base"
 Cohesion: 0.06
@@ -1128,8 +1153,8 @@ Cohesion: 0.09
 Nodes (12): chdir(), ExFatVolume, m_cwv, m_vwd, exists(), ls(), mkdir(), open() (+4 more)
 
 ### Community 157 - "visao-geral.md"
-Cohesion: 0.21
-Nodes (6): Histórico preservado, Documentação, Como manter a wiki, Inventário do repositório, Antes de cada nova versão, Bibliotecas do projeto
+Cohesion: 0.23
+Nodes (5): Histórico preservado, Documentação, Como manter a wiki, Inventário do repositório, Hotspot de download (v3)
 
 ### Community 158 - "FatVolume"
 Cohesion: 0.09
@@ -1143,9 +1168,9 @@ Nodes (18): Bibliotecas Utilizadas, `ble.txt`, Configuração (Defines e Constan
 Cohesion: 0.06
 Nodes (34): SdioCard, begin, cardCMD6, end, erase, errorCode, errorData, errorLine (+26 more)
 
-### Community 161 - "WiFiClass"
-Cohesion: 0.20
-Nodes (5): WiFiClass, enableProv, isProvEnabled, printDiag, prov_enable
+### Community 161 - "na_hci_transport.c"
+Cohesion: 0.10
+Nodes (15): hci_transport_controller_acl_tx(), hci_transport_controller_packet_rx(), hci_transport_host_packet_rx(), hci_transport_packet_rx(), na_hci_transport_deinit(), na_hci_transport_host_acl_tx(), na_hci_transport_host_callback_register(), na_hci_transport_host_cmd_tx() (+7 more)
 
 ### Community 162 - "The Toolkit"
 Cohesion: 0.10
@@ -1160,8 +1185,8 @@ Cohesion: 0.08
 Nodes (12): chdir(), ExFatVolume, m_cwv, m_vwd, exists(), ls(), mkdir(), open() (+4 more)
 
 ### Community 165 - "ESP32 + SIM800L + DHT22 - Estação Meteorológica IoT"
-Cohesion: 0.06
-Nodes (32): 1. Upload dos Arquivos PHP, 2. Configurar o Endpoint no ESP32, 3. Testar o Endpoint, Alimentação Recomendada, 🏗️ Arquitetura do Sistema, Arquivo `utilities.h`, 🔧 Componentes de Hardware, 🔌 Conexões Elétricas (+24 more)
+Cohesion: 0.05
+Nodes (36): 1. Criar o Banco de Dados, 1. Upload dos Arquivos PHP, 2. Configurar o Endpoint no ESP32, 2. Estrutura da Tabela, 3. Credenciais de Acesso, 3. Testar o Endpoint, Alimentação Recomendada, 🏗️ Arquitetura do Sistema (+28 more)
 
 ### Community 166 - "obufstream"
 Cohesion: 0.08
@@ -1185,30 +1210,30 @@ Nodes (18): CRITIQUE_DIR, firstExisting(), getDesignSidecarCandidates(), getDesi
 
 ### Community 171 - "Print"
 Cohesion: 0.05
-Nodes (28): acquireData(), printData(), printHeader(), acquireData(), printData(), printHeader(), userSetup(), writeADXL345Register() (+20 more)
+Nodes (31): acquireData(), printData(), printHeader(), Bin, n_, p_, Dbl, n (+23 more)
 
-### Community 172 - "archive_tests/SdFat/src/ExFatLib/ExFatFile.h"
+### Community 172 - "archive_tests/SdFat/src/common/FmtNumber.h"
+Cohesion: 0.18
+Nodes (13): fprintf(), mprintf(), vfprintf(), vmprintf(), fmtBase10(), fmtDouble(), fmtHex(), fmtSigned() (+5 more)
+
+### Community 173 - "archive_tests/SdFat/extras/AvrPrintStimmer.cpp"
 Cohesion: 0.11
-Nodes (16): fprintf(), mprintf(), vfprintf(), vmprintf(), fmtBase10(), fmtDouble(), fmtSigned(), fmtUnsigned() (+8 more)
-
-### Community 173 - "pgmspace"
-Cohesion: 0.10
 Nodes (17): __FlashStringHelper, PrintBasic, m_error, printDouble, printNum, StreamBasic, available, peek (+9 more)
 
-### Community 175 - "glue.h"
-Cohesion: 0.07
-Nodes (39): bt_ccm_decrypt(), bt_ccm_encrypt(), ccm_auth(), ccm_calculate_X0(), ccm_crypt(), xor16(), auth_match(), subnet_by_id() (+31 more)
+### Community 175 - "bt_encrypt_be"
+Cohesion: 0.26
+Nodes (13): bt_ccm_decrypt(), bt_ccm_encrypt(), ccm_auth(), ccm_calculate_X0(), ccm_crypt(), xor16(), bt_mesh_net_decrypt(), bt_mesh_net_encrypt() (+5 more)
 
 ### Community 176 - "libraries/SdFat/src/SdCard/Rp2040Sdio/DbgLog.h"
 Cohesion: 0.09
 Nodes (19): Bin, n_, p_, Dbl, n, p, Hex, n (+11 more)
 
-### Community 177 - "Server API"
-Cohesion: 0.18
-Nodes (11): Characteristic callbacks, Characteristics, Descriptor callbacks, Descriptors, Example, Is Now, Originally, Server API (+3 more)
+### Community 177 - "Migrating from Bluedroid to NimBLE"
+Cohesion: 0.10
+Nodes (20): Advertising API, Arduino Configuration, BLE Addresses, BLE Scan, Characteristic callbacks, Characteristics, Class Names, Descriptor callbacks (+12 more)
 
 ### Community 178 - "NimBLEAddress.cpp"
-Cohesion: 0.17
+Cohesion: 0.16
 Nodes (12): NimBLEAddress, equals, getBase, getType, getVal, isNrpa, isNull, isPublic (+4 more)
 
 ### Community 179 - "Delight Techniques"
@@ -1224,24 +1249,24 @@ Cohesion: 0.18
 Nodes (17): barPaletteForTheme(), buildDesignHeader(), defangOutsideHandlers(), designPanelCss(), detectPageTheme(), fetchDesignSystem(), initActionPicker(), initBar() (+9 more)
 
 ### Community 182 - "archive_tests/SdFat/src/common/DebugMacros.h"
-Cohesion: 0.12
-Nodes (18): fsFmtDate(), fsFmtField(), fsFmtTime(), fsFmtTimeZone(), fsPrintDate(), fsPrintDateTime(), fsPrintTime(), fsPrintTimeZone() (+10 more)
+Cohesion: 0.11
+Nodes (19): fsFmtDate(), fsFmtField(), fsFmtTime(), fsFmtTimeZone(), fsPrintDate(), fsPrintDateTime(), fsPrintTime(), fsPrintTimeZone() (+11 more)
 
 ### Community 183 - "FsVolume"
 Cohesion: 0.07
 Nodes (8): FsVolume, begin, m_cwv, m_fVol, m_volMem, m_xVol, open, ls()
 
-### Community 184 - "ble_svc_gap.c"
-Cohesion: 0.13
-Nodes (13): ble_svc_gap_access(), ble_svc_gap_appearance_read_access(), ble_svc_gap_appearance_write_access(), ble_svc_gap_deinit(), ble_svc_gap_device_name_read_access(), ble_svc_gap_device_name_set(), ble_svc_gap_device_name_write_access(), ble_svc_gap_security_level_read_access() (+5 more)
+### Community 184 - "os_mbuf.c"
+Cohesion: 0.06
+Nodes (38): net_buf_add_zeros(), net_buf_simple_add_be32(), net_buf_simple_add_le24(), net_buf_simple_add_le32(), ble_svc_gap_access(), ble_svc_gap_appearance_read_access(), ble_svc_gap_appearance_write_access(), ble_svc_gap_deinit() (+30 more)
 
-### Community 185 - "na_hci_transport.c"
-Cohesion: 0.17
-Nodes (10): hci_transport_controller_acl_tx(), hci_transport_controller_packet_rx(), hci_transport_host_packet_rx(), hci_transport_packet_rx(), na_hci_transport_deinit(), na_hci_transport_host_acl_tx(), na_hci_transport_host_cmd_tx(), na_hci_transport_init() (+2 more)
+### Community 185 - "os_trace_api.h"
+Cohesion: 0.09
+Nodes (12): ble_phy_trace_init(), ble_phy_trace_u32(), ble_phy_trace_u32x3(), ble_phy_trace_void(), ble_ll_trace_init(), ble_ll_trace_module_send_desc(), ble_phy_trace_init(), ble_phy_trace_module_send_desc() (+4 more)
 
 ### Community 186 - "slist.h"
-Cohesion: 0.28
-Nodes (16): sys_slist_append(), sys_slist_append_list(), sys_slist_find_and_remove(), sys_slist_get(), sys_slist_get_not_empty(), sys_slist_init(), sys_slist_insert(), sys_slist_is_empty() (+8 more)
+Cohesion: 0.24
+Nodes (18): sys_slist_append(), sys_slist_append_list(), sys_slist_find_and_remove(), sys_slist_get(), sys_slist_get_not_empty(), sys_slist_init(), sys_slist_insert(), sys_slist_is_empty() (+10 more)
 
 ### Community 187 - "colorize.md"
 Cohesion: 0.11
@@ -1251,20 +1276,20 @@ Nodes (17): Accent Color Application, Accessibility, Assess Color Opportunity, B
 Cohesion: 0.21
 Nodes (17): appendOriginToDirective(), buildTagBlock(), commentClose(), commentOpen(), CONFIG_PATH, __dirname, findCspMetaTags(), getAttr() (+9 more)
 
-### Community 189 - "arduino"
-Cohesion: 0.08
-Nodes (16): FillStack(), stackBegin(), stackPointer(), UnusedStack(), Adafruit_Sensor, getEvent, getSensor, printSensorDetails (+8 more)
+### Community 189 - "Adafruit_Sensor"
+Cohesion: 0.32
+Nodes (4): Adafruit_Sensor, getEvent, getSensor, printSensorDetails
 
 ### Community 190 - "SD/src/sd_diskio.cpp"
-Cohesion: 0.19
-Nodes (24): CRC16(), CRC7(), ff_sd_initialize(), ff_sd_ioctl(), ff_sd_read(), ff_sd_status(), ff_sd_write(), sd_read_raw() (+16 more)
+Cohesion: 0.21
+Nodes (23): CRC16(), CRC7(), ff_sd_initialize(), ff_sd_ioctl(), ff_sd_read(), ff_sd_status(), ff_sd_write(), sd_read_raw() (+15 more)
 
 ### Community 191 - "RingBuf"
 Cohesion: 0.15
 Nodes (12): is_aligned(), memcpyBuf(), printField(), read(), RingBuf, m_buf, m_count, m_file (+4 more)
 
 ### Community 192 - "ble_aes_ccm.c"
-Cohesion: 0.23
+Cohesion: 0.19
 Nodes (14): ble_aes_ccm_auth(), ble_aes_ccm_calculate_X0(), ble_aes_ccm_crypt(), ble_aes_ccm_decrypt(), ble_aes_ccm_encrypt(), ble_aes_ccm_encrypt_be(), xor16(), ble_ead_decrypt() (+6 more)
 
 ### Community 193 - "sds_t"
@@ -1272,8 +1297,8 @@ Cohesion: 0.07
 Nodes (18): sds_t, appPerfClass, auSize, busWidthSecureMode, discardFule, eraseSize, eraseTimeoutOffset, perfEnhance (+10 more)
 
 ### Community 194 - "_set"
-Cohesion: 0.23
-Nodes (12): gf_double(), tc_cmac_erase(), tc_cmac_final(), tc_cmac_init(), tc_cmac_setup(), tc_cmac_update(), _set(), ble_ll_crypto_h6() (+4 more)
+Cohesion: 0.15
+Nodes (21): gf_double(), tc_cmac_erase(), tc_cmac_final(), tc_cmac_init(), tc_cmac_setup(), tc_cmac_update(), _set(), ble_ll_crypto_h6() (+13 more)
 
 ### Community 195 - "ESP32 GPS Logger — Documentação Completa"
 Cohesion: 0.11
@@ -1291,25 +1316,25 @@ Nodes (14): createLiveBrowserSessionState(), clearHandled(), clearScrollY(), cle
 Cohesion: 0.07
 Nodes (18): SdSpiCard, eraseSingleSectorEnable, IDLE_STATE, m_beginCalled, m_csPin, m_errorCode, m_spiActive, m_state (+10 more)
 
-### Community 199 - "libraries/SdFat/extras/AvrPrintStimmer.cpp"
-Cohesion: 0.11
+### Community 199 - "pgmspace"
+Cohesion: 0.10
 Nodes (17): __FlashStringHelper, PrintBasic, m_error, printDouble, printNum, StreamBasic, available, peek (+9 more)
 
-### Community 200 - "FatFormatter"
-Cohesion: 0.11
-Nodes (23): lbaToMbrChs(), setLe16(), setLe32(), FatFormatter, format, initFatDir, initPbs, m_capacityMB (+15 more)
+### Community 200 - "archive_tests/SdFat/src/common/FsStructs.h"
+Cohesion: 0.10
+Nodes (23): isWriteMode(), isFatFile(), isFatFileOrSubdir(), isFatLongName(), isFatSubdir(), lfnReservedChar(), sfnReservedChar(), lfnLegalChar() (+15 more)
 
 ### Community 201 - "sds_t"
 Cohesion: 0.07
 Nodes (18): sds_t, appPerfClass, auSize, busWidthSecureMode, discardFule, eraseSize, eraseTimeoutOffset, perfEnhance (+10 more)
 
-### Community 202 - "Funções"
-Cohesion: 0.12
-Nodes (17): `adicionarLinhaCircular(...)`, `appendFile(const char *path, const char *message) → bool`, `appendLinhasCirculares(...) → int`, BLE — `setupBLE()`, `bleScanLigar()`, `bleScanDesligar()`, `bleConsumerTask()`, `BLEScanCallbacks::onResult/onScanEnd`, Estado Movimento/Parado — `atualizarModo(kmh)`, `entrarModoMovimento()`, `entrarModoParadoSono()`, `entrarModoParadoCheck()`, `iniciarCicloRadio()`, `atualizarCicloRadio()`, `exibirDashboard(...)`, `flushBuffers() → bool`, Funções (+9 more)
+### Community 202 - "CheckStyle"
+Cohesion: 0.06
+Nodes (18): CheckAltTokens(), CheckBraces(), CheckCommaSpacing(), CheckComment(), CheckForHeaderGuard(), CheckParenthesisSpacing(), CheckSectionSpacing(), CheckSpacing() (+10 more)
 
-### Community 203 - "Funções"
-Cohesion: 0.12
-Nodes (17): `adicionarLinhaCircular(...)`, `appendFile(const char *path, const char *message) → bool`, `appendLinhasCirculares(...) → int`, BLE — `setupBLE()`, `bleScanLigar()`, `bleScanDesligar()`, `bleConsumerTask()`, `BLEScanCallbacks::onResult/onScanEnd`, Estado Movimento/Parado — `atualizarModo(kmh)`, `entrarModoMovimento()`, `entrarModoParadoSono()`, `entrarModoParadoCheck()`, `iniciarCicloRadio()`, `atualizarCicloRadio()`, `exibirDashboard(...)`, `flushBuffers() → bool`, Funções (+9 more)
+### Community 203 - "nrf52/phy.c"
+Cohesion: 0.10
+Nodes (5): phy_debug_init(), phy_fem_init(), phy_debug_init(), phy_fem_init(), phy_gpiote_configure()
 
 ### Community 204 - "SdSpiCard"
 Cohesion: 0.07
@@ -1339,25 +1364,25 @@ Nodes (16): Avoid Redundant Copy, Confirmation Dialogs: Use Sparingly, Consisten
 Cohesion: 0.10
 Nodes (15): FsCache, CACHE_FOR_READ, CACHE_FOR_WRITE, CACHE_OPTION_NO_READ, CACHE_RESERVE_FOR_WRITE, CACHE_STATUS_DIRTY, CACHE_STATUS_MASK, CACHE_STATUS_MIRROR_FAT (+7 more)
 
-### Community 212 - "ble_store_ram.c"
-Cohesion: 0.16
-Nodes (26): ble_store_ram_delete(), ble_store_ram_delete_cccd(), ble_store_ram_delete_csfc(), ble_store_ram_delete_ead(), ble_store_ram_delete_obj(), ble_store_ram_delete_our_sec(), ble_store_ram_delete_peer_sec(), ble_store_ram_delete_sec() (+18 more)
+### Community 212 - "nrf51/src/ble_hw.c"
+Cohesion: 0.09
+Nodes (3): ble_hw_get_public_addr(), ble_hw_get_static_addr(), ble_hw_rng_init()
 
 ### Community 213 - "ble_store_config_conf.c"
 Cohesion: 0.22
 Nodes (11): ble_store_config_conf_init(), ble_store_config_deserialize_arr(), ble_store_config_persist_cccds(), ble_store_config_persist_csfcs(), ble_store_config_persist_eads(), ble_store_config_persist_local_irk(), ble_store_config_persist_our_secs(), ble_store_config_persist_peer_secs() (+3 more)
 
-### Community 214 - "ble_eddystone.c"
-Cohesion: 0.60
+### Community 214 - "os.h"
+Cohesion: 0.15
 Nodes (4): ble_eddystone_set_adv_data_gen(), ble_eddystone_set_adv_data_uid(), ble_eddystone_set_adv_data_url(), ble_eddystone_set_svc_data_base()
 
-### Community 215 - "Adafruit_BusIO_Register"
-Cohesion: 0.12
-Nodes (26): Adafruit_BusIO_Register, _address, _addrwidth, _buffer, _byteorder, _cached, _genericdevice, _i2cdevice (+18 more)
+### Community 215 - "stddef"
+Cohesion: 0.03
+Nodes (32): isWriteMode(), atEnd(), FsName, begin, end, next, get16(), getch() (+24 more)
 
-### Community 216 - "_copy"
-Cohesion: 0.29
-Nodes (9): add_round_key(), inv_mix_columns(), inv_shift_rows(), inv_sub_bytes(), mult_row_column(), tc_aes128_set_decrypt_key(), tc_aes_decrypt(), tc_ctr_mode() (+1 more)
+### Community 216 - "nrf5x/src/ble_hw.c"
+Cohesion: 0.09
+Nodes (3): ble_hw_get_public_addr(), ble_hw_get_static_addr(), ble_hw_rng_init()
 
 ### Community 218 - "Implement Adaptations"
 Cohesion: 0.13
@@ -1408,7 +1433,7 @@ Cohesion: 0.14
 Nodes (14): Brand bans (on top of the shared absolute bans), Brand permissions, Brand register, Color, Font selection procedure, Imagery, Layout, Motion (+6 more)
 
 ### Community 232 - "esp32_gsm_gps/src/SD.cpp"
-Cohesion: 0.11
+Cohesion: 0.12
 Nodes (16): sdcard_init(), sdcard_num_sectors(), sdcard_sector_size(), sdcard_type(), sdcard_unmount(), SDFS, begin, cardSize (+8 more)
 
 ### Community 233 - "optimize.md"
@@ -1420,16 +1445,16 @@ Cohesion: 0.14
 Nodes (13): Accessibility & Inclusion, Brand & Personality, Interview mode, not confirmation mode, Minimum viable interview, Register (ask first; it shapes everything below), Step 1: Load current state, Step 2: Explore the codebase, Step 3: Ask strategic questions (for PRODUCT.md) (+5 more)
 
 ### Community 235 - "Adafruit_SPIDevice"
-Cohesion: 0.15
+Cohesion: 0.17
 Nodes (21): Adafruit_SPIDevice, Adafruit_SPIDevice::Adafruit_SPIDevice(), begin, beginTransaction, beginTransactionWithAssertingCS, _begun, _cs, _dataMode (+13 more)
 
 ### Community 236 - "Adafruit_GrayOLED"
-Cohesion: 0.10
-Nodes (24): Adafruit_GrayOLED, Adafruit_GrayOLED::Adafruit_GrayOLED(), _bpp, buffer, clearDisplay, csPin, dcPin, display (+16 more)
+Cohesion: 0.09
+Nodes (26): Adafruit_GrayOLED, Adafruit_GrayOLED::Adafruit_GrayOLED(), _bpp, buffer, clearDisplay, csPin, dcPin, display (+18 more)
 
 ### Community 237 - "Adafruit_MPU6050"
-Cohesion: 0.08
-Nodes (27): Adafruit_MPU6050, accel_sensor, accX, accY, accZ, getAccelerometerSensor, getGyroSensor, _getRawSensorData (+19 more)
+Cohesion: 0.05
+Nodes (46): Adafruit_MPU6050, accel_sensor, Adafruit_MPU6050_Accelerometer, getEvent, getSensor, _sensorID, _theMPU6050, accX (+38 more)
 
 ### Community 238 - "istream"
 Cohesion: 0.13
@@ -1443,9 +1468,9 @@ Nodes (22): CRC7(), CRC_CCITT(), cardCMD6, cardCommand, erase, isBusy, readData,
 Cohesion: 0.12
 Nodes (17): Advertising, Beacons, BLE Addresses, BLE Device, BLE UUID's, Characteristic callbacks, Characteristics, Client (+9 more)
 
-### Community 241 - "libraries/SdFat/src/common/FsDateTime.cpp"
-Cohesion: 0.14
-Nodes (18): fsFmtDate(), fsFmtField(), fsFmtTime(), fsFmtTimeZone(), fsPrintDate(), fsPrintDateTime(), fsPrintTime(), fsPrintTimeZone() (+10 more)
+### Community 241 - "getLe16"
+Cohesion: 0.10
+Nodes (23): fsFmtDate(), fsFmtField(), fsFmtTime(), fsFmtTimeZone(), fsPrintDate(), fsPrintDateTime(), fsPrintTime(), fsPrintTimeZone() (+15 more)
 
 ### Community 242 - "libraries/SdFat/src/SdCard/SdSpiCard.cpp"
 Cohesion: 0.24
@@ -1456,12 +1481,12 @@ Cohesion: 0.13
 Nodes (13): Adafruit_I2CDevice, Adafruit_I2CDevice::Adafruit_I2CDevice(), _addr, address, begin, _begun, detected, end (+5 more)
 
 ### Community 245 - "Adafruit_GenericDevice"
-Cohesion: 0.11
+Cohesion: 0.10
 Nodes (15): Adafruit_BusIO_Register::Adafruit_BusIO_Register(), Adafruit_GenericDevice, Adafruit_GenericDevice::Adafruit_GenericDevice(), begin, _begun, end, _obj, read (+7 more)
 
-### Community 246 - "Adafruit_MPU6050.h"
-Cohesion: 0.10
-Nodes (19): Adafruit_MPU6050_Accelerometer, getEvent, getSensor, _sensorID, _theMPU6050, fillAccelEvent, fillGyroEvent, fillTempEvent (+11 more)
+### Community 246 - "app_keys.c"
+Cohesion: 0.19
+Nodes (21): app_get(), app_key_alloc(), app_key_del(), app_key_evt(), app_key_revoke(), app_key_set(), app_key_update_find(), bt_mesh_app_key_add() (+13 more)
 
 ### Community 247 - "Diagnose"
 Cohesion: 0.17
@@ -1487,9 +1512,9 @@ Nodes (18): Anti-Patterns, CSS Anchor Positioning, Destructive Actions: Undo > C
 Cohesion: 0.30
 Nodes (11): buildTargetNames(), cleanSkillsLock(), cleanup(), DEPRECATED_NAMES, findProjectRoot(), findSkillsDirs(), HARNESS_DIRS, isImpeccableSkill() (+3 more)
 
-### Community 254 - "O que você deve fazer quando esta skill for invocada"
-Cohesion: 0.17
-Nodes (11): 6a — Listar todos os arquivos para o commit, 6b — Gerar mensagem de commit descritiva, 6c — Executar commit e push, O que você deve fazer quando esta skill for invocada, Passo 1 — Detectar o que mudou, Passo 2 — Atualizar READMEs locais das pastas afetadas, Passo 3 — Detectar sinais de implementação grande, Passo 4 — Atualizar docs globais (somente se o usuário confirmar) (+3 more)
+### Community 254 - "/sync-docs"
+Cohesion: 0.29
+Nodes (6): 1. Detectar mudanças, 2. Comparar documentação e implementação, 3. Sinalizar conceitos novos, 4. Validar e preparar revisão, Fontes deste projeto, /sync-docs
 
 ### Community 255 - "archive_tests/SdFat/src/SdCard/SdCardInfo.h"
 Cohesion: 0.08
@@ -1499,13 +1524,13 @@ Nodes (12): FsBlockDeviceInterface, isBusy, readSector, readSectors, sectorCount
 Cohesion: 0.20
 Nodes (16): fmtNum(), ostream, do_fill, fill_not_left, putBool, putch, putChar, putDouble (+8 more)
 
-### Community 257 - "O que você deve fazer quando esta skill for invocada"
-Cohesion: 0.17
-Nodes (11): 6a — Listar todos os arquivos para o commit, 6b — Gerar mensagem de commit descritiva, 6c — Executar commit e push, O que você deve fazer quando esta skill for invocada, Passo 1 — Detectar o que mudou, Passo 2 — Atualizar READMEs locais das pastas afetadas, Passo 3 — Detectar sinais de implementação grande, Passo 4 — Atualizar docs globais (somente se o usuário confirmar) (+3 more)
+### Community 257 - "/sync-docs"
+Cohesion: 0.29
+Nodes (6): 1. Detectar mudanças, 2. Comparar documentação e implementação, 3. Sinalizar conceitos novos, 4. Validar e preparar revisão, Fontes deste projeto, /sync-docs
 
-### Community 258 - "ctr_prng.c"
-Cohesion: 0.47
-Nodes (6): arrInc(), tc_ctr_prng_generate(), tc_ctr_prng_init(), tc_ctr_prng_reseed(), tc_ctr_prng_uninstantiate(), tc_ctr_prng_update()
+### Community 258 - "esp_nimble_hci.c"
+Cohesion: 0.11
+Nodes (11): ble_hci_rx_acl(), ble_hci_trans_cfg_hs(), ble_hci_trans_hs_acl_tx(), ble_hci_trans_hs_cmd_tx(), ble_hci_trans_ll_acl_tx(), ble_hci_trans_ll_evt_tx(), bt_record_hci_data(), esp_vhci_host_send_packet_wrapper() (+3 more)
 
 ### Community 259 - "libraries/SdFat/src/SdCard/SdCardInfo.h"
 Cohesion: 0.08
@@ -1532,16 +1557,12 @@ Cohesion: 0.20
 Nodes (10): detectCsp(), INLINE_HEADER_SIGNALS, LAYOUT_EXTS, MONOREPO_HELPER_SIGNALS, NUXT_ROUTE_RULES_SIGNALS, NUXT_SECURITY_SIGNALS, SCAN_EXTS, SKIP_DIRS (+2 more)
 
 ### Community 265 - "ostream"
-Cohesion: 0.20
+Cohesion: 0.16
 Nodes (16): fmtNum(), ostream, do_fill, fill_not_left, putBool, putch, putChar, putDouble (+8 more)
 
-### Community 266 - "FileInfo"
-Cohesion: 0.11
-Nodes (4): FileInfo, GetHeaderGuardCPPVariable(), FixupPathFromRoot(), PathSplitToList()
-
 ### Community 267 - "archive_tests/SdFat/src/common/FsUtf.h"
-Cohesion: 0.11
-Nodes (12): atEnd(), FsName, begin, end, next, get16(), getch(), highSurrogate() (+4 more)
+Cohesion: 0.23
+Nodes (5): highSurrogate(), isValidCp(), lowSurrogate(), mbToCp(), mbToU16()
 
 ### Community 268 - "archive_tests/SdFat/src/SdCard/SdSpiCard.h"
 Cohesion: 0.12
@@ -1559,10 +1580,6 @@ Nodes (10): Craft Flow, Gates: do not compress, Production bar, Step 0: Project 
 Cohesion: 0.20
 Nodes (10): Anti-Patterns Verdict, Design Health Score, Generate Combined Critique Report, Minor Observations, Overall Impression, Persona Red Flags, Priority Issues, Questions to Consider (+2 more)
 
-### Community 272 - "FileInfo"
-Cohesion: 0.11
-Nodes (4): FileInfo, GetHeaderGuardCPPVariable(), FixupPathFromRoot(), PathSplitToList()
-
 ### Community 273 - "Product register"
 Cohesion: 0.20
 Nodes (9): Color, Components, Layout, Motion, Product bans (on top of the shared absolute bans), Product permissions, Product register, The product slop test (+1 more)
@@ -1575,12 +1592,12 @@ Nodes (10): Breakpoints: Content-Driven, Detect Input Method, Not Just Screen Si
 Cohesion: 0.09
 Nodes (5): is_server_ready(), main(), Glyph, fingerprint(), main()
 
-### Community 276 - "libraries/SdFat/src/common/FsUtf.h"
-Cohesion: 0.11
-Nodes (12): atEnd(), FsName, begin, end, next, get16(), getch(), highSurrogate() (+4 more)
+### Community 276 - "NimBLEScanResults"
+Cohesion: 0.12
+Nodes (17): **Breaking changes**, Advertised Device, Scan, NimBLEAdvertisedDevice, erase, getResults, NimBLEScanCallbacks, onDiscovered (+9 more)
 
 ### Community 277 - "StreamBaseClass"
-Cohesion: 0.11
+Cohesion: 0.12
 Nodes (13): StreamBaseClass, getch, m_mode, open, putch, putstr, seekoff, write (+5 more)
 
 ### Community 278 - "libraries/SdFat/src/SdCard/SdSpiCard.h"
@@ -1604,8 +1621,8 @@ Cohesion: 0.22
 Nodes (6): CONTEXT.md Format, Rules, Single vs multi-context repos, Structure, Domain awareness, File structure
 
 ### Community 284 - ".height"
-Cohesion: 0.11
-Nodes (26): Accessibility, CSS Animations, JavaScript Animation, Performance, Technical Implementation, Timing & Easing, GFXcanvas1, drawFastHLine (+18 more)
+Cohesion: 0.20
+Nodes (15): Accessibility, CSS Animations, JavaScript Animation, Performance, Technical Implementation, Timing & Easing, drawFastHLine, drawFastVLine (+7 more)
 
 ### Community 285 - "Codex: Visual Direction & Asset Production"
 Cohesion: 0.22
@@ -1624,8 +1641,8 @@ Cohesion: 0.22
 Nodes (8): bufferToBase64(), captureAndEmit(), captureElementToBlob(), collectFontCssText(), inlineFontUrls(), loadModernScreenshot(), maybePrefetchPage(), sendEvent()
 
 ### Community 289 - "GFXcanvas16"
-Cohesion: 0.10
-Nodes (16): GFXcanvas16, buffer, buffer_owned, byteSwap, drawFastRawHLine, drawFastRawVLine, drawPixel, fillScreen (+8 more)
+Cohesion: 0.18
+Nodes (10): GFXcanvas16, buffer, buffer_owned, byteSwap, drawFastRawHLine, drawFastRawVLine, drawPixel, fillScreen (+2 more)
 
 ### Community 290 - "SdSpiArduinoDriver"
 Cohesion: 0.09
@@ -1639,9 +1656,9 @@ Nodes (12): StreamBaseClass, getch, m_mode, open, putch, putstr, seekoff, Stream
 Cohesion: 0.17
 Nodes (17): DHT, begin, computeHeatIndex, convertCtoF, convertFtoC, data, expectPulse, _lastreadtime (+9 more)
 
-### Community 293 - "light_model.c"
-Cohesion: 0.33
-Nodes (6): light_model_gen_level_get(), light_model_gen_level_set(), light_model_gen_onoff_set(), light_model_light_lightness_get(), light_model_light_lightness_set(), update_light_state()
+### Community 293 - "ble_ll_dtm.c"
+Cohesion: 0.16
+Nodes (19): ble_ll_dtm_calculate_itvl(), ble_ll_dtm_ctx_free(), ble_ll_dtm_enabled(), ble_ll_dtm_end_test(), ble_ll_dtm_ev_tx_resched_cb(), ble_ll_dtm_reset(), ble_ll_dtm_rx_test(), ble_ll_dtm_set_next() (+11 more)
 
 ### Community 294 - "DHT"
 Cohesion: 0.17
@@ -1651,13 +1668,17 @@ Nodes (17): DHT, begin, computeHeatIndex, convertCtoF, convertFtoC, data, expect
 Cohesion: 0.17
 Nodes (17): DHT, begin, computeHeatIndex, convertCtoF, convertFtoC, data, expectPulse, _lastreadtime (+9 more)
 
-### Community 296 - "NimBLEStreamServer"
-Cohesion: 0.09
-Nodes (16): ChrCallbacks, m_parent, m_peerHandle, m_userCallbacks, onStatus, onSubscribe, onWrite, NimBLEStreamServer (+8 more)
+### Community 296 - "ProcessFileData"
+Cohesion: 0.07
+Nodes (14): CheckForBadCharacters(), CheckForCopyright(), CheckForIncludeWhatYouUse(), CheckForNewlineAtEOF(), CheckHeaderFileIncluded(), FindNextMultiLineCommentEnd(), FindNextMultiLineCommentStart(), FlagCxxHeaders() (+6 more)
 
 ### Community 297 - "Cognitive Load Assessment"
 Cohesion: 0.25
 Nodes (7): Cognitive Load Assessment, Cognitive Load Checklist, Extraneous Load: Bad Design, Germane Load: Learning Effort, Intrinsic Load: The Task Itself, The Working Memory Rule, Three Types of Cognitive Load
+
+### Community 298 - "ProcessFileData"
+Cohesion: 0.07
+Nodes (14): CheckForBadCharacters(), CheckForCopyright(), CheckForIncludeWhatYouUse(), CheckForNewlineAtEOF(), CheckHeaderFileIncluded(), FindNextMultiLineCommentEnd(), FindNextMultiLineCommentStart(), FlagCxxHeaders() (+6 more)
 
 ### Community 299 - "live-poll.mjs"
 Cohesion: 0.50
@@ -1711,13 +1732,13 @@ Nodes (6): Default UUIDs, Features, Good For, How it Works, NimBLE Stream Echo E
 Cohesion: 0.29
 Nodes (6): Compatible With, Features, How it Works, NimBLE Stream Server Example, Service UUIDs, Usage
 
-### Community 312 - "ble_hs.h"
-Cohesion: 0.10
-Nodes (9): STATS_SECT_ENTRY(), ble_gatts_lcl_svc_foreach(), ble_gatt_show_local_chr(), ble_gatt_show_local_inc_svc(), ble_gatt_show_local_svc(), ble_gatts_flags_to_str(), ble_gatts_show_local(), ble_uuid_to_str() (+1 more)
+### Community 312 - "ble_gatts_lcl.c"
+Cohesion: 0.52
+Nodes (6): ble_gatt_show_local_chr(), ble_gatt_show_local_inc_svc(), ble_gatt_show_local_svc(), ble_gatts_flags_to_str(), ble_uuid_to_str(), NimBLEUUID::operator std::string() const()
 
-### Community 313 - "ExFatFormatter"
-Cohesion: 0.15
-Nodes (13): exFatChecksum(), setLe64(), ExFatFormatter, format, m_dev, m_secBuf, m_upcaseChecksum, m_upcaseSector (+5 more)
+### Community 313 - "5. Alterações, observabilidade e validação"
+Cohesion: 0.10
+Nodes (19): 1. Objetivo, bibliotecas e comportamento, 3. Tarefas, configuração e interface HTTP, 5. Alterações, observabilidade e validação, Aquisição e recursos, Arquivos disponibilizados, Cenários na placa, Comunicação entre loop e tarefa HTTP, Configuração inicial (+11 more)
 
 ### Community 314 - "ADR Format"
 Cohesion: 0.33
@@ -1743,13 +1764,17 @@ Nodes (9): __FlashStringHelper, PrintBasic, m_error, printDouble, printNum, Stre
 Cohesion: 0.19
 Nodes (11): close, copy, mkdir, move, open, openCwd, openNext, openRoot (+3 more)
 
-### Community 320 - "ble_hs_adv.h"
-Cohesion: 0.33
-Nodes (5): ble_hs_adv_field, length, type, value, os_mbuf
+### Community 320 - "CheckLanguage"
+Cohesion: 0.10
+Nodes (15): CheckCasts(), CheckCStyleCast(), CheckGlobalStatic(), CheckIncludeLine(), CheckLanguage(), CheckPrintf(), _ClassifyInclude(), _DropCommonSuffixes() (+7 more)
 
 ### Community 321 - "DHT_Unified"
 Cohesion: 0.12
 Nodes (15): DHT_Unified, begin, _dht, _temp, _type, Humidity, getEvent, getSensor (+7 more)
+
+### Community 322 - "Funções"
+Cohesion: 0.11
+Nodes (18): `adicionarLinhaCircular(...)`, `appendFile(const char *path, const char *message) → bool`, `appendLinhasCirculares(...) → int`, BLE — `setupBLE()`, `bleScanLigar()`, `bleScanDesligar()`, `drenarFilaBLE()`, Estado Movimento/Parado — `atualizarModo(kmh)`, `entrarModoMovimento()`, `entrarModoParadoSono()`, `entrarModoParadoCheck()`, `iniciarCicloRadio()`, `atualizarCicloRadio()`, `exibirDashboard(...)`, `flushBuffers() → bool`, Funções (+10 more)
 
 ### Community 323 - "BufferedPrint"
 Cohesion: 0.19
@@ -1787,9 +1812,9 @@ Nodes (3): ble_ll_sched_css_get_conn_interval_us(), ble_ll_sched_css_get_period_
 Cohesion: 0.12
 Nodes (7): iostream, setfill, c, setprecision, p, setw, w
 
-### Community 334 - "Migrating from Bluedroid to NimBLE"
-Cohesion: 0.12
-Nodes (16): Advertising API, Arduino Configuration, BLE Addresses, BLE Scan, Class Names, Client API, Client callbacks, Client Security (+8 more)
+### Community 334 - "ESP32 GPS Logger — Documentação Completa"
+Cohesion: 0.11
+Nodes (18): Bibliotecas Utilizadas, `ble.txt`, Configuração (Defines e Constantes), Deduplicação por Hash (SSID / BLE MAC), Dependências de Instalação (Arduino IDE), ESP32 GPS Logger — Documentação Completa, Estado Movimento/Parado, Estrutura de Arquivos do Projeto (+10 more)
 
 ### Community 335 - "hitl-loop.template.sh"
 Cohesion: 0.83
@@ -1803,21 +1828,25 @@ Nodes (3): Heuristics Scoring Guide, Issue Severity (P0–P3), Score Summary
 Cohesion: 0.12
 Nodes (6): CheckEmptyBlockBody(), CleanseComments(), CleansedLines, CleanseRawStrings(), IsCppString(), ReplaceAlternateTokens()
 
-### Community 339 - "archive_tests/SdFat/examples/examplesV1/LowLatencyLoggerMPU6050/UserFunctions.cpp"
-Cohesion: 0.15
-Nodes (6): acquireData(), printData(), printHeader(), acquireData(), printData(), printHeader()
+### Community 339 - "CheckLanguage"
+Cohesion: 0.10
+Nodes (15): CheckCasts(), CheckCStyleCast(), CheckGlobalStatic(), CheckIncludeLine(), CheckLanguage(), CheckPrintf(), _ClassifyInclude(), _DropCommonSuffixes() (+7 more)
 
 ### Community 340 - "archive_tests/SdFat/src/SpiDriver/SdSpiDue.cpp"
 Cohesion: 0.24
 Nodes (11): dmac_channel_disable(), dmac_channel_enable(), dmac_channel_transfer_done(), dmac_disable(), dmac_enable(), SdSpiArduinoDriver::begin(), SdSpiArduinoDriver::receive(), SdSpiArduinoDriver::send() (+3 more)
 
-### Community 341 - "ble_store_config_write"
-Cohesion: 0.20
-Nodes (16): ble_store_key_from_value(), ble_store_key_from_value_cccd(), ble_store_key_from_value_csfc(), ble_store_key_from_value_ead(), ble_store_key_from_value_local_irk(), ble_store_key_from_value_rpa_rec(), ble_store_key_from_value_sec(), ble_restore_our_sec_nvs() (+8 more)
+### Community 341 - "os_cputime.c"
+Cohesion: 0.15
+Nodes (11): hal_timer_config(), hal_timer_set_cb(), os_cputime_delay_nsecs(), os_cputime_delay_ticks(), os_cputime_delay_usecs(), os_cputime_get32(), os_cputime_init(), os_cputime_timer_init() (+3 more)
 
 ### Community 342 - "libraries/SdFat/src/iostream/iostream.h"
 Cohesion: 0.12
 Nodes (7): iostream, setfill, c, setprecision, p, setw, w
+
+### Community 343 - "Stream"
+Cohesion: 0.07
+Nodes (13): Adafruit_BusIO_Register::print(), Adafruit_BusIO_Register::println(), Stream, available, m_timeout, peek, read, ArduinoInStream (+5 more)
 
 ### Community 344 - "libraries/SdFat/src/SpiDriver/SdSpiDue.cpp"
 Cohesion: 0.24
@@ -1852,20 +1881,20 @@ Cohesion: 0.50
 Nodes (4): [1.4.1] - 2022-10-23, Added, Changed, Fixed
 
 ### Community 352 - "libraries/SdFat/src/SdCard/Rp2040Sdio/PioSdioCard.pio.h"
-Cohesion: 0.36
-Nodes (11): cmd_rsp_program_get_default_config(), pio_cmd_rsp_program_config(), pio_rd_clk_program_config(), pio_rd_data_program_config(), pio_wr_data_program_config(), pio_wr_resp_program_config(), rd_clk_program_get_default_config(), rd_data_patch_program() (+3 more)
+Cohesion: 0.44
+Nodes (11): cmd_rsp_program_get_default_config(), pio_cmd_rsp_program_config(), pio_rd_clk_program_config(), pio_rd_data_program_config(), pio_wr_data_program_config(), pio_wr_resp_program_config(), rd_clk_program_get_default_config(), rd_data_program_get_default_config() (+3 more)
 
-### Community 353 - "printFatDir"
-Cohesion: 0.31
-Nodes (8): FatFile::dmpFile(), FatPartition::dmpDirSector(), FatPartition::dmpFat(), FatPartition::dmpSector(), getLfnChar(), printFatDir(), printHex(), printHexLn()
+### Community 353 - "ble_npl_event_get_arg"
+Cohesion: 0.06
+Nodes (50): ble_ll_adv_event_done(), ble_ll_adv_periodic_event_done(), ble_ll_adv_sec_event_done(), ble_ll_ctrl_proc_rsp_timer_cb(), clear_timeout(), net_buf_get(), net_buf_put(), attention_off() (+42 more)
 
 ### Community 354 - "DHT-1.4.6/DHT_U.cpp"
 Cohesion: 0.20
 Nodes (9): begin, DHT_Unified::Humidity::getEvent(), DHT_Unified::Humidity::getSensor(), DHT_Unified::Humidity::Humidity(), setMinDelay, setName, DHT_Unified::Temperature::getEvent(), DHT_Unified::Temperature::getSensor() (+1 more)
 
-### Community 355 - "[1.3.2] - 2021-11-20"
-Cohesion: 0.67
-Nodes (3): [1.3.2] - 2021-11-20, Added, Fixed
+### Community 355 - "Funções"
+Cohesion: 0.12
+Nodes (17): `adicionarLinhaCircular(...)`, `appendFile(const char *path, const char *message) → bool`, `appendLinhasCirculares(...) → int`, BLE — `setupBLE()`, `bleScanLigar()`, `bleScanDesligar()`, `bleConsumerTask()`, `BLEScanCallbacks::onResult/onScanEnd`, Estado Movimento/Parado — `atualizarModo(kmh)`, `entrarModoMovimento()`, `entrarModoParadoSono()`, `entrarModoParadoCheck()`, `iniciarCicloRadio()`, `atualizarCicloRadio()`, `exibirDashboard(...)`, `flushBuffers() → bool`, Funções (+9 more)
 
 ### Community 356 - "[1.3.6] - 2022-01-18"
 Cohesion: 0.67
@@ -1875,9 +1904,9 @@ Nodes (3): [1.3.6] - 2022-01-18, Changed, Fixed
 Cohesion: 0.22
 Nodes (13): Bond migration, migrateBondStore(), migrateBondStoreToCurrent(), migrateBondStoreToV1(), migrateEntryToCurrent(), migrateEntryToV1(), migrateLocalIrkEntryToCurrent(), migrateLocalIrkEntryToV1() (+5 more)
 
-### Community 358 - "NimBLEStreamClient"
-Cohesion: 0.19
-Nodes (7): NimBLEStreamClient, begin, end, m_pChr, m_userNotifyCallback, notifyCallback, ready
+### Community 358 - "Funções"
+Cohesion: 0.12
+Nodes (17): `adicionarLinhaCircular(...)`, `appendFile(const char *path, const char *message) → bool`, `appendLinhasCirculares(...) → int`, BLE — `setupBLE()`, `bleScanLigar()`, `bleScanDesligar()`, `drenarFilaBLE()`, Estado Movimento/Parado — `atualizarModo(kmh)`, `entrarModoMovimento()`, `entrarModoParadoSono()`, `entrarModoParadoCheck()`, `iniciarCicloRadio()`, `atualizarCicloRadio()`, `exibirDashboard(...)`, `flushBuffers() → bool`, Funções (+9 more)
 
 ### Community 361 - "cid_t"
 Cohesion: 0.15
@@ -1891,21 +1920,21 @@ Nodes (8): DHT_Unified::Humidity::getEvent(), DHT_Unified::Humidity::getSensor()
 Cohesion: 0.22
 Nodes (8): DHT_Unified::Humidity::getEvent(), DHT_Unified::Humidity::getSensor(), DHT_Unified::Humidity::Humidity(), setMinDelay, setName, DHT_Unified::Temperature::getEvent(), DHT_Unified::Temperature::getSensor(), DHT_Unified::Temperature::Temperature()
 
-### Community 370 - "bt_mesh_prov"
+### Community 370 - "archive_tests/SdFat/examples/examplesV1/LowLatencyLoggerMPU6050/UserFunctions.cpp"
 Cohesion: 0.15
-Nodes (12): bt_mesh_prov, input_actions, input_size, oob_info, output_actions, output_size, private_key_be, public_key_be (+4 more)
+Nodes (6): acquireData(), printData(), printHeader(), acquireData(), printData(), printHeader()
 
 ### Community 372 - "cid_t"
 Cohesion: 0.15
 Nodes (8): cid_t, crc, mdt, mid, oid, pnm, prv, psn8
 
 ### Community 375 - "Análise da distribuição de tarefas entre os cores"
-Cohesion: 0.17
-Nodes (11): 1. Buffer BLE sem proteção completa, 2. Posição GPS sem snapshot protegido, 3. Vetor de deduplicação compartilhado entre cores, 4. Loop ocupa CPU sem pausa explícita, Análise da distribuição de tarefas entre os cores, Limite físico dos rádios, Motivo da distribuição, Problemas de concorrência e processamento (+3 more)
+Cohesion: 0.15
+Nodes (12): 1. Buffer BLE sem proteção completa, 2. Posição GPS sem snapshot protegido, 3. Vetor de deduplicação compartilhado entre cores, 4. Loop ocupa CPU sem pausa explícita, Análise da distribuição de tarefas entre os cores, Distribuição atual após correção, Limite físico dos rádios, Motivo da distribuição (+4 more)
 
-### Community 376 - "NimBLECharacteristicCallbacks"
-Cohesion: 0.26
-Nodes (9): getCallbacks, readEvent, setCallbacks, writeEvent, NimBLECharacteristicCallbacks, onRead, onStatus, onSubscribe (+1 more)
+### Community 376 - "ble_l2cap_coc.c"
+Cohesion: 0.12
+Nodes (19): ble_l2cap_clear_used_cid(), ble_l2cap_coc_chan_alloc(), ble_l2cap_coc_cleanup_chan(), ble_l2cap_coc_create_server(), ble_l2cap_coc_create_srv_chan(), ble_l2cap_coc_dbg_assert_srv_not_inserted(), ble_l2cap_coc_get_cid(), ble_l2cap_coc_init() (+11 more)
 
 ### Community 394 - "archive_tests/SdFat/src/SdCard/SdioCard.h"
 Cohesion: 0.22
@@ -1927,21 +1956,21 @@ Nodes (4): SdioConfig, m_clkPin, m_cmdPin, m_dat0Pin
 Cohesion: 0.20
 Nodes (9): Adafruit Unified Sensor Driver #, How Does it Work? ##, Required Functions, Sensor Data/Events (`sensors_event_t`), Sensor Details (`sensor_t`), Sensor Types (`sensors_type_t`), Standardised SI values for `sensors_event_t`, The Unified Driver Abstraction Layer in Practice ## (+1 more)
 
-### Community 400 - "GFXcanvas8"
-Cohesion: 0.20
-Nodes (9): GFXcanvas8, buffer, buffer_owned, drawFastRawHLine, drawFastRawVLine, drawPixel, fillScreen, getPixel (+1 more)
+### Community 400 - "NimBLELocalValueAttribute.h"
+Cohesion: 0.17
+Nodes (6): NimBLEConnInfo, NimBLELocalValueAttribute, m_properties, readEvent, writeEvent, setValue()
 
 ### Community 401 - "Adafruit Unified Sensor Driver #"
 Cohesion: 0.20
 Nodes (9): Adafruit Unified Sensor Driver #, How Does it Work? ##, Required Functions, Sensor Data/Events (`sensors_event_t`), Sensor Details (`sensor_t`), Sensor Types (`sensors_type_t`), Standardised SI values for `sensors_event_t`, The Unified Driver Abstraction Layer in Practice ## (+1 more)
 
 ### Community 402 - "tc_aes_encrypt"
-Cohesion: 0.36
-Nodes (8): add_round_key(), mix_columns(), mult_row_column(), rotword(), shift_rows(), sub_bytes(), tc_aes128_set_encrypt_key(), tc_aes_encrypt()
+Cohesion: 0.09
+Nodes (32): add_round_key(), inv_mix_columns(), inv_shift_rows(), inv_sub_bytes(), mult_row_column(), tc_aes128_set_decrypt_key(), tc_aes_decrypt(), add_round_key() (+24 more)
 
-### Community 403 - "_ShouldPrintError"
-Cohesion: 0.20
-Nodes (5): Error(), _Filters(), IsErrorSuppressedByNolint(), _ParseFilterSelector(), _ShouldPrintError()
+### Community 403 - "ProcessLine"
+Cohesion: 0.11
+Nodes (9): CheckForFunctionLengths(), CheckForMultilineCommentsAndStrings(), CheckForNonStandardConstructs(), CheckInvalidIncrement(), CheckMakePairUsesDeduction(), CheckPosixThreading(), CheckRedundantOverrideOrFinal(), CheckVlogArguments() (+1 more)
 
 ### Community 404 - "SdioConfig"
 Cohesion: 0.27
@@ -1955,25 +1984,25 @@ Nodes (4): SdSpiBaseClass, begin, receive, send
 Cohesion: 0.22
 Nodes (8): 1. Fix da Race Condition no NimBLE (Sucesso Parcial), 2. Uso de NVS (Preferences) (Sucesso, porém inadequado), 3. Tentativa com RTC_NOINIT_ATTR e Magic Number (Falha Crítica), 4. Uso da seção `.rtc.bss` (RTC_DATA_ATTR sem valor) (Falha de Isolamento), 5. Substituição do Reset por Deep Sleep (Solução Final adotada), Cronologia das Tentativas, Diagnóstico de Travamento de Fase (BLE Loop Bug), Problema Raiz Identificado
 
-### Community 408 - "ff_sd_read"
-Cohesion: 0.33
-Nodes (6): ff_sd_read(), ff_sd_write(), sd_read_raw(), sd_write_raw(), readRAW, writeRAW
+### Community 408 - "GFXcanvas8"
+Cohesion: 0.13
+Nodes (9): GFXcanvas8, buffer, buffer_owned, drawFastRawHLine, drawFastRawVLine, drawPixel, fillScreen, getPixel (+1 more)
 
-### Community 409 - "ccm_mode.c"
-Cohesion: 0.44
-Nodes (5): ccm_cbc_mac(), ccm_ctr_mode(), tc_ccm_config(), tc_ccm_decryption_verification(), tc_ccm_generation_encryption()
+### Community 409 - "NimBLEAttValue.h"
+Cohesion: 0.20
+Nodes (8): getTimeStamp(), Has_c_str_length, Has_c_str_length<T, decltype(void(std::declval<T&>().c_str())), decltype(void(std::declval<T&>().length()))>, Has_data_size, Has_data_size<T, decltype(void(std::declval<T&>().data())), decltype(void(std::declval<T&>().size()))>, Has_value_type, Has_value_type<T, decltype(void(sizeof(typename T::value_type)))>, setTimeStamp()
 
 ### Community 410 - "Contributing"
 Cohesion: 0.22
 Nodes (8): About this Driver, Adafruit MPU6050 ![Build Status](https://github.com/adafruit/Adafruit_MPU6050/workflows/Arduino%20Library%20CI/badge.svg), clang-format resources, Contributing, Dependencies, Documentation and doxygen, Formatting and clang-format, Installation
 
-### Community 411 - "NimBLE-Arduino/README.md"
-Cohesion: 0.22
-Nodes (7): Acknowledgments, Arduino installation, NimBLE-Arduino, Platformio installation, Sponsors, Supported MCU's, Using
+### Community 411 - "NimBLERemoteDescriptor.h"
+Cohesion: 0.21
+Nodes (7): NimBLEClient, NimBLERemoteCharacteristic, NimBLERemoteDescriptor, getClient, getRemoteCharacteristic, m_pRemoteCharacteristic, toString
 
-### Community 412 - "MinimumSerial"
-Cohesion: 0.36
-Nodes (6): MinimumSerial, available, begin, flush, read, write
+### Community 412 - "ProcessLine"
+Cohesion: 0.11
+Nodes (9): CheckForFunctionLengths(), CheckForMultilineCommentsAndStrings(), CheckForNonStandardConstructs(), CheckInvalidIncrement(), CheckMakePairUsesDeduction(), CheckPosixThreading(), CheckRedundantOverrideOrFinal(), CheckVlogArguments() (+1 more)
 
 ### Community 413 - "SdSpiBaseClass"
 Cohesion: 0.22
@@ -1999,9 +2028,9 @@ Nodes (7): Adafruit Community Code of Conduct, Attribution, Moderation, Our Pled
 Cohesion: 0.25
 Nodes (7): Adafruit Community Code of Conduct, Attribution, Moderation, Our Pledge, Our Responsibilities, Our Standards, Scope
 
-### Community 425 - "libraries/SdFat/examples/examplesV1/LowLatencyLoggerADXL345/UserFunctions.cpp"
-Cohesion: 0.32
-Nodes (5): acquireData(), printData(), printHeader(), userSetup(), writeADXL345Register()
+### Community 425 - "archive_tests/SdFat/src/common/FsDateTime.h"
+Cohesion: 0.12
+Nodes (3): FS_DATE(), FS_TIME(), ExFatFile::timestamp()
 
 ### Community 426 - "FsFormatter"
 Cohesion: 0.25
@@ -2011,33 +2040,37 @@ Nodes (3): FsFormatter, m_fFmt, m_xFmt
 Cohesion: 0.32
 Nodes (5): SdSpiConfig, csPin, maxSck, options, spiPort
 
-### Community 434 - "fontconvert.c"
-Cohesion: 0.38
-Nodes (3): enbit(), main(), printf
+### Community 434 - "NimBLEStream::ByteRingBuffer"
+Cohesion: 0.15
+Nodes (9): Guard, _locked, NimBLEStream::ByteRingBuffer, m_buf, m_capacity, m_head, m_mutex, m_size (+1 more)
 
 ### Community 435 - "Variantes, protótipos e histórico"
-Cohesion: 0.29
-Nodes (7): `archive/ble_scanner_poc/` — PoC BLE histórica, `archive/esp32_gsm_gps/` — telemetria celular, `archive/esp32gpsd_dualcore/` — variante FreeRTOS sem BLE, `esp32gpsd/` — linha principal, `esp32gpsd_v2/` — variante de teste, Experimentos e dependências, Variantes, protótipos e histórico
+Cohesion: 0.25
+Nodes (8): `archive/ble_scanner_poc/` — PoC BLE histórica, `archive/esp32_gsm_gps/` — telemetria celular, `archive/esp32gpsd_dualcore/` — variante FreeRTOS sem BLE, `esp32gpsd/` — linha principal, `esp32gpsd_v2/` — variante de teste, `esp32gpsd_v3/` — hotspot em teste, Experimentos e dependências, Variantes, protótipos e histórico
 
-### Community 436 - "NimBLE2904.h"
-Cohesion: 0.29
-Nodes (6): NimBLE2904Data, m_description, m_exponent, m_format, m_namespace, m_unit
+### Community 436 - "CheckForNonConstReference"
+Cohesion: 0.12
+Nodes (8): CheckForNonConstReference(), CheckOperatorSpacing(), FindStartOfExpressionInLine(), IsDecltype(), IsDerivedFunction(), IsInitializerList(), IsOutOfLineMethodDefinition(), ReverseCloseExpression()
+
+### Community 437 - "String"
+Cohesion: 0.11
+Nodes (3): ble_sm_alg_rand(), ble_sm_alg_xor_128(), na_ble_sm_alg_c1()
 
 ### Community 438 - "bt_mesh_elem"
 Cohesion: 0.29
 Nodes (7): bt_mesh_elem, addr, loc, model_count, models, vnd_model_count, vnd_models
 
-### Community 440 - "📊 Dados Coletados"
-Cohesion: 0.29
-Nodes (7): 1. Sensor DHT22, 2. Módulo GPS NEO-6M, 3. Sensor MPU6050 (opcional), 4. Scanner WiFi, 5. Scanner BLE (Bluetooth Low Energy), 6. Scanner Bluetooth Clássico, 📊 Dados Coletados
+### Community 440 - "archive_tests/SdFat/src/SdCard/Rp2040Sdio/PioSdioCard.pio.h"
+Cohesion: 0.44
+Nodes (11): cmd_rsp_program_get_default_config(), pio_cmd_rsp_program_config(), pio_rd_clk_program_config(), pio_rd_data_program_config(), pio_wr_data_program_config(), pio_wr_resp_program_config(), rd_clk_program_get_default_config(), rd_data_program_get_default_config() (+3 more)
 
 ### Community 444 - "esp32_gsm_gps/DHT_sensor_library/README.md"
 Cohesion: 0.33
 Nodes (5): Contributing, Dependencies, Description, DHT sensor library [![Build Status](https://github.com/adafruit/DHT-sensor-library/workflows/Arduino%20Library%20CI/badge.svg)](https://github.com/adafruit/DHT-sensor-library/actions), Documentation and doxygen
 
 ### Community 445 - "Arquitetura do GPS Logger"
-Cohesion: 0.33
-Nodes (6): Armazenamento, Arquitetura do GPS Logger, Concorrência e limites, Construção e diagnóstico, Fluxo de execução, Modos e rádio
+Cohesion: 0.29
+Nodes (7): Armazenamento, Arquitetura do GPS Logger, Concorrência e limites, Construção e diagnóstico, Fluxo de execução, Hotspot na v3 (em teste), Modos e rádio
 
 ### Community 446 - "A short guide to use fontconvert.c to create your own fonts using MinGW."
 Cohesion: 0.33
@@ -2046,10 +2079,6 @@ Nodes (5): A short guide to use fontconvert.c to create your own fonts using Min
 ### Community 447 - "libraries/DHT_sensor_library/README.md"
 Cohesion: 0.33
 Nodes (5): Contributing, Dependencies, Description, DHT sensor library [![Build Status](https://github.com/adafruit/DHT-sensor-library/workflows/Arduino%20Library%20CI/badge.svg)](https://github.com/adafruit/DHT-sensor-library/actions), Documentation and doxygen
-
-### Community 448 - "bt_mesh_comp"
-Cohesion: 0.33
-Nodes (6): bt_mesh_comp, cid, elem, elem_count, pid, vid
 
 ### Community 452 - "SD library"
 Cohesion: 0.40
@@ -2063,17 +2092,17 @@ Nodes (5): Configurações relevantes, Dados registrados, Hardware, configuraç�
 Cohesion: 0.40
 Nodes (5): Atenção às fontes, Escolha o caminho, Família do logger, Protótipo celular, Visão geral
 
-### Community 455 - "NimBLETaskData"
-Cohesion: 0.40
-Nodes (5): NimBLETaskData, m_flags, m_pBuf, m_pHandle, m_pInstance
+### Community 455 - "NimBLEScan.h"
+Cohesion: 0.17
+Nodes (4): NimBLEAddress, NimBLEDevice, recordSrTime(), toString()
 
-### Community 456 - "🔌 Conexões (Pinout)"
-Cohesion: 0.40
-Nodes (5): 🔌 Conexões (Pinout), Módulo Cartão SD, Módulo GPS NEO-6M, Sensor DHT22, Sensor MPU6050 (opcional)
+### Community 456 - "vector"
+Cohesion: 0.17
+Nodes (8): ble_hs_adv_field, length, type, value, os_mbuf, getManufacturerData(), getServiceData(), NimBLEScan
 
-### Community 458 - "🗄️ Configuração do Banco de Dados"
-Cohesion: 0.50
-Nodes (4): 1. Criar o Banco de Dados, 2. Estrutura da Tabela, 3. Credenciais de Acesso, 🗄️ Configuração do Banco de Dados
+### Community 458 - "GFXcanvas1"
+Cohesion: 0.11
+Nodes (15): GFXcanvas1, buffer, buffer_owned, drawFastRawHLine, drawFastRawVLine, drawPixel, fillScreen, getPixel (+7 more)
 
 ### Community 460 - "Graphify do repositório"
 Cohesion: 0.50
@@ -2087,36 +2116,128 @@ Nodes (3): Adafruit GFX Library ![Build Status](https://github.com/adafruit/Adaf
 Cohesion: 0.50
 Nodes (3): Adafruit_SSD1306 [![Build Status](https://github.com/adafruit/Adafruit_SSD1306/workflows/Arduino%20Library%20CI/badge.svg)](https://github.com/adafruit/Adafruit_SSD1306/actions)[![Documentation](https://github.com/adafruit/ci-arduino/blob/master/assets/doxygen_badge.svg)](http://adafruit.github.io/Adafruit_SSD1306/html/index.html), Changes, Compatibility
 
-### Community 463 - "Wiki do projeto ESP32"
+### Community 463 - "GetHeaderGuardCPPVariable"
+Cohesion: 0.18
+Nodes (5): CheckForHeaderGuard(), GetHeaderGuardCPPVariable(), FixupPathFromRoot(), ParseNolintSuppressions(), PathSplitToList()
+
+### Community 464 - "4. SdFat, arquivos grandes e sincronização"
+Cohesion: 0.17
+Nodes (12): 4. SdFat, arquivos grandes e sincronização, Acesso ao cartão, Algoritmo do download, Cleanup obrigatório, Compatibilidade obrigatória, Corrida no buffer BLE, Envio cancelável, Escritas durante download (+4 more)
+
+### Community 465 - "hci_h4.c"
+Cohesion: 0.33
+Nodes (8): hci_h4_frame_start(), hci_h4_ib_consume(), hci_h4_ib_pull_min_len(), hci_h4_sm_completed(), hci_h4_sm_init(), hci_h4_sm_rx(), hci_h4_sm_w4_header(), hci_h4_sm_w4_payload()
+
+### Community 466 - "NimBLE-Arduino/README.md"
+Cohesion: 0.22
+Nodes (7): Acknowledgments, Arduino installation, NimBLE-Arduino, Platformio installation, Sponsors, Supported MCU's, Using
+
+### Community 474 - "ble_hs_id_copy_addr"
+Cohesion: 0.17
+Nodes (8): ble_dtm_rx_start(), ble_dtm_stop(), ble_dtm_tx_start(), ble_hs_id_copy_addr(), ble_hs_util_ensure_addr(), ble_hs_util_ensure_rand_addr(), ble_hs_util_load_rand_addr(), onSync
+
+### Community 475 - "ChrCallbacks"
+Cohesion: 0.22
+Nodes (7): ChrCallbacks, m_parent, m_peerHandle, m_userCallbacks, onStatus, onSubscribe, onWrite
+
+### Community 476 - "arduino"
+Cohesion: 0.12
+Nodes (8): FillStack(), stackBegin(), stackPointer(), UnusedStack(), FillStack(), stackBegin(), stackPointer(), UnusedStack()
+
+### Community 477 - "3. Tarefas, configuração e interface HTTP"
+Cohesion: 0.29
+Nodes (7): 3. Tarefas, configuração e interface HTTP, Comunicação entre loop e tarefa HTTP, Configuração inicial, Distribuição entre cores, Download `GET /download?file=...`, Inicialização, Página `GET /`
+
+### Community 478 - "MinimumSerial"
+Cohesion: 0.36
+Nodes (6): MinimumSerial, available, begin, flush, read, write
+
+### Community 501 - "2. Máquina de estados e integração com os scans"
+Cohesion: 0.25
+Nodes (8): 2. Máquina de estados e integração com os scans, Correção necessária no encerramento WiFi, Critérios de movimento, Entrada no hotspot, Estados de aplicação, Retorno ao movimento, Sono e reabertura, Temporizadores sem novos fixes
+
+### Community 502 - "2. Máquina de estados e integração com os scans"
+Cohesion: 0.25
+Nodes (8): 2. Máquina de estados e integração com os scans, Correção necessária no encerramento WiFi, Critérios de movimento, Entrada no hotspot, Estados de aplicação, Retorno ao movimento, Sono e reabertura, Temporizadores sem novos fixes
+
+### Community 503 - "Adafruit_Sensor"
+Cohesion: 0.32
+Nodes (4): Adafruit_Sensor, getEvent, getSensor, printSensorDetails
+
+### Community 504 - "archive_tests/SdFat/examples/examplesV1/LowLatencyLoggerADXL345/UserFunctions.cpp"
+Cohesion: 0.38
+Nodes (5): acquireData(), printData(), printHeader(), userSetup(), writeADXL345Register()
+
+### Community 505 - "NimBLECharacteristic.h"
+Cohesion: 0.33
+Nodes (5): indicate(), NimBLE2904, NimBLEDescriptor, NimBLEService, notify()
+
+### Community 506 - "NimBLE2904Data"
+Cohesion: 0.33
+Nodes (6): NimBLE2904Data, m_description, m_exponent, m_format, m_namespace, m_unit
+
+### Community 508 - "bt_mesh_comp"
+Cohesion: 0.33
+Nodes (6): bt_mesh_comp, cid, elem, elem_count, pid, vid
+
+### Community 509 - "getServiceUUID"
+Cohesion: 0.47
+Nodes (5): findServiceData, getServiceData, getServiceDataUUID, getServiceUUID, isAdvertisingService
+
+### Community 511 - "begin"
+Cohesion: 0.30
+Nodes (3): begin, end, getScan
+
+### Community 512 - "getPayloadByType"
+Cohesion: 0.70
+Nodes (4): getManufacturerData, getName, getPayloadByType, getURI
+
+### Community 513 - "NimBLECharacteristic::NimBLECharacteristic"
+Cohesion: 0.40
+Nodes (3): getService, NimBLECharacteristic::NimBLECharacteristic(), setService
+
+### Community 514 - "isLegacyAdvertisement"
+Cohesion: 0.50
+Nodes (3): isLegacyAdvertisement, isScannable, update
+
+### Community 515 - "NimBLEHIDDevice.h"
+Cohesion: 0.50
+Nodes (3): NimBLECharacteristic, NimBLEServer, NimBLEService
+
+### Community 516 - "Wiki do projeto ESP32"
 Cohesion: 0.67
 Nodes (3): Escopo, Páginas, Wiki do projeto ESP32
 
-### Community 464 - "[1.3.5] - 2022-01-14"
+### Community 517 - "[1.3.2] - 2021-11-20"
+Cohesion: 0.67
+Nodes (3): [1.3.2] - 2021-11-20, Added, Fixed
+
+### Community 518 - "[1.3.5] - 2022-01-14"
 Cohesion: 0.67
 Nodes (3): [1.3.5] - 2022-01-14, Added, Fixed
 
-### Community 465 - "[1.3.8] - 2022-04-27"
+### Community 519 - "[1.3.8] - 2022-04-27"
 Cohesion: 0.67
 Nodes (3): [1.3.8] - 2022-04-27, Changed, Fixed
 
-### Community 466 - "[1.4.3] 2024-11-27"
+### Community 520 - "[1.4.3] 2024-11-27"
 Cohesion: 0.67
 Nodes (3): [1.4.3] 2024-11-27, Added, Fixed
 
 ## Knowledge Gaps
-- **2584 isolated node(s):** `DEPRECATED_NAMES`, `HARNESS_DIRS`, `SKILL_FINGERPRINTS`, `CANONICAL_SECTIONS`, `SKIP_DIRS` (+2579 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 4957 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **101 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **2646 isolated node(s):** `DEPRECATED_NAMES`, `HARNESS_DIRS`, `SKILL_FINGERPRINTS`, `CANONICAL_SECTIONS`, `SKIP_DIRS` (+2641 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 5017 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **103 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Adafruit_GFX` connect `Adafruit_GFX` to `GFXcanvas16`, `Adafruit_SSD1306`, `Adafruit_GFX.cpp`, `Print`, `Adafruit_GrayOLED`, `Adafruit_SPIDevice`, `GFXcanvas8`, `Adafruit_GFX_Button`, `.height`, `arduino`?**
-  _High betweenness centrality (0.093) - this node is a cross-community bridge._
-- **Why does `Print` connect `Print` to `esp_nimble_hci.c`, `libraries/SdFat/extras/AvrPrintStimmer.cpp`, `NimBLEStreamServer`, `libraries/SdFat/examples/examplesV1/LowLatencyLoggerADXL345/UserFunctions.cpp`, `pgmspace`, `libraries/SdFat/src/SdCard/Rp2040Sdio/DbgLog.h`, `fontconvert.c`, `archive_tests/SdFat/examples/examplesV1/LowLatencyLoggerMPU6050/UserFunctions.cpp`, `Adafruit_GFX`, `RingBuf`, `Stream`, `arduino`, `RingBuf`?**
-  _High betweenness centrality (0.084) - this node is a cross-community bridge._
+- **Why does `Adafruit_GFX` connect `Adafruit_GFX` to `GFXcanvas16`, `Adafruit_SSD1306`, `Adafruit_GFX.cpp`, `GFXcanvas1`, `Print`, `Adafruit_GrayOLED`, `Adafruit_I2CDevice`, `GFXcanvas8`, `Adafruit_GFX_Button`, `.height`?**
+  _High betweenness centrality (0.097) - this node is a cross-community bridge._
+- **Why does `Print` connect `Print` to `WiFi.h`, `GFXcanvas8`, `pgmspace`, `NimBLEStream.cpp`, `archive_tests/SdFat/extras/AvrPrintStimmer.cpp`, `libraries/SdFat/src/SdCard/Rp2040Sdio/DbgLog.h`, `archive_tests/SdFat/examples/examplesV1/LowLatencyLoggerMPU6050/UserFunctions.cpp`, `Adafruit_GFX`, `RingBuf`, `Adafruit_Sensor`, `archive_tests/SdFat/examples/examplesV1/LowLatencyLoggerADXL345/UserFunctions.cpp`, `Adafruit_Sensor`, `Stream`, `RingBuf`?**
+  _High betweenness centrality (0.088) - this node is a cross-community bridge._
 - **Why does `The frontmatter: token schema` connect `document.md` to `.height`?**
-  _High betweenness centrality (0.053) - this node is a cross-community bridge._
+  _High betweenness centrality (0.054) - this node is a cross-community bridge._
 - **Are the 186 inferred relationships involving `os_mbuf_free_chain()` (e.g. with `ble_hci_rx_acl()` and `ble_hci_trans_hs_acl_tx()`) actually correct?**
   _`os_mbuf_free_chain()` has 186 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 179 inferred relationships involving `ble_hs_unlock()` (e.g. with `ble_att_mtu_by_cid()` and `ble_att_send_outstanding_after_response()`) actually correct?**
@@ -2124,4 +2245,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Are the 177 inferred relationships involving `ble_hs_lock()` (e.g. with `ble_att_mtu_by_cid()` and `ble_att_send_outstanding_after_response()`) actually correct?**
   _`ble_hs_lock()` has 177 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `DEPRECATED_NAMES`, `HARNESS_DIRS`, `SKILL_FINGERPRINTS` to the rest of the system?**
-  _2584 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _2646 weakly-connected nodes found - possible documentation gaps or missing edges._

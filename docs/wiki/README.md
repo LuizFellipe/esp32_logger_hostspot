@@ -9,6 +9,7 @@ Wiki de orientação do repositório. Comece pelo [Graphify](../GRAPHIFY.md) par
 - [Hardware, configuração e dados](dados-hardware.md)
 - [Variantes, protótipos e histórico](variantes.md)
 - [Inventário de pastas e arquivos](inventario.md)
+- [Compilação e gravação via Arduino CLI](compilacao-arduino-cli.md)
 
 ## Escopo
 

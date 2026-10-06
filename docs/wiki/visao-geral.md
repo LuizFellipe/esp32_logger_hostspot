@@ -1,6 +1,6 @@
 # Visão geral
 
-Este repositório reúne experimentos e firmwares Arduino para ESP32. A linha mais completa é o **GPS Logger**, que grava posição, sensores e observações de rádio em microSD. Outra linha envia telemetria por GPRS com SIM800L para um backend PHP/MySQL.
+Este repositório reúne experimentos e firmwares Arduino para ESP32. A linha mais completa é o **GPS Logger**, que grava posição, sensores e observações de rádio em microSD. O projeto GSM funcional com SIM800L e backend PHP/MySQL permanece no repositório independente `esp32_gsm_gps`, acessível aqui pelo submódulo histórico.
 
 ## Escolha o caminho
 
@@ -8,6 +8,7 @@ Este repositório reúne experimentos e firmwares Arduino para ESP32. A linha ma
 |---|---|
 | Entender o logger atual | [`esp32gpsd/README.md`](../../esp32gpsd/README.md) e [`esp32gpsd/esp32gpsd.ino`](../../esp32gpsd/esp32gpsd.ino) |
 | Ver variante em teste | [`esp32gpsd_v2/README.md`](../../esp32gpsd_v2/README.md) e [`esp32gpsd_v2/esp32gpsd_v2.ino`](../../esp32gpsd_v2/esp32gpsd_v2.ino) |
+| Usar o hotspot em teste | [`esp32gpsd_v3/README.md`](../../esp32gpsd_v3/README.md) e [`esp32gpsd_v3/esp32gpsd_v3.ino`](../../esp32gpsd_v3/esp32gpsd_v3.ino) |
 | Consultar a alternativa sem BLE | [`archive/esp32gpsd_dualcore/esp32gpsd_dualcore.ino`](../../archive/esp32gpsd_dualcore/esp32gpsd_dualcore.ino) e [`DUALCORE.MD`](../../archive/esp32gpsd_dualcore/DUALCORE.MD) |
 | Ver telemetria com SIM800L | [`archive/esp32_gsm_gps/README_PROJETO.md`](../../archive/esp32_gsm_gps/README_PROJETO.md) |
 | Investigar BLE experimental | [`archive/ble_scanner_poc/ble_scanner_poc.ino`](../../archive/ble_scanner_poc/ble_scanner_poc.ino) e [`DEBUG.MD`](../../archive/ble_scanner_poc/DEBUG.MD) |

@@ -13,6 +13,9 @@ flowchart TD
   Repo --> Docs[Project documentation]
 
   Logger --> Main[esp32gpsd/esp32gpsd.ino<br/>primary firmware]
+  Logger --> V3[esp32gpsd_v3/esp32gpsd_v3.ino<br/>hotspot em teste]
+  V3 --> HTTP[WebServer / Hotspot_HTTP]
+  HTTP --> SD
   Logger --> V2[esp32gpsd_v2/esp32gpsd_v2.ino<br/>test variant]
   Logger --> Dual[archive/esp32gpsd_dualcore/esp32gpsd_dualcore.ino<br/>dual-core WiFi variant]
   Logger --> Logs[log/ sample output]
@@ -42,8 +45,9 @@ flowchart TD
 
 - `esp32gpsd` é a linha principal do logger local: sensores e posição alimentam `log.txt`; scanners WiFi/BLE alimentam `wifi.txt` e `ble.txt` através de buffers e cache de deduplicação.
 - `esp32gpsd_v2` é uma variante de teste muito próxima da principal. Consulte o código e o README dessa pasta para diferenças atuais antes de tratá-la como release independente.
+- `esp32gpsd_v3` implementa hotspot parado e download HTTP dos logs; mantém buffers na `loopTask` e compartilha o SD com a tarefa HTTP por `sdMutex`.
 - `esp32gpsd_dualcore` distribui leitura de sensores/GPS e trabalho de WiFi/SD entre tarefas FreeRTOS; não possui BLE.
-- `esp32_gsm_gps` é um protótipo separado: envia telemetria pela rede celular para uma API PHP que persiste em MySQL/MariaDB.
+- `esp32_gsm_gps` é um projeto independente com montagem GSM funcional preservada na `main` do repositório original: envia telemetria pela rede celular para uma API PHP que persiste em MySQL/MariaDB.
 - `ble_scanner_poc` concentra experimentos antigos de BLE e sequenciamento por reinicialização; não representa o fluxo atual do logger principal.
 - `libraries/`, `archive/esp32_gsm_gps/TinyGPS/`, `archive/esp32_gsm_gps/DHT_sensor_library/` e componentes dentro de `archive/archive_tests/` são dependências/fontes vendorizadas, não firmware principal.
 

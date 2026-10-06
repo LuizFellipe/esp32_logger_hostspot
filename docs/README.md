@@ -1,5 +1,6 @@
 # Documentação
 
+- [Logger com hotspot (v3, em teste)](../esp32gpsd_v3/README.md)
 - [Wiki e inventário](wiki/README.md)
 - [Mapa dos projetos](GRAPHIFY.md)
 - [Pinout original](hardware/pinout.png)

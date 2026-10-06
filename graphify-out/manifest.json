@@ -4386,15 +4386,15 @@
     "semantic_hash": ""
   },
   "docs/GRAPHIFY.md": {
-    "mtime": 1791248967.5014257,
-    "seen": 1791249608.1315227,
-    "ast_hash": "dbb91540e44966a7c196ebdb5224c709",
+    "mtime": 1791252727.0717285,
+    "seen": 1791252794.6863744,
+    "ast_hash": "cc527820fef8fef5891eac3c793dc1db",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791249369.2130694,
-    "seen": 1791249608.1285677,
-    "ast_hash": "7bead34783f4f0a089805b090e2ce1b2",
+    "mtime": 1791252836.9457407,
+    "seen": 1791252883.830717,
+    "ast_hash": "64ab8e397239bd79a3b521c02182f1c6",
     "semantic_hash": ""
   },
   "archive/archive_tests/SD/README.md": {
@@ -4644,9 +4644,9 @@
     "semantic_hash": ""
   },
   "esp32gpsd_v2/README.md": {
-    "mtime": 1791249369.2151775,
-    "seen": 1791249608.131805,
-    "ast_hash": "b7ed40cb096d4345118282461d12e045",
+    "mtime": 1791249815.6755152,
+    "seen": 1791252794.6950428,
+    "ast_hash": "c943f173d5a43326a93663e6ba357d89",
     "semantic_hash": ""
   },
   "archive/vendor/DHT-1.4.6/keywords.txt": {
@@ -4764,15 +4764,15 @@
     "semantic_hash": ""
   },
   "docs/wiki/README.md": {
-    "mtime": 1791248129.6565552,
-    "seen": 1791248693.072841,
-    "ast_hash": "b2d3cbc1c311414c954fbd98a86ac4b8",
+    "mtime": 1791253842.0364773,
+    "seen": 1791254913.6098046,
+    "ast_hash": "13ac5cf168cac624b75e6df99166890d",
     "semantic_hash": ""
   },
   "docs/wiki/arquitetura-logger.md": {
-    "mtime": 1791249369.2174792,
-    "seen": 1791249608.1316285,
-    "ast_hash": "54ca2ad28b4382f3324cf0dbd9d276cf",
+    "mtime": 1791252727.0720427,
+    "seen": 1791252794.6864781,
+    "ast_hash": "5a115190c868eb4cb7c8f2b99f2a31f4",
     "semantic_hash": ""
   },
   "docs/wiki/dados-hardware.md": {
@@ -4782,21 +4782,21 @@
     "semantic_hash": ""
   },
   "docs/wiki/inventario.md": {
-    "mtime": 1791248214.7286973,
-    "seen": 1791248693.0728486,
-    "ast_hash": "2fff47cb618b56d40244d9067f083f9e",
+    "mtime": 1791252727.0593884,
+    "seen": 1791252794.6949239,
+    "ast_hash": "7c9ae690699241d41e8104440143ce09",
     "semantic_hash": ""
   },
   "docs/wiki/variantes.md": {
-    "mtime": 1791249369.2168744,
-    "seen": 1791249608.1317348,
-    "ast_hash": "773c07cf79f80ce2c6e8279afb03d90b",
+    "mtime": 1791252727.0591984,
+    "seen": 1791252794.694928,
+    "ast_hash": "f8146090986a6853560ec38ec8c3dce9",
     "semantic_hash": ""
   },
   "docs/wiki/visao-geral.md": {
-    "mtime": 1791248129.6055553,
-    "seen": 1791248693.072854,
-    "ast_hash": "6207491997230ceb4232434578dc6a55",
+    "mtime": 1791252727.0633886,
+    "seen": 1791252794.694931,
+    "ast_hash": "a02123dd9a5cac3b5f61f0c4583bf361",
     "semantic_hash": ""
   },
   "archive/archive_tests/SdFat/images/SdioSpi.jpg": {
@@ -6198,9 +6198,9 @@
     "semantic_hash": ""
   },
   "docs/README.md": {
-    "mtime": 1791248213.8002684,
-    "seen": 1791248693.0728374,
-    "ast_hash": "5217cf82ca4ab4019b2db66ccbe204e1",
+    "mtime": 1791252727.0643885,
+    "seen": 1791252794.6863787,
+    "ast_hash": "779750299223d9da8a223d2fec2df497",
     "semantic_hash": ""
   },
   "esp32gpsd_v2/analisecores.md": {
@@ -6501,6 +6501,24 @@
     "mtime": 1735834040.0,
     "seen": 1791248693.0745192,
     "ast_hash": "005b6892eca778c382e9af3da95512fa",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/README.md": {
+    "mtime": 1791254759.6691647,
+    "seen": 1791254913.6102529,
+    "ast_hash": "2807e0b610327fbd4d4236992170350c",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/hotspot.md": {
+    "mtime": 1791251133.8262696,
+    "seen": 1791252794.6952305,
+    "ast_hash": "064390d5c76157194186b5f899b7e9e2",
+    "semantic_hash": ""
+  },
+  "docs/wiki/compilacao-arduino-cli.md": {
+    "mtime": 1791254759.6687255,
+    "seen": 1791254913.6098647,
+    "ast_hash": "71b90cbc0cf5d98c70bcdc2b7f675576",
     "semantic_hash": ""
   }
 }

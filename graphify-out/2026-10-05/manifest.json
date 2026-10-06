@@ -4290,9 +4290,9 @@
     "semantic_hash": ""
   },
   ".agents/skills/sync-docs/SKILL.md": {
-    "mtime": 1788740957.168597,
-    "seen": 1791245343.4275272,
-    "ast_hash": "db2361bbc8aa802b49a11a42a80ef4f2",
+    "mtime": 1791249525.4780319,
+    "seen": 1791249608.1278574,
+    "ast_hash": "51f5e92f5d258d4247834ebbb85052b3",
     "semantic_hash": ""
   },
   ".agents/skills/tdd/SKILL.md": {
@@ -4362,9 +4362,9 @@
     "semantic_hash": ""
   },
   ".claude/skills/sync-docs/SKILL.md": {
-    "mtime": 1788740957.168597,
-    "seen": 1791245343.4275413,
-    "ast_hash": "db2361bbc8aa802b49a11a42a80ef4f2",
+    "mtime": 1791249494.1309073,
+    "seen": 1791249608.1284728,
+    "ast_hash": "51f5e92f5d258d4247834ebbb85052b3",
     "semantic_hash": ""
   },
   ".serena/project.yml": {
@@ -4386,15 +4386,15 @@
     "semantic_hash": ""
   },
   "docs/GRAPHIFY.md": {
-    "mtime": 1791248606.3969514,
-    "seen": 1791248693.0728338,
-    "ast_hash": "bf0de6a2db3ed290f08f5750a19e19b5",
+    "mtime": 1791252727.0717285,
+    "seen": 1791252794.6863744,
+    "ast_hash": "cc527820fef8fef5891eac3c793dc1db",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791248606.5376594,
-    "seen": 1791248693.068137,
-    "ast_hash": "b26d07e81d2bd3d5a9f02f5fc483597a",
+    "mtime": 1791252836.9457407,
+    "seen": 1791252883.830717,
+    "ast_hash": "64ab8e397239bd79a3b521c02182f1c6",
     "semantic_hash": ""
   },
   "archive/archive_tests/SD/README.md": {
@@ -4638,15 +4638,15 @@
     "semantic_hash": ""
   },
   "esp32gpsd/README.md": {
-    "mtime": 1791248606.5359528,
-    "seen": 1791248693.072856,
-    "ast_hash": "8b85ed6254f78228b19d8394db93b1a0",
+    "mtime": 1791249369.213929,
+    "seen": 1791249608.1318033,
+    "ast_hash": "dab1b7a0a2e41d8fdcaa6c30ce20604e",
     "semantic_hash": ""
   },
   "esp32gpsd_v2/README.md": {
-    "mtime": 1791248606.5372975,
-    "seen": 1791248693.0728579,
-    "ast_hash": "ceabcae1b3e107539738e382d2a2929f",
+    "mtime": 1791249815.6755152,
+    "seen": 1791252794.6950428,
+    "ast_hash": "c943f173d5a43326a93663e6ba357d89",
     "semantic_hash": ""
   },
   "archive/vendor/DHT-1.4.6/keywords.txt": {
@@ -4770,9 +4770,9 @@
     "semantic_hash": ""
   },
   "docs/wiki/arquitetura-logger.md": {
-    "mtime": 1791248129.6796174,
-    "seen": 1791248693.0728436,
-    "ast_hash": "b4330bc09647bf7c1ab17f27196f11b7",
+    "mtime": 1791252727.0720427,
+    "seen": 1791252794.6864781,
+    "ast_hash": "5a115190c868eb4cb7c8f2b99f2a31f4",
     "semantic_hash": ""
   },
   "docs/wiki/dados-hardware.md": {
@@ -4782,21 +4782,21 @@
     "semantic_hash": ""
   },
   "docs/wiki/inventario.md": {
-    "mtime": 1791248214.7286973,
-    "seen": 1791248693.0728486,
-    "ast_hash": "2fff47cb618b56d40244d9067f083f9e",
+    "mtime": 1791252727.0593884,
+    "seen": 1791252794.6949239,
+    "ast_hash": "7c9ae690699241d41e8104440143ce09",
     "semantic_hash": ""
   },
   "docs/wiki/variantes.md": {
-    "mtime": 1791248606.445952,
-    "seen": 1791248693.0728512,
-    "ast_hash": "a11f98054109de49464dbe85fe8b1fac",
+    "mtime": 1791252727.0591984,
+    "seen": 1791252794.694928,
+    "ast_hash": "f8146090986a6853560ec38ec8c3dce9",
     "semantic_hash": ""
   },
   "docs/wiki/visao-geral.md": {
-    "mtime": 1791248129.6055553,
-    "seen": 1791248693.072854,
-    "ast_hash": "6207491997230ceb4232434578dc6a55",
+    "mtime": 1791252727.0633886,
+    "seen": 1791252794.694931,
+    "ast_hash": "a02123dd9a5cac3b5f61f0c4583bf361",
     "semantic_hash": ""
   },
   "archive/archive_tests/SdFat/images/SdioSpi.jpg": {
@@ -6198,15 +6198,15 @@
     "semantic_hash": ""
   },
   "docs/README.md": {
-    "mtime": 1791248213.8002684,
-    "seen": 1791248693.0728374,
-    "ast_hash": "5217cf82ca4ab4019b2db66ccbe204e1",
+    "mtime": 1791252727.0643885,
+    "seen": 1791252794.6863787,
+    "ast_hash": "779750299223d9da8a223d2fec2df497",
     "semantic_hash": ""
   },
   "esp32gpsd_v2/analisecores.md": {
-    "mtime": 1791248129.9785554,
-    "seen": 1791248693.07286,
-    "ast_hash": "82ac27e868aef764ef0169b4e30b08b7",
+    "mtime": 1791249369.2160127,
+    "seen": 1791249608.1318061,
+    "ast_hash": "d692b112a83989a1b2032c678e4ed6aa",
     "semantic_hash": ""
   },
   "esp32gpsd_v2/hotspot.md": {
@@ -6501,6 +6501,18 @@
     "mtime": 1735834040.0,
     "seen": 1791248693.0745192,
     "ast_hash": "005b6892eca778c382e9af3da95512fa",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/README.md": {
+    "mtime": 1791252727.0933912,
+    "seen": 1791252794.695227,
+    "ast_hash": "59ff02288c6054a5f4108ecfbbd5aa85",
+    "semantic_hash": ""
+  },
+  "esp32gpsd_v3/hotspot.md": {
+    "mtime": 1791251133.8262696,
+    "seen": 1791252794.6952305,
+    "ast_hash": "064390d5c76157194186b5f899b7e9e2",
     "semantic_hash": ""
   }
 }

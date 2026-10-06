@@ -1,11 +1,21 @@
-# ESP32 GPS Logger com SD Card e DHT22
+# ESP32 Logger Hotspot
+
+Este repositório (`esp32_logger_hostspot`) mantém o logger com armazenamento SD e
+sua evolução com hotspot. O projeto GSM funcional permanece no repositório
+[esp32_gsm_gps](https://github.com/LuizFellipe/esp32_gsm_gps), referenciado aqui
+como submódulo histórico. As branches mantidas são `main` e `esp32logger`.
+
+A `main` inclui as três versões: v1 em `esp32gpsd/`, v2 em `esp32gpsd_v2/` e
+v3 em `esp32gpsd_v3/`. O hotspot está implementado na v3, ainda em teste;
+consulte o [README da v3](esp32gpsd_v3/README.md) para uso e limitações.
 
 ## Organização do projeto
 
 | Caminho | Papel |
 |---|---|
 | [`esp32gpsd/`](esp32gpsd/README.md) | Firmware principal. |
-| [`esp32gpsd_v2/`](esp32gpsd_v2/README.md) | Variante experimental ativa. |
+| [`esp32gpsd_v2/`](esp32gpsd_v2/README.md) | Variante experimental. |
+| [`esp32gpsd_v3/`](esp32gpsd_v3/README.md) | v2 + hotspot WiFi para baixar os logs quando parado (em teste). |
 | [`libraries/`](libraries/README.md) | Bibliotecas locais, versões e sincronização com Arduino IDE. |
 | [`docs/`](docs/README.md) | Wiki, mapa e pinout. |
 | [`archive/`](archive/README.md) | Experimentos e variantes históricas; GSM como submódulo. |
@@ -100,7 +110,7 @@ Projeto de datalogger baseado em ESP32 que coleta dados de GPS, temperatura, umi
 
 ### 6. Scanner Bluetooth Clássico — histórico
 
-Presente nos experimentos de `archive/ble_scanner_poc/`; não integra v1 ou v2 atuais.
+Presente nos experimentos de `archive/ble_scanner_poc/`; não integra v1, v2 ou v3 atuais.
 - **Endereço MAC**
 - **Nome** (se anunciado)
 - **RSSI**
@@ -167,7 +177,7 @@ As versões locais são a fonte principal. Sincronize-as com Arduino IDE seguind
 - **SdFat** (Bill Greiman) - Para acesso ao cartão SD
 - **NimBLE-Arduino** - Para o scan ativo de dispositivos BLE
 
-As bibliotecas `SPI`, `WiFi`, `Wire`, `esp_task_wdt` (watchdog) já fazem parte do framework ESP32.
+As bibliotecas `SPI`, `WiFi`, `Wire`, `esp_task_wdt` (watchdog) já fazem parte do framework ESP32. A v3 também usa `WebServer`, incluída no core, e uma tarefa HTTP para baixar os logs.
 
 > **Partition Scheme:** selecione **"No OTA (Large APP)"** em Tools → Partition Scheme na Arduino IDE. WiFi + NimBLE juntos estouram a flash da partição padrão de 4 MB.
 
@@ -194,8 +204,8 @@ As principais configurações podem ser ajustadas no início do arquivo `esp32gp
 #define SD_REMOUNT_MAX_FALHAS 10 // Falhas consecutivas de remount do SD antes de reiniciar o ESP32
 
 #define PARKED_KMH_THRESHOLD 2.0                 // Abaixo/igual a esse km/h o veículo é considerado "parado"
-#define MOVING_KMH_THRESHOLD 5.0                 // Exclusivo da v2: limiar de retorno a movimento
-#define MOVING_DEBOUNCE_FIXES 5                   // Exclusivo da v2: fixes consecutivos
+#define MOVING_KMH_THRESHOLD 5.0                 // v2 e v3: limiar de retorno a movimento
+#define MOVING_DEBOUNCE_FIXES 5                   // v2 e v3: fixes consecutivos
 #define PARKED_SLEEP_MS (5UL*60UL*1000UL)        // Sono parado (sem scan) entre checks (5 min)
 #define RADIO_SCAN_INTERVAL_MS 30000UL           // Cadência do ciclo WiFi+BLE em movimento (30s)
 #define LOG_ADD_MOVING_MS 10000UL                // Cadência de log.txt no buffer em movimento
@@ -235,7 +245,7 @@ por `processarDadosGPS()`; o projeto de hotspot descreve uma evolução futura.
 Sensores e dashboard mantêm ciclo aproximado de 1 s; o log entra no buffer
 a cada 10 s em movimento e 30 s parado.
 
-Detalhes em [v1](esp32gpsd/README.md) e [v2](esp32gpsd_v2/README.md).
+Detalhes em [v1](esp32gpsd/README.md) e [v2](esp32gpsd_v2/README.md). A [v3](esp32gpsd_v3/README.md) mantém a histerese e o consumo BLE da v2; depois do check parado, tenta flush e abre o hotspot. Downloads adiam flush/remount; o SD é compartilhado com a tarefa HTTP por `sdMutex`. Após 5 min sem atividade HTTP, fecha o AP e entra no sono.
 A arquitetura antiga com RF Phase Sequencer fica em `archive/ble_scanner_poc/`.
 
 ## 🔋 Gerenciamento de energia e vida útil do SD

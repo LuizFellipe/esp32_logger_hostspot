@@ -15,6 +15,16 @@ Consulte o [README da v2](../../esp32gpsd_v2/README.md).
 O [hotspot para download](../../esp32gpsd_v2/hotspot.md) é um projeto documentado,
 sem implementação HTTP no sketch atual.
 
+## `esp32gpsd_v3/` — hotspot em teste
+
+Evolui a v2 com `WebServer`, página em `http://192.168.4.1/` e download dos
+três logs. Depois do check parado e da tentativa de flush, abre o AP; após
+5 min sem atividade HTTP, fecha e entra no sono de 5 min. Retorno ao movimento
+usa a histerese da v2 e fecha o AP. `servicoModo()` trata temporizadores e
+ciclos de rádio mesmo sem fix novo. A tarefa `Hotspot_HTTP` roda no core 1;
+`sdMutex` protege o SD, e downloads adiam flush/remount. Arquivos acima de
+4.294.967.295 bytes são recusados. Consulte o [README da v3](../../esp32gpsd_v3/README.md).
+
 ## `archive/esp32gpsd_dualcore/` — variante FreeRTOS sem BLE
 
 Divisão por tarefas/núcleos para amostragem de sensores e trabalho WiFi/SD. Não implementa BLE. A documentação de conceitos e exemplos está em [`DUALCORE.MD`](../../archive/esp32gpsd_dualcore/DUALCORE.MD).

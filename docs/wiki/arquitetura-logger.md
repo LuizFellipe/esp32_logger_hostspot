@@ -44,6 +44,18 @@ O log em RAM ainda não gravado pode se perder numa interrupção abrupta de ene
 
 A v1 usa uma tarefa FreeRTOS para consumo BLE; a v2 concentra esse consumo na `loopTask`, que também realiza flush. A v2 retira o consumidor concorrente dos buffers e usa o filtro nativo de duplicatas do NimBLE, sem vetor compartilhado ou reinício em callback. A alternativa `esp32gpsd_dualcore` tem arquitetura diferente, com tarefas dedicadas a sensores e a WiFi/SD; ela não deve ser confundida com a linha principal. Veja [variantes](variantes.md).
 
+## Hotspot na v3 (em teste)
+
+A v3 mantém a aquisição e o consumo BLE da v2 na `loopTask`, e adiciona
+`MODO_PARADO_HOTSPOT` depois do check WiFi/BLE e da tentativa de flush.
+A tarefa `Hotspot_HTTP` atende página e downloads no core 1. O SD volta a usar
+`sdMutex` para serializar leituras HTTP e escrita/remount; os buffers continuam
+pertencendo à `loopTask`. Enquanto um download está aberto, flush/remount são
+adiados. Inatividade HTTP de 5 min fecha o AP e inicia o sono; movimento
+confirmado pela histerese fecha o AP e interrompe downloads. Temporizadores
+e fechamento dos scans são atendidos por `servicoModo()` sem depender de fix
+GPS novo. Consulte o [README da v3](../../esp32gpsd_v3/README.md).
+
 ## Construção e diagnóstico
 
 O README do logger registra dependências Arduino e configuração de partição necessárias para combinar WiFi e NimBLE. Ajustes de SPI, watchdog, cache e buffers estão documentados no sketch e em [`esp32gpsd/README.md`](../../esp32gpsd/README.md). Para sinais de execução, consulte o dashboard serial e os registros gravados no cartão.
