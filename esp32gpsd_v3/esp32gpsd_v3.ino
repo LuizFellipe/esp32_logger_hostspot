@@ -12,6 +12,7 @@
 #include <WebServer.h>
 #include <string>
 #include <atomic>
+#include <stdarg.h>
 
 // Arduino IDE -> Tools -> Partition Scheme -> "No OTA (Large APP)" —
 // necessario pra WiFi + NimBLE juntos nao estourar a Flash.
@@ -34,8 +35,8 @@ const uint8_t SD_CS_PIN = 5;
 // indisponível e o buffer encher, as linhas mais antigas são descartadas
 // para abrir espaço às mais recentes)
 #define LOG_BUFFER_MAX    150    // Linhas de log GPS acumuladas antes de flush
-#define WIFI_BUFFER_MAX   100    // Linhas de log WiFi acumuladas antes de flush
-#define BLE_BUFFER_MAX    100    // Linhas de log BLE acumuladas antes de flush
+#define WIFI_BUFFER_MAX   50     // Linhas de log WiFi acumuladas antes de flush
+#define BLE_BUFFER_MAX    50     // Linhas de log BLE acumuladas antes de flush
 #define SSID_CACHE_MAX    500    // Máx SSIDs rastreadas para deduplicação (guarda hash, não string)
 #define BLE_CACHE_MAX     500    // Máx MACs BLE rastreadas para deduplicação
 
@@ -100,6 +101,48 @@ WebServer server(80);
 std::atomic<bool>     hotspotAberto{false};
 std::atomic<bool>     downloadAtivo{false};
 std::atomic<uint32_t> ultimaAtividade{0};  // millis() da última ação válida
+enum DownloadEstado { DOWNLOAD_OCIOSO, DOWNLOAD_INICIADO, DOWNLOAD_CONCLUIDO, DOWNLOAD_ERRO };
+std::atomic<int> downloadEstado{DOWNLOAD_OCIOSO};
+// HTTP publica metricas; somente loopTask formata e imprime.
+std::atomic<uint32_t> webPaginas{0}, webDownloads{0}, webOutros{0}, webUltimoMs{0};
+std::atomic<uint32_t> downloadsOk{0}, downloadsErro{0}, downloadsOcupado{0};
+std::atomic<uint32_t> downloadInicioMs{0}, downloadFimMs{0}, downloadTotal{0}, downloadEnviado{0};
+std::atomic<const char*> downloadMotivo{nullptr};
+std::atomic<uint32_t> downloadStalls{0};
+std::atomic<int> downloadArquivo{0};  // 0 invalido, 1 log, 2 WiFi, 3 BLE
+uint32_t loopNumero = 0, loopInicioMs = 0, loopAnteriorMs = 0;
+uint32_t tempoAquisicaoMs = 0, tempoDadosMs = 0, tempoModoMs = 0, tempoSDMs = 0;
+const char* faseLoop = "BOOT";
+uint32_t ultimoFlushMs = 0, ultimoFlushDuracaoMs = 0;
+bool temFlush = false, wifiScanFalhou = false, bleScanFalhou = false;
+int ultimoDownloadEstado = DOWNLOAD_OCIOSO, ultimoDownloadArquivo = 0;
+uint32_t ultimoDownloadFimMs = 0, ultimoDownloadDuracaoMs = 0, ultimoDownloadBytes = 0;
+std::atomic<uint32_t> perdidos{0};
+std::atomic<bool> bleFimPendente{false};
+std::atomic<int> bleFimMotivo{0};
+bool sdConfirmado = false;
+bool flushPendente = false;
+unsigned long ultimoRetryFlush = 0;
+unsigned long ultimaVelocidadeMs = 0;
+bool temVelocidade = false;
+struct LeituraGPS {
+  long lat = TinyGPS::GPS_INVALID_ANGLE, lon = TinyGPS::GPS_INVALID_ANGLE;
+  unsigned long date = TinyGPS::GPS_INVALID_DATE, time = TinyGPS::GPS_INVALID_TIME;
+  unsigned long posMs = 0;
+  unsigned short sat = TinyGPS::GPS_INVALID_SATELLITES;
+  float hdop = NAN;
+  const char* direcao = "";
+} leituraGPS;
+float ultimaVelocidade = NAN;
+bool temPosicao = false;
+unsigned long ultimaPosicaoMs = 0;
+unsigned long ultimaLeituraDHT = 0;
+bool dhtLido = false;
+unsigned long ultimoDHTValido = 0;
+bool dhtValido = false;
+uint32_t cicloNumero = 0;
+int bleBufferizados = 0, bleDuplicados = 0;
+bool watchdogAtivo = false;
 bool hotspotDisponivel = false;            // false se a tarefa HTTP não subiu no boot
 
 // Estrutura para armazenar dados médios do MPU6050
@@ -171,8 +214,8 @@ bool radioCicloWifiDone  = false;
 bool radioCicloBleDone   = false;
 unsigned long radioCicloInicio = 0;
 unsigned long ultimoCicloFim   = 0;
-WifiStats ultimoWifiStats = {0, 0, 0};  // último resultado de varrerWiFi(), pro dashboard
-// Leituras mais recentes pro /api do hotspot (loopTask escreve, Hotspot_HTTP lê).
+volatile WifiStats ultimoWifiStats = {0, 0, 0};  // último resultado de varrerWiFi(), pro dashboard
+// Leituras mais recentes para a pagina do hotspot (loopTask escreve, Hotspot_HTTP lê).
 volatile float dashTemp = NAN, dashUmid = NAN;
 volatile int   dashBle = 0;  // dispositivos BLE vistos no ciclo atual/último
 
@@ -180,13 +223,62 @@ volatile int   dashBle = 0;  // dispositivos BLE vistos no ciclo atual/último
 // em andamento — global pra flushBuffers() poder checar antes de gravar no
 // SD e evitar coincidir escrita física com o pico de corrente do rádio.
 volatile bool scanEmAndamento = false;
-volatile bool bleScanAtivo    = false;
+std::atomic<bool> bleScanAtivo{false};
 
 // Última posição/hora conhecida do GPS — usada por drenarFilaBLE() pra
 // rotular os achados BLE. Escrita e lida só pela loopTask.
-char lastTimeStamp[25] = "---";
+char lastTimeStamp[25] = "";
 long lastLat = 0;
 long lastLon = 0;
+
+// Console ASCII: 80 colunas, sem escapes ANSI, legivel em qualquer monitor.
+void tempoTexto(uint32_t ms, char* destino, size_t tamanho) {
+  uint32_t sec = ms / 1000;
+  snprintf(destino, tamanho, "%02lu:%02lu:%02lu", (unsigned long)(sec / 3600),
+    (unsigned long)((sec / 60) % 60), (unsigned long)(sec % 60));
+}
+
+uint32_t tempoRestante(uint32_t agora, uint32_t inicio, uint32_t intervalo) {
+  uint32_t decorrido = agora - inicio;
+  return decorrido >= intervalo ? 0 : intervalo - decorrido;
+}
+
+void eventoSerial(const char* tipo, const char* formato, ...) {
+  char texto[192], uptime[20];
+  va_list args;
+  va_start(args, formato);
+  vsnprintf(texto, sizeof(texto), formato, args);
+  va_end(args);
+  tempoTexto(millis(), uptime, sizeof(uptime));
+  Serial.printf("[%s] [%s] loop=%lu %-10s | %s\n", uptime, tipo,
+    (unsigned long)loopNumero, faseLoop, texto);
+}
+
+void linhaPainel(const char* formato, ...) {
+  char texto[192];
+  va_list args;
+  va_start(args, formato);
+  vsnprintf(texto, sizeof(texto), formato, args);
+  va_end(args);
+  Serial.printf("| %-76.76s |\n", texto);
+}
+
+const char* nomeDownload(int arquivo) {
+  switch (arquivo) {
+    case 1: return "log.txt";
+    case 2: return "wifi.txt";
+    case 3: return "ble.txt";
+    default: return "arquivo invalido";
+  }
+}
+
+// Executado apenas pela tarefa HTTP. Estado terminal publicado por ultimo.
+void finalizarDownload(bool sucesso) {
+  downloadFimMs.store(millis());
+  if (sucesso) downloadsOk.fetch_add(1);
+  else downloadsErro.fetch_add(1);
+  downloadEstado.store(sucesso ? DOWNLOAD_CONCLUIDO : DOWNLOAD_ERRO);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Hash FNV-1a de 32 bits e cache de deduplicação genéricos — usados pra
@@ -208,35 +300,35 @@ bool hashJaVisto(const uint32_t* cache, int count, const char* s) {
   return false;
 }
 
-void adicionarHashCache(uint32_t* cache, int &count, int max, const char* s, bool &cheioAvisado, const char* label) {
-  if (count < max) {
-    cache[count] = hashString(s);
-    count++;
-  } else if (!cheioAvisado) {
-    Serial.printf("Aviso: cache de %s cheio. Deduplicacao desativada a partir daqui.\n", label);
+bool adicionarHashCache(uint32_t* cache, int &count, int max, const char* s, bool &cheioAvisado, const char* label) {
+  if (count >= max) {
+    if (!cheioAvisado) eventoSerial("EVT", "Cache %s cheio; novos IDs sem cache", label);
     cheioAvisado = true;
+    return false;
   }
+  cache[count++] = hashString(s);
+  return true;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Grava bloco de dados no final de um arquivo no cartão SD (1 open/close)
-// Retorna true só se abertura E escrita tiverem sucesso.
+bool confirmarArquivo(FsFile& file, bool escritaOk, const char* path) {
+  bool syncOk = file.sync();
+  bool closeOk = file.close();
+  sdConfirmado = escritaOk && syncOk && closeOk;
+  if (!escritaOk) eventoSerial("ERR", "SD %s etapa=escrita", path);
+  if (!syncOk) eventoSerial("ERR", "SD %s etapa=sync", path);
+  if (!closeOk) eventoSerial("ERR", "SD %s etapa=close", path);
+  return sdConfirmado;
+}
+
 bool appendFile(const char *path, const char *message) {
   FsFile file = sd.open(path, O_WRONLY | O_CREAT | O_APPEND);
   if (!file) {
-    Serial.print("Aviso: ");
-    Serial.print(path);
-    Serial.println(" nao disponivel para escrita.");
+    sdConfirmado = false;
+    eventoSerial("ERR", "SD %s etapa=open", path);
     return false;
   }
-
-  bool ok = file.print(message) > 0;
-  if (!ok) {
-    Serial.print("Erro ao gravar em: ");
-    Serial.println(path);
-  }
-  file.close();
-  return ok;
+  size_t len = strlen(message);
+  return confirmarArquivo(file, file.write(message, len) == len, path);
 }
 
 // Tenta remontar o cartão SD (sd.end() + sd.begin()). Usado quando uma
@@ -252,51 +344,46 @@ bool remontarSD() {
   } else {
     falhasRemountSD++;
     if (falhasRemountSD >= SD_REMOUNT_MAX_FALHAS) {
-      Serial.println("SD nao remontou apos multiplas tentativas. Reiniciando ESP32...");
+      eventoSerial("ERR", "SD remount falhou %d vezes; reiniciando", falhasRemountSD);
       esp_restart();
     }
   }
 
+  if (!ok) eventoSerial("ERR", "SD etapa=remount tentativa=%d", falhasRemountSD);
   return ok;
 }
 
 // Grava as linhas de um buffer circular direto no arquivo (1 open/close),
 // na ordem cronológica (mais antiga primeiro), sem montar uma cópia do
 // bloco inteiro em RAM antes. Retorna quantas linhas foram efetivamente
-// gravadas (pode ser < count se falhar no meio) — o chamador usa isso pra
-// não reenviar linha já gravada numa tentativa seguinte.
+// confirmadas: count ou zero. Qualquer falha retem o lote inteiro.
 int appendLinhasCirculares(const char* path, char* buf, int rows, int lineLen, int head, int count) {
   FsFile file = sd.open(path, O_WRONLY | O_CREAT | O_APPEND);
   if (!file) {
-    Serial.print("Aviso: ");
-    Serial.print(path);
-    Serial.println(" nao disponivel para escrita.");
+    sdConfirmado = false;
+    eventoSerial("ERR", "SD %s etapa=open", path);
     return 0;
   }
-
-  int escritas = 0;
   bool ok = true;
   for (int i = 0; i < count && ok; i++) {
     const char* linha = buf + ((size_t)((head + i) % rows) * lineLen);
-    ok = file.print(linha) > 0;
-    if (ok) escritas++;
+    size_t len = strlen(linha);
+    ok = file.write(linha, len) == len;
   }
-  if (!ok) {
-    Serial.print("Erro ao gravar em: ");
-    Serial.println(path);
-  }
-  file.close();
-  return escritas;
+  // Qualquer etapa incerta retém o lote inteiro; retry pode duplicar linhas.
+  return confirmarArquivo(file, ok, path) ? count : 0;
 }
 
 // Adiciona uma linha a um buffer circular: se cheio, descarta a mais antiga
 // pra abrir espaço (preserva sempre o trecho mais recente do percurso).
 void adicionarLinhaCircular(char* buf, int rows, int lineLen, int &head, int &count, const char* linha) {
+  if (strlen(linha) >= (size_t)lineLen) { perdidos.fetch_add(1); return; }
   int idx;
   if (count < rows) {
     idx = (head + count) % rows;
     count++;
   } else {
+    perdidos.fetch_add(1);
     idx = head;                // sobrescreve a mais antiga
     head = (head + 1) % rows;  // avança o início, descartando-a
   }
@@ -306,31 +393,31 @@ void adicionarLinhaCircular(char* buf, int rows, int lineLen, int &head, int &co
 }
 
 // Flush: grava os 3 buffers no SD. Retorna true só se todos os buffers com
-// dados foram gravados com sucesso. Em caso de falha parcial, os dados não
-// escritos ficam retidos no buffer circular e o SD é remontado, para a
+// dados foram confirmados. Em caso de falha, o lote inteiro fica
+// retido no buffer circular e o SD e remontado, para a
 // próxima tentativa.
 bool flushBuffers() {
+  flushPendente = true;
+  ultimoRetryFlush = millis();
   // Não grava no SD com rádio (WiFi ou BLE) em andamento — evita coincidir
   // escrita física com o pico de corrente do scan.
   if (scanEmAndamento || bleScanAtivo) {
-    Serial.println(F("Flush adiado: radio em andamento."));
     return false;
   }
 
   // Download com arquivo aberto: não grava nem remonta o SD por baixo dele.
   // Checa de novo já com o mutex — downloadAtivo é ligado sob sdMutex.
   if (downloadAtivo) {
-    Serial.println(F("Flush adiado: download em andamento."));
     return false;
   }
   xSemaphoreTake(sdMutex, portMAX_DELAY);
   if (downloadAtivo) {
     xSemaphoreGive(sdMutex);
-    Serial.println(F("Flush adiado: download em andamento."));
     return false;
   }
 
-  Serial.println(F(">> GRAVANDO SD... NAO DESLIGAR! <<"));
+  eventoSerial("EVT", "SD flush buf=%d", logBufferCount + wifiBufferCount + bleBufferCount);
+  uint32_t inicioFlush = millis();
   bool falhaAlgum = false;
 
   struct BufferFlush {
@@ -350,29 +437,34 @@ bool flushBuffers() {
   };
 
   for (auto &b : buffers) {
-    esp_task_wdt_reset();
+    if (watchdogAtivo) esp_task_wdt_reset();
     if (*b.count > 0) {
-      Serial.printf("  %s: %d linhas... ", b.label, *b.count);
+
       int escritas = appendLinhasCirculares(b.path, b.buf, b.rows, b.lineLen, *b.head, *b.count);
       *b.head   = (*b.head + escritas) % b.rows;
       *b.count -= escritas;
       if (escritas > 0 && *b.count == 0) {
-        Serial.println("OK");
+        eventoSerial("OK ", "SD %s lote confirmado=%d", b.label, escritas);
       } else {
-        Serial.printf("FALHOU (%d/%d linhas gravadas, restante mantido em buffer)\n", escritas, escritas + *b.count);
+        eventoSerial("ERR", "SD %s lote retido=%d", b.label, *b.count);
         falhaAlgum = true;
       }
     }
   }
 
+  temFlush = true;
+  ultimoFlushMs = millis();
+  ultimoFlushDuracaoMs = ultimoFlushMs - inicioFlush;
   if (falhaAlgum) {
+    sdConfirmado = false;
     remontarSD();  // tenta recuperar pro próximo ciclo
     xSemaphoreGive(sdMutex);
     return false;
   }
   xSemaphoreGive(sdMutex);
 
-  Serial.println(F(">> GRAVACAO CONCLUIDA. SEGURO DESLIGAR. <<"));
+  flushPendente = false;
+  eventoSerial("OK ", "SD flush confirmado");
   return true;
 }
 
@@ -384,8 +476,7 @@ void inicializarArquivoLog() {
     const char* cabecalho =
       "data_hora, lat, lon, sat, hdop, kmh, direcao, umidade, temp_dht,"
       " ac_x, ac_y, ac_z, gy_x, gy_y, gy_z\n";
-    appendFile(logFileName, cabecalho);
-    Serial.println("Cabecalho CSV criado em log.txt");
+    if (appendFile(logFileName, cabecalho)) eventoSerial("OK ", "Cabecalho CSV criado");
   }
 }
 
@@ -418,105 +509,44 @@ const char* modoNome(uint8_t modo) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Exibe dashboard ASCII no Serial Monitor
-void exibirDashboard(const char* timeStamp, long lat, long lon,
-                     int sat, float hdop, float kmh, const char* direcao,
-                     float umidade, float tempDHT,
-                     DadosMPU mediaMPU, WifiStats wifi, bool temFix) {
-
-  // Se o buffer Serial estiver cheio (host desconectado/lento), não bloqueia a loopTask
-  if (Serial.availableForWrite() < 128) return;
-  char barra[LOG_BUFFER_MAX + 1];
-  for (int i = 0; i < LOG_BUFFER_MAX; i++) {
-    barra[i] = (i < logBufferCount) ? '#' : '-';
+void lerDHT() {
+  unsigned long agora = millis();
+  if (dhtLido && agora - ultimaLeituraDHT < 2000) return;
+  dhtLido = true;
+  ultimaLeituraDHT = agora;
+  dashUmid = dht.readHumidity();
+  dashTemp = dht.readTemperature();
+  if (isfinite(dashTemp) && isfinite(dashUmid)) {
+    ultimoDHTValido = agora;
+    dhtValido = true;
   }
-  barra[LOG_BUFFER_MAX] = '\0';
+}
 
-  Serial.println(F("================================================"));
-
-  // Linha GPS
-  if (temFix) {
-    Serial.printf("  GPS   %s  Sat:%d  HDOP:%.1f\n", timeStamp, sat, hdop);
-    Serial.printf("  Pos   Lat:%.6f  Lon:%.6f\n", lat / 1000000.0, lon / 1000000.0);
-    Serial.printf("  Mov   Vel:%.1f km/h  Dir:%s\n", kmh, direcao);
-  } else {
-    Serial.println(F("  GPS   --- Aguardando fix ---"));
-    Serial.println(F("  Pos   Lat:---  Lon:---"));
-    Serial.println(F("  Mov   Vel:---  Dir:---"));
-  }
-
-  // Linha DHT
-  if (isnan(tempDHT) || isnan(umidade)) {
-    Serial.println(F("  DHT   Temp:---  Umid:---"));
-  } else {
-    Serial.printf("  DHT   Temp:%.1f C  Umid:%.1f%%\n", tempDHT, umidade);
-  }
-
-  // Linha MPU
-  if (mpuDisponivel) {
-    Serial.printf("  MPU   Ac(%.2f %.2f %.2f)  Gy(%.2f %.2f %.2f)\n",
-                  mediaMPU.acX, mediaMPU.acY, mediaMPU.acZ,
-                  mediaMPU.gyX, mediaMPU.gyY, mediaMPU.gyZ);
-  } else {
-    Serial.println(F("  MPU   --- Indisponivel ---"));
-  }
-
-  // Linha MODO (Movimento/Parado)
-  Serial.printf("  MODO  %s\n", modoNome(modoAtual));
-
-  if (temFix) {
-    Serial.printf("  WiFi  %d redes | %d novas | %d dup\n",
-                  wifi.total, wifi.novas, wifi.dup);
-  } else {
-    Serial.println(F("  WiFi  --- (sem fix GPS) ---"));
-  }
-
-  switch (modoAtual) {
-    case MODO_MOVIMENTO: {
-      long remSeg = (long)(RADIO_SCAN_INTERVAL_MS - (millis() - ultimoCicloFim)) / 1000;
-      if (radioCicloAtivo) {
-        Serial.println(F("  RF    ciclo WiFi+BLE em andamento"));
-      } else {
-        if (remSeg < 0) remSeg = 0;
-        Serial.printf("  RF    proximo ciclo WiFi+BLE em %lds\n", remSeg);
-      }
-      break;
-    }
-    case MODO_PARADO_SONO: {
-      long remSeg = (long)(PARKED_SLEEP_MS - (millis() - modoInicio)) / 1000;
-      if (remSeg < 0) remSeg = 0;
-      Serial.printf("  RF    dormindo (sem scan)  acorda em %lds ou ao mover\n", remSeg);
-      break;
-    }
-    case MODO_PARADO_CHECK:
-      Serial.println(F("  RF    check unico WiFi+BLE em andamento"));
-      break;
-    case MODO_PARADO_HOTSPOT: {
-      long remSeg = (long)(HOTSPOT_IDLE_MS - (millis() - ultimaAtividade)) / 1000;
-      if (remSeg < 0) remSeg = 0;
-      Serial.printf("  RF    hotspot %s (192.168.4.1)%s  fecha em %lds sem atividade\n",
-                    HOTSPOT_SSID, downloadAtivo ? " [download]" : "", remSeg);
-      break;
-    }
-  }
-
-  // Linha cadência do log.txt (10s em movimento, 30s parado)
-  Serial.printf("  LOG   gravacao no buffer a cada %lus\n",
-                (modoAtual == MODO_MOVIMENTO ? LOG_ADD_MOVING_MS : LOG_ADD_PARKED_MS) / 1000);
-
-  // Linha Buffer/SD
-  Serial.printf("  SD    [%s] %d/%d\n", barra, logBufferCount, LOG_BUFFER_MAX);
-
-  // Linha buffers de todas as fontes + caches de deduplicação
-  Serial.printf("  BUF   log:%d/%d  wifi:%d/%d  ble:%d/%d\n",
-                logBufferCount, LOG_BUFFER_MAX,
-                wifiBufferCount, WIFI_BUFFER_MAX,
-                bleBufferCount, BLE_BUFFER_MAX);
-  Serial.printf("  CACHE ssid:%d/%d  ble:%d/%d  boot:%lu\n",
-                ssidCacheCount, SSID_CACHE_MAX,
-                bleCacheCount, BLE_CACHE_MAX,
-                (unsigned long)bootCount);
-
-  Serial.println(F("================================================"));
+void exibirDashboard(DadosMPU mediaMPU) {
+  static unsigned long ultimoResumo = 0;
+  unsigned long agora = millis();
+  // Mudo durante download; espacado com hotspot aberto (nao disputa CPU/heap com a tarefa HTTP).
+  if (downloadEstado.load() == DOWNLOAD_INICIADO) return;
+  if (agora - ultimoResumo < (hotspotAberto.load() ? 30000UL : 5000UL)) return;
+  ultimoResumo = agora;
+  char uptime[20], restante[20] = "-";
+  tempoTexto(agora, uptime, sizeof(uptime));
+  bool hot = hotspotAberto.load();
+  if (hot) tempoTexto(tempoRestante(millis(), ultimaAtividade.load(), HOTSPOT_IDLE_MS), restante, sizeof(restante));
+  bool vel = temVelocidade && agora - ultimaVelocidadeMs < 3000;
+  char pos[40] = "sem fix", dht[24] = "DHT --";
+  if (temPosicao) snprintf(pos, sizeof(pos), "%.5f,%.5f", lastLat / 1000000.0, lastLon / 1000000.0);
+  if (isfinite(dashTemp) && isfinite(dashUmid)) snprintf(dht, sizeof(dht), "%.1fC %.0f%%", dashTemp, dashUmid);
+  Serial.printf("[%s] %s | %.1f km/h | loop #%lu %lums\n", uptime, modoNome(modoAtual),
+    vel ? ultimaVelocidade : NAN, (unsigned long)loopNumero, (unsigned long)loopAnteriorMs);
+  Serial.printf("  GPS %s | %s | az=%.1f\n", pos, dht, mediaMPU.acZ);
+  Serial.printf("  RF #%lu wifi=%d ble=%d | SD %s %d/%d %d/%d %d/%d | heap=%luKB max=%luKB perdas=%lu\n",
+    (unsigned long)cicloNumero, ultimoWifiStats.total, (int)dashBle, sdConfirmado ? "ok" : "INCERTO",
+    logBufferCount, LOG_BUFFER_MAX, wifiBufferCount, WIFI_BUFFER_MAX, bleBufferCount, BLE_BUFFER_MAX,
+    (unsigned long)ESP.getFreeHeap() / 1024, (unsigned long)ESP.getMaxAllocHeap() / 1024, (unsigned long)perdidos.load());
+  if (hot) Serial.printf("  WEB %s clientes=%u fecha %s | pag=%lu dl=%lu ok=%lu erro=%lu\n", HOTSPOT_SSID,
+    WiFi.softAPgetStationNum(), restante, (unsigned long)webPaginas.load(), (unsigned long)webDownloads.load(),
+    (unsigned long)downloadsOk.load(), (unsigned long)downloadsErro.load());
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -527,14 +557,23 @@ WifiStats varrerWiFi(const char* timeStamp, long lat, long lon) {
 
   // Se não há scan rodando, inicia um novo de forma assíncrona (true, true para show_hidden e passive)
   if (!scanEmAndamento) {
-    WiFi.scanNetworks(true, true);
+    int16_t inicio = WiFi.scanNetworks(true, true);
+    if (inicio == WIFI_SCAN_FAILED) {
+      eventoSerial("ERR", "WiFi scan inicio falhou");
+      wifiScanFalhou = true;
+      radioCicloWifiDone = true;
+      return lastStats;
+    }
     scanEmAndamento = true;
-    return lastStats; // Retorna último resultado enquanto varre
+    if (inicio == WIFI_SCAN_RUNNING) return lastStats; // Retorna último resultado enquanto varre
   }
 
   // Verifica se o scan assíncrono terminou
   int16_t n = WiFi.scanComplete();
   if (n == WIFI_SCAN_FAILED) {
+    eventoSerial("ERR", "WiFi scan falhou");
+    wifiScanFalhou = true;
+    radioCicloWifiDone = true;
     scanEmAndamento = false; // Falhou, permite tentar de novo
     return lastStats;
   }
@@ -559,8 +598,10 @@ WifiStats varrerWiFi(const char* timeStamp, long lat, long lon) {
 
     // Formata dados da rede
     char dadosWifi[256];
-    snprintf(dadosWifi, sizeof(dadosWifi), "%s, %ld, %ld, %s, %ld, %d, %s\n",
-             timeStamp, lat, lon, ssid, WiFi.RSSI(i),
+    char pos[48] = " , ";
+    if (temPosicao) snprintf(pos, sizeof(pos), "%ld, %ld", lat, lon);
+    snprintf(dadosWifi, sizeof(dadosWifi), "%s, %s, %s, %ld, %d, %s\n",
+             timeStamp, pos, ssid, WiFi.RSSI(i),
              (int)WiFi.channel(i), obterTipoCriptografia(WiFi.encryptionType(i)));
 
     // Acumula no buffer circular WiFi (descarta a linha mais antiga se cheio)
@@ -570,6 +611,7 @@ WifiStats varrerWiFi(const char* timeStamp, long lat, long lon) {
 
   WiFi.scanDelete();
   scanEmAndamento = false; // Pronto para o próximo ciclo
+  radioCicloWifiDone = true;
   lastStats = stats;
   return stats;
 }
@@ -605,18 +647,21 @@ void drenarFilaBLE() {
     if (!hashJaVisto(bleCacheHash, bleCacheCount, rec->address)) {
       adicionarHashCache(bleCacheHash, bleCacheCount, BLE_CACHE_MAX, rec->address, bleCacheCheioAvisado, "BLE");
 
+      bleBufferizados++;
+      char pos[48] = " , ";
+      if (temPosicao) snprintf(pos, sizeof(pos), "%ld, %ld", lastLat, lastLon);
       char dadosBLE[256];
       if (rec->hasTxPower) {
-        snprintf(dadosBLE, sizeof(dadosBLE), "%s, %ld, %ld, %s, %s, %d, %d\n",
-                 lastTimeStamp, lastLat, lastLon, rec->address,
+        snprintf(dadosBLE, sizeof(dadosBLE), "%s, %s, %s, %s, %d, %d\n",
+                 lastTimeStamp, pos, rec->address,
                  rec->hasName ? rec->name : "", (int)rec->rssi, (int)rec->txPower);
       } else {
-        snprintf(dadosBLE, sizeof(dadosBLE), "%s, %ld, %ld, %s, %s, %d, \n",
-                 lastTimeStamp, lastLat, lastLon, rec->address,
+        snprintf(dadosBLE, sizeof(dadosBLE), "%s, %s, %s, %s, %d, \n",
+                 lastTimeStamp, pos, rec->address,
                  rec->hasName ? rec->name : "", (int)rec->rssi);
       }
       adicionarLinhaCircular(&bleBuffer[0][0], BLE_BUFFER_MAX, 256, bleBufferHead, bleBufferCount, dadosBLE);
-    }
+    } else bleDuplicados++;
     free(rec);
   }
 }
@@ -624,12 +669,18 @@ void drenarFilaBLE() {
 // Callbacks do Scanner BLE — dedup dentro do scan fica com o filtro de
 // duplicatas nativo do NimBLE (filter_duplicates, ligado por padrão).
 class BLEScanCallbacks : public NimBLEScanCallbacks {
+  void onScanEnd(const NimBLEScanResults&, int reason) override {
+    bleFimMotivo.store(reason);
+    bleScanAtivo = false;
+    bleFimPendente.store(true);
+  }
+
 
   void onResult(const NimBLEAdvertisedDevice* dev) override {
     std::string addrStr = dev->getAddress().toString();
 
     BLEDeviceRecord* rec = (BLEDeviceRecord*)malloc(sizeof(BLEDeviceRecord));
-    if (rec == nullptr) return;
+    if (rec == nullptr) { perdidos.fetch_add(1); return; }
     memset(rec, 0, sizeof(BLEDeviceRecord));
 
     rec->rssi      = dev->getRSSI();
@@ -645,6 +696,7 @@ class BLEScanCallbacks : public NimBLEScanCallbacks {
     }
 
     if (xQueueSend(bleQueue, &rec, 0) != pdTRUE) {
+      perdidos.fetch_add(1);
       free(rec); // Queue cheia: descarta sem bloquear o BLE stack
     }
   }
@@ -653,13 +705,20 @@ class BLEScanCallbacks : public NimBLEScanCallbacks {
 
 // Inicializa o controller BLE e a fila uma única vez no boot.
 // Não inicia scan aqui — quem liga/desliga o scan é o state machine de modo.
+void bleIniciar();
 void setupBLE() {
   bleQueue = xQueueCreate(BLE_QUEUE_DEPTH, sizeof(BLEDeviceRecord*));
   if (bleQueue == nullptr) {
-    Serial.println(F("ERRO: falha ao criar bleQueue"));
+    perdidos.fetch_add(1);
+    eventoSerial("ERR", "Falha ao criar bleQueue");
     while (1) vTaskDelay(pdMS_TO_TICKS(1000));
   }
 
+  bleIniciar();
+}
+
+// Sobe o controller BLE. Chamado no boot e ao fechar o hotspot (bleParar()).
+void bleIniciar() {
   NimBLEDevice::init("");
   pBLEScan = NimBLEDevice::getScan();
   pBLEScan->setScanCallbacks(&bleScanCallbacks, false);
@@ -669,15 +728,29 @@ void setupBLE() {
   pBLEScan->setMaxResults(0);
 }
 
+// Derruba o controller BLE enquanto o hotspot esta aberto: devolve ~dezenas de
+// KB de heap para o lwIP/HTTP. Chamar so com scan BLE encerrado.
+void bleParar() {
+  if (!pBLEScan) return;
+  NimBLEDevice::deinit(true);
+  pBLEScan = nullptr;
+}
+
 // Liga o scan BLE por BLE_SCAN_DURATION_MS (termina sozinho)
 void bleScanLigar() {
   bleScanAtivo = true;
-  pBLEScan->start(BLE_SCAN_DURATION_MS);
+  if (!pBLEScan) bleIniciar();
+  if (!pBLEScan->start(BLE_SCAN_DURATION_MS)) {
+    bleScanAtivo = false;
+    bleScanFalhou = true;
+    radioCicloBleDone = true;
+    eventoSerial("ERR", "BLE scan inicio falhou");
+  }
 }
 
 // Garante o scan BLE parado (no-op se já terminou sozinho)
 void bleScanDesligar() {
-  pBLEScan->stop();
+  if (pBLEScan) pBLEScan->stop();
   bleScanAtivo = false;
 }
 
@@ -689,6 +762,11 @@ void bleScanDesligar() {
 // Dispara um novo ciclo de scan WiFi+BLE simultâneo. WiFi é disparado pelo
 // scanWifiAtivo em processarDadosGPS(); BLE começa aqui.
 void iniciarCicloRadio() {
+  cicloNumero++;
+  bleBufferizados = bleDuplicados = 0;
+  bleFimPendente = false;
+  wifiScanFalhou = bleScanFalhou = false;
+  eventoSerial("EVT", "RADIO ciclo #%lu iniciado: WiFi + BLE", (unsigned long)cicloNumero);
   radioCicloAtivo    = true;
   radioCicloWifiDone = false;
   radioCicloBleDone  = false;
@@ -707,17 +785,20 @@ void atualizarCicloRadio() {
   if (!radioCicloAtivo) return;
   unsigned long agora = millis();
 
-  if (!radioCicloWifiDone && !scanEmAndamento && (agora - radioCicloInicio > 500)) {
-    radioCicloWifiDone = true;
-  }
-  if (!radioCicloBleDone && (agora - radioCicloInicio >= BLE_SCAN_DURATION_MS)) {
-    bleScanDesligar();
+  if (bleFimPendente.exchange(false)) {
     radioCicloBleDone = true;
+    int motivo = bleFimMotivo.load();
+    bleScanFalhou = motivo != 0;
+    if (motivo != 0) eventoSerial("ERR", "BLE scan terminou motivo=%d", motivo);
+    drenarFilaBLE();
   }
 
   if (radioCicloWifiDone && radioCicloBleDone) {
     radioCicloAtivo = false;
     ultimoCicloFim = agora;
+    eventoSerial(wifiScanFalhou || bleScanFalhou ? "ERR" : "OK ",
+      "RADIO ciclo #%lu encerrado em %lums | WiFi=%s BLE=%s", (unsigned long)cicloNumero,
+      (unsigned long)(agora - radioCicloInicio), wifiScanFalhou ? "falhou" : "concluido", bleScanFalhou ? "falhou" : "concluido");
     if (modoAtual == MODO_PARADO_CHECK) {
       entrarModoParadoHotspot();
     }
@@ -731,12 +812,12 @@ void fecharHotspot() {
   hotspotAberto = false;
   WiFi.softAPdisconnect(true);
   WiFi.mode(WIFI_STA);
-  Serial.println(F("Hotspot fechado."));
+  eventoSerial("EVT", "Hotspot fechado.");
 }
 
 void entrarModoMovimento() {
   if (modoAtual == MODO_PARADO_HOTSPOT) {
-    Serial.println(F("Movimento: fechando hotspot."));
+    eventoSerial("EVT", "Movimento: fechando hotspot.");
     fecharHotspot();
   }
   modoAtual = MODO_MOVIMENTO;
@@ -750,7 +831,7 @@ void entrarModoMovimento() {
 void entrarModoParadoSono() {
   modoAtual = MODO_PARADO_SONO;
   modoInicio = millis();
-  Serial.println(F("Parado: dormindo (sem scan) por 5 min..."));
+  eventoSerial("EVT", "Parado: dormindo (sem scan) por 5 min...");
 
   // Grava tudo no SD antes do período sem scan (momento seguro pro cartão).
   // Se falhar, os dados ficam no buffer circular e o flush por capacidade
@@ -761,7 +842,7 @@ void entrarModoParadoSono() {
 void entrarModoParadoCheck() {
   modoAtual = MODO_PARADO_CHECK;
   modoInicio = millis();
-  Serial.println(F("Acordou: checando WiFi + BLE juntos..."));
+  eventoSerial("EVT", "Acordou: checando WiFi + BLE juntos...");
   iniciarCicloRadio();
 }
 
@@ -773,13 +854,16 @@ void entrarModoParadoHotspot() {
     entrarModoParadoSono();
     return;
   }
+  if (scanEmAndamento || bleScanAtivo || radioCicloAtivo) return;
   flushBuffers();
+  drenarFilaBLE();
+  bleParar();
   WiFi.mode(WIFI_AP);
   IPAddress ip(192, 168, 4, 1);
   bool ok = WiFi.softAPConfig(ip, ip, IPAddress(255, 255, 255, 0)) &&
             WiFi.softAP(HOTSPOT_SSID, HOTSPOT_PASS, HOTSPOT_CANAL, 0, 1);
   if (!ok) {
-    Serial.println(F("ERRO: falha ao abrir hotspot. Tenta de novo no proximo check."));
+    eventoSerial("ERR", "falha ao abrir hotspot. Tenta de novo no proximo check.");
     WiFi.mode(WIFI_STA);
     entrarModoParadoSono();
     return;
@@ -788,7 +872,7 @@ void entrarModoParadoHotspot() {
   modoInicio = millis();
   ultimaAtividade = millis();
   hotspotAberto = true;
-  Serial.printf("Hotspot aberto: SSID %s  http://%s/  fecha apos %lus sem atividade\n",
+  eventoSerial("EVT", "Hotspot aberto: SSID %s  http://%s/  fecha apos %lus sem atividade",
                 HOTSPOT_SSID, WiFi.softAPIP().toString().c_str(), HOTSPOT_IDLE_MS / 1000);
 }
 
@@ -797,7 +881,10 @@ void entrarModoParadoHotspot() {
 // Achados WiFi usam a última posição conhecida.
 void servicoModo() {
   if (radioCicloAtivo && !radioCicloWifiDone) {
-    ultimoWifiStats = varrerWiFi(lastTimeStamp, lastLat, lastLon);
+    WifiStats stats = varrerWiFi(lastTimeStamp, lastLat, lastLon);
+    ultimoWifiStats.total = stats.total;
+    ultimoWifiStats.novas = stats.novas;
+    ultimoWifiStats.dup = stats.dup;
   }
   atualizarCicloRadio();
 
@@ -813,7 +900,7 @@ void servicoModo() {
       // entre as duas leituras e a subtração daria underflow (fecha à toa).
       uint32_t ult = ultimaAtividade;
       if (!downloadAtivo && (millis() - ult >= HOTSPOT_IDLE_MS)) {
-        Serial.println(F("Hotspot: 5 min sem atividade."));
+        eventoSerial("EVT", "Hotspot: 5 min sem atividade.");
         fecharHotspot();
         entrarModoParadoSono();
       }
@@ -852,7 +939,7 @@ void atualizarModo(float kmh) {
     // abre o hotspot (que faz o flush).
     modoAtual  = MODO_PARADO_CHECK;
     modoInicio = millis();
-    Serial.println(F("Parou: ciclo WiFi+BLE final antes do hotspot..."));
+    eventoSerial("EVT", "Parou: ciclo WiFi+BLE final antes do hotspot...");
     if (!radioCicloAtivo) iniciarCicloRadio();
   }
   // Demais transições parado (sono/check/hotspot) são temporais: servicoModo().
@@ -861,100 +948,155 @@ void atualizarModo(float kmh) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Processa dados do GPS e DHT22, exibe no Serial e acumula no buffer
 // Recebe a média das leituras do MPU6050 coletadas durante o ciclo GPS
+// TinyGPS nao expoe a idade da velocidade. Inspeciona somente sentencas
+// aprovadas pelo checksum do parser; GGA nunca renova velocidade RMC.
+bool numeroNMEA(const char* campo, bool decimal = true) {
+  bool digito = false, ponto = false;
+  for (const char* p = campo; *p; ++p) {
+    if (*p >= '0' && *p <= '9') digito = true;
+    else if (*p == '.' && decimal && !ponto) ponto = true;
+    else return false;
+  }
+  return digito;
+}
+
+bool receberGPS(char c) {
+  static char nmea[128];
+  static size_t len = 0;
+  static bool overflow = false;
+  if (c == '$') { len = 0; overflow = false; }
+  if (len < sizeof(nmea) - 1) nmea[len++] = c;
+  else overflow = true;
+  bool valido = gps.encode(c);
+  if (!valido || overflow) return false;
+  nmea[len] = '\0';
+  char* campos[20];
+  int count = 0;
+  campos[count++] = nmea;
+  for (char* t = nmea; *t && count < 20; ++t) {
+    if (*t == ',' || *t == '*') { *t = '\0'; campos[count++] = t + 1; }
+  }
+  bool rmc = strcmp(campos[0], "$GPRMC") == 0;
+  bool gga = strcmp(campos[0], "$GPGGA") == 0;
+  bool posValida = rmc && count > 9 && *campos[1] && *campos[3] &&
+    *campos[4] && *campos[5] && *campos[6] && *campos[9];
+  posValida = posValida || (gga && count > 8 && *campos[1] && *campos[2] &&
+    *campos[3] && *campos[4] && *campos[5]);
+  if (!posValida) return false;
+  int latitude = rmc ? 3 : 2, longitude = rmc ? 5 : 4;
+  if (!numeroNMEA(campos[1]) || strlen(campos[1]) < 6 ||
+      !numeroNMEA(campos[latitude]) || !numeroNMEA(campos[longitude]) ||
+      (strcmp(campos[latitude + 1], "N") && strcmp(campos[latitude + 1], "S")) ||
+      (strcmp(campos[longitude + 1], "E") && strcmp(campos[longitude + 1], "W")) ||
+      (rmc && (!numeroNMEA(campos[9], false) || strlen(campos[9]) != 6))) return false;
+  unsigned long idade;
+  gps.get_position(&leituraGPS.lat, &leituraGPS.lon, &idade);
+  leituraGPS.posMs = millis() - idade;
+  gps.get_datetime(&leituraGPS.date, &leituraGPS.time);
+  if (rmc) {
+    leituraGPS.direcao = numeroNMEA(campos[8]) && gps.f_course() < 360 && gps.course() != TinyGPS::GPS_INVALID_ANGLE ? TinyGPS::cardinal(gps.f_course()) : "";
+    char* end = nullptr;
+    double knots = strtod(campos[7], &end);
+    if (numeroNMEA(campos[7]) && *end == '\0' && isfinite(knots) && knots >= 0) {
+      ultimaVelocidade = knots * 1.852;
+      ultimaVelocidadeMs = millis();
+      temVelocidade = true;
+      atualizarModo(ultimaVelocidade);
+    }
+  } else {
+    leituraGPS.sat = numeroNMEA(campos[7], false) && strtoul(campos[7], nullptr, 10) < TinyGPS::GPS_INVALID_SATELLITES ? gps.satellites() : TinyGPS::GPS_INVALID_SATELLITES;
+    leituraGPS.hdop = numeroNMEA(campos[8]) ? gps.hdop() / 100.0f : NAN;
+  }
+  return true;
+}
+
+void campoFloat(char* destino, size_t tamanho, float valor, int casas) {
+  destino[0] = '\0';
+  if (isfinite(valor)) snprintf(destino, tamanho, "%.*f", casas, valor);
+}
+
 void processarDadosGPS(DadosMPU mediaMPU) {
-  long lat, lon;
-  unsigned long fix_age, date, time;
-
-  // Coleta posição em números inteiros (milionésimos de grau)
-  gps.get_position(&lat, &lon, &fix_age);
-
-  // Coleta data e hora brutas
-  gps.get_datetime(&date, &time, &fix_age);
-
-  // Coleta outros dados
-  int sat    = (gps.satellites() == TinyGPS::GPS_INVALID_SATELLITES) ? 0 : gps.satellites();
-  float hdop = (gps.hdop() == TinyGPS::GPS_INVALID_HDOP) ? 0 : gps.hdop() / 100.0;
-  float kmh  = (gps.f_speed_kmph() == TinyGPS::GPS_INVALID_F_SPEED) ? 0.0 : gps.f_speed_kmph();
-
-  // Coleta direção em formato cardinal ("N", "S", "SE", etc.)
-  const char* direcao = TinyGPS::cardinal(gps.f_course());
-
-  // Coleta dados do DHT22
-  float umidade = dht.readHumidity();
-  float tempDHT = dht.readTemperature();
-  dashTemp = tempDHT;
-  dashUmid = umidade;
-
-  // Extrai componentes da data (DDMMYY)
-  int dia  = date / 10000;
-  int mes  = (date / 100) % 100;
-  int ano  = 2000 + (date % 100);
-
-  // Extrai componentes da hora (HHMMSSCC)
-  int hora    = time / 1000000;
-  int minuto  = (time / 10000) % 100;
-  int segundo = (time / 100) % 100;
-
-  // Ajuste de fuso horário (-3h) com tratamento de virada de dia
-  struct tm t;
-  t.tm_year  = ano - 1900;
-  t.tm_mon   = mes - 1;
-  t.tm_mday  = dia;
-  t.tm_hour  = hora;
-  t.tm_min   = minuto;
-  t.tm_sec   = segundo;
-  t.tm_isdst = -1; // Não considerar horário de verão
-
-  // Subtrai 3 horas (UTC-3)
-  t.tm_hour -= 3;
-
-  // mktime "normaliza" a estrutura (ajustando dia/mês/ano se necessário)
-  mktime(&t);
-
-  // Buffer para o timestamp
-  char timeStamp[25];
-  snprintf(timeStamp, sizeof(timeStamp), "%02d/%02d/%04d %02d:%02d:%02d",
-           t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min, t.tm_sec);
-
-  // Atualiza a última posição/hora conhecida — usada por drenarFilaBLE().
-  strncpy(lastTimeStamp, timeStamp, sizeof(lastTimeStamp) - 1);
-  lastTimeStamp[sizeof(lastTimeStamp) - 1] = '\0';
+  long lat = leituraGPS.lat, lon = leituraGPS.lon;
+  unsigned long date = leituraGPS.date, time = leituraGPS.time;
+  if (lat == TinyGPS::GPS_INVALID_ANGLE ||
+      lon == TinyGPS::GPS_INVALID_ANGLE || labs(lat) > 90000000L || labs(lon) > 180000000L) return;
   lastLat = lat;
   lastLon = lon;
+  temPosicao = true;
+  ultimaPosicaoMs = leituraGPS.posMs;
 
-  // Monta linha do CSV
-  char logData[160];
+  int dia = date / 10000, mes = (date / 100) % 100, ano = 2000 + date % 100;
+  int hora = time / 1000000, minuto = (time / 10000) % 100, segundo = (time / 100) % 100;
+  if (date == TinyGPS::GPS_INVALID_DATE || time == TinyGPS::GPS_INVALID_TIME ||
+      mes < 1 || mes > 12 || dia < 1 ||
+      hora > 23 || minuto > 59 || segundo > 59) return;
+  const int diasMes[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  int limite = diasMes[mes - 1] + (mes == 2 && (ano % 4 == 0 && (ano % 100 != 0 || ano % 400 == 0)));
+  if (dia > limite) return;
+  struct tm t = {};
+  t.tm_year = ano - 1900; t.tm_mon = mes - 1; t.tm_mday = dia;
+  t.tm_hour = hora - 3; t.tm_min = minuto; t.tm_sec = segundo;
+  t.tm_isdst = 0;
+  // TZ definido como UTC no boot; o deslocamento explicito sempre e UTC-3.
+  if (mktime(&t) == (time_t)-1) return;
+  if (!strftime(lastTimeStamp, sizeof(lastTimeStamp), "%d/%m/%Y %H:%M:%S", &t)) return;
+
+  char sat[8] = "", hdop[16], kmh[16], umid[16], temp[16];
+  if (leituraGPS.sat != TinyGPS::GPS_INVALID_SATELLITES) snprintf(sat, sizeof(sat), "%u", leituraGPS.sat);
+  campoFloat(hdop, sizeof(hdop), leituraGPS.hdop, 2);
+  campoFloat(kmh, sizeof(kmh), temVelocidade && millis() - ultimaVelocidadeMs < 3000 ? ultimaVelocidade : NAN, 2);
+  campoFloat(umid, sizeof(umid), dashUmid, 1);
+  campoFloat(temp, sizeof(temp), dashTemp, 1);
+  const char* direcao = leituraGPS.direcao;
+  char imu[112] = ", , , , , ";
   if (mpuDisponivel) {
-    snprintf(logData, sizeof(logData),
-             "%s, %ld, %ld, %d, %.2f, %.2f, %s, %.1f, %.1f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
-             timeStamp, lat, lon, sat, hdop, kmh, direcao, umidade, tempDHT,
-             mediaMPU.acX, mediaMPU.acY, mediaMPU.acZ,
-             mediaMPU.gyX, mediaMPU.gyY, mediaMPU.gyZ);
-  } else {
-    // MPU indisponível: campos vazios para manter estrutura do CSV
-    snprintf(logData, sizeof(logData),
-             "%s, %ld, %ld, %d, %.2f, %.2f, %s, %.1f, %.1f, , , , , , \n",
-             timeStamp, lat, lon, sat, hdop, kmh, direcao, umidade, tempDHT);
+    char valores[6][16];
+    float dados[] = {mediaMPU.acX, mediaMPU.acY, mediaMPU.acZ, mediaMPU.gyX, mediaMPU.gyY, mediaMPU.gyZ};
+    for (int i = 0; i < 6; ++i) campoFloat(valores[i], sizeof(valores[i]), dados[i], 2);
+    snprintf(imu, sizeof(imu), "%s, %s, %s, %s, %s, %s", valores[0], valores[1], valores[2], valores[3], valores[4], valores[5]);
   }
-
-  // Atualiza o modo Movimento/Parado com base na velocidade atual
-  atualizarModo(kmh);
-
-  // Acumula no buffer circular de log — 10s em movimento, 30s parado
-  // (leitura/dashboard continuam a cada segundo, só o append é espaçado)
-  unsigned long cadenciaLog = (modoAtual == MODO_MOVIMENTO) ? LOG_ADD_MOVING_MS : LOG_ADD_PARKED_MS;
-  if (millis() - lastLogAddMs >= cadenciaLog) {
-    adicionarLinhaCircular(&logBuffer[0][0], LOG_BUFFER_MAX, 160, logBufferHead, logBufferCount, logData);
+  char logData[160];
+  int len = snprintf(logData, sizeof(logData), "%s, %ld, %ld, %s, %s, %s, %s, %s, %s, %s\n",
+    lastTimeStamp, lat, lon, sat, hdop, kmh, direcao, umid, temp, imu);
+  unsigned long cadencia = modoAtual == MODO_MOVIMENTO ? LOG_ADD_MOVING_MS : LOG_ADD_PARKED_MS;
+  if (millis() - lastLogAddMs >= cadencia) {
+    if (len < 0 || len >= (int)sizeof(logData)) perdidos.fetch_add(1);
+    else adicionarLinhaCircular(&logBuffer[0][0], LOG_BUFFER_MAX, 160, logBufferHead, logBufferCount, logData);
     lastLogAddMs = millis();
   }
+}
 
-  // Scan WiFi (poll do ciclo) roda em servicoModo(), a cada volta do loop.
-  exibirDashboard(timeStamp, lat, lon, sat, hdop, kmh, direcao,
-                  umidade, tempDHT, mediaMPU, ultimoWifiStats, true);
+void imprimirAcessosWeb() {
+  static uint32_t paginasAntes = 0, downloadsAntes = 0, outrosAntes = 0;
+  uint32_t paginas = webPaginas.load(), downloads = webDownloads.load(), outros = webOutros.load();
+  if (paginas != paginasAntes || downloads != downloadsAntes || outros != outrosAntes) {
+    eventoSerial("EVT", "WEB acesso: pagina +%lu | download +%lu | outros/404 +%lu",
+      (unsigned long)(paginas - paginasAntes), (unsigned long)(downloads - downloadsAntes), (unsigned long)(outros - outrosAntes));
+    paginasAntes = paginas; downloadsAntes = downloads; outrosAntes = outros;
+  }
+}
 
-  // Flush do buffer de log por capacidade
-  if (logBufferCount >= LOG_BUFFER_MAX) {
-    flushBuffers();
+void imprimirDownload() {
+  static bool iniciadoImpresso = false;
+  int estado = downloadEstado.load();
+  if (estado == DOWNLOAD_OCIOSO) return;
+  if (!iniciadoImpresso) {
+    eventoSerial("EVT", "Download iniciado: %s", nomeDownload(downloadArquivo.load()));
+    iniciadoImpresso = true;
+  }
+  if (estado == DOWNLOAD_CONCLUIDO || estado == DOWNLOAD_ERRO) {
+    ultimoDownloadEstado = estado;
+    ultimoDownloadArquivo = downloadArquivo.load();
+    ultimoDownloadFimMs = downloadFimMs.load();
+    ultimoDownloadDuracaoMs = ultimoDownloadFimMs - downloadInicioMs.load();
+    ultimoDownloadBytes = downloadEnviado.load();
+    const char* motivo = downloadMotivo.load();
+    eventoSerial(estado == DOWNLOAD_CONCLUIDO ? "OK " : "ERR", "Download %s: %s | %lu/%lu bytes em %lums | motivo=%s stalls=%lu heap=%lu maxblk=%lu",
+      estado == DOWNLOAD_CONCLUIDO ? "concluido" : "erro", nomeDownload(ultimoDownloadArquivo),
+      (unsigned long)ultimoDownloadBytes, (unsigned long)downloadTotal.load(), (unsigned long)ultimoDownloadDuracaoMs,
+      motivo ? motivo : "-", (unsigned long)downloadStalls.load(), (unsigned long)ESP.getFreeHeap(), (unsigned long)ESP.getMaxAllocHeap());
+    iniciadoImpresso = false;
+    downloadEstado.store(DOWNLOAD_OCIOSO);
   }
 }
 
@@ -1010,15 +1152,22 @@ a.btn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 // GET / — sensores (valores do último scan) + lista dos logs. HTML5 + CSS, sem JS.
 // Renova a janela. "Atualizar" recarrega a página.
 void httpRaiz() {
+  webUltimoMs.store(millis());
+  webPaginas.fetch_add(1);
   ultimaAtividade = millis();
   const char* nomes[] = { "log.txt", "wifi.txt", "ble.txt" };
   float t = dashTemp, h = dashUmid;
   char v[16];
 
+  // Envio em blocos (chunked): evita um String de varios KB com heap baixo.
+  server.sendHeader("Cache-Control", "no-store");
+  server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  server.send(200, "text/html; charset=utf-8", "");
   String html = F("<!doctype html><html lang=pt-BR><head><meta charset=utf-8>"
     "<meta name=viewport content='width=device-width,initial-scale=1'>"
     "<title>Logs ESP32 GPS</title><style>");
-  html += PAGINA_CSS;
+  server.sendContent(html); html = "";
+  server.sendContent(PAGINA_CSS);
   html += F("</style></head><body><main><h1>Logs ESP32 GPS</h1>"
             "<p class=sub>Último scan WiFi+BLE e última leitura do DHT22</p><section class=grid>");
 
@@ -1037,6 +1186,7 @@ void httpRaiz() {
          html += String(F("<div class='card h'><span class=lbl>Umidade</span><span class=num>")) + v +
                  F(" <small>%</small></span><meter min=0 max=100 value=") + v + F("></meter></div>"); }
   html += F("</section><h2>Arquivos</h2>");
+  server.sendContent(html); html = "";
 
   int achados = 0;
   bool sdOk = false;
@@ -1061,8 +1211,8 @@ void httpRaiz() {
   html += F("<p><a class=btn href='/'>Atualizar</a></p>"
             "<p class=foot>O hotspot fecha após 5 minutos sem atividade (abrir/atualizar esta "
             "página ou baixar um arquivo renova o prazo).</p></main></body></html>");
-  server.sendHeader("Cache-Control", "no-store");
-  server.send(200, "text/html; charset=utf-8", html);
+  server.sendContent(html);
+  server.sendContent("");  // fecha o ultimo chunk
 }
 
 // Motivo pra abortar a transferência, ou nullptr pra seguir.
@@ -1077,28 +1227,45 @@ const char* motivoAborto(NetworkClient& client, unsigned long ultimoProgresso) {
 // Enquanto o arquivo está aberto (downloadAtivo), flushBuffers() é adiado,
 // e com ele remontarSD(); os dados seguem acumulando nos buffers circulares.
 void httpDownload() {
+  webUltimoMs.store(millis());
+  webDownloads.fetch_add(1);
+  // Mantem a transicao terminal ate a loopTask imprimi-la; sem fila.
+  if (downloadEstado.load() != DOWNLOAD_OCIOSO) {
+    downloadsOcupado.fetch_add(1);
+    server.send(503, "text/plain", "Download ocupado\n");
+    return;
+  }
   String nome = server.arg("file");
+  downloadArquivo.store(nome == "log.txt" ? 1 : nome == "wifi.txt" ? 2 : nome == "ble.txt" ? 3 : 0);
+  downloadTotal.store(0); downloadEnviado.store(0);
+  downloadMotivo.store(nullptr); downloadStalls.store(0);
+  downloadInicioMs.store(millis());
+  downloadEstado.store(DOWNLOAD_INICIADO);
   const char* path = caminhoPermitido(nome);
-  if (!path) { server.send(400, "text/plain", "Arquivo invalido\n"); return; }
+  if (!path) { server.send(400, "text/plain", "Arquivo invalido\n"); finalizarDownload(false); return; }
 
   if (xSemaphoreTake(sdMutex, pdMS_TO_TICKS(2000)) != pdTRUE) {
     server.send(503, "text/plain", "SD ocupado\n");
+    finalizarDownload(false);
     return;
   }
   if (sd.fatType() == 0) {
     xSemaphoreGive(sdMutex);
     server.send(503, "text/plain", "SD indisponivel\n");
+    finalizarDownload(false);
     return;
   }
   if (!sd.exists(path)) {
     xSemaphoreGive(sdMutex);
     server.send(404, "text/plain", "Arquivo nao encontrado\n");
+    finalizarDownload(false);
     return;
   }
   FsFile f = sd.open(path, O_RDONLY);
   if (!f) {
     xSemaphoreGive(sdMutex);
     server.send(503, "text/plain", "Falha ao abrir arquivo\n");
+    finalizarDownload(false);
     return;
   }
   uint64_t total = f.fileSize();
@@ -1108,13 +1275,15 @@ void httpDownload() {
     f.close();
     xSemaphoreGive(sdMutex);
     server.send(503, "text/plain", "Arquivo > 4 GB nao suportado\n");
+    finalizarDownload(false);
     return;
   }
+  downloadTotal.store((uint32_t)total);
   downloadAtivo = true;
   xSemaphoreGive(sdMutex);
 
   ultimaAtividade = millis();
-  Serial.printf("Download %s: %llu bytes\n", nome.c_str(), total);
+  downloadEstado.store(DOWNLOAD_INICIADO);
   server.sendHeader("Content-Disposition", "attachment; filename=\"" + nome + "\"");
   server.sendHeader("Cache-Control", "no-store");
   server.setContentLength((size_t)total);
@@ -1122,7 +1291,7 @@ void httpDownload() {
 
   NetworkClient client = server.client();
   uint64_t enviado = 0;
-  unsigned long inicio = millis(), ultimoProgresso = millis();
+  unsigned long ultimoProgresso = millis();
   const char* motivo = nullptr;
   while (enviado < total && !motivo) {
     size_t pedir = (total - enviado < HTTP_BLOCO) ? (size_t)(total - enviado) : HTTP_BLOCO;
@@ -1134,25 +1303,22 @@ void httpDownload() {
     size_t off = 0;
     while (off < pedir && !(motivo = motivoAborto(client, ultimoProgresso))) {
       size_t w = client.write(httpBuf + off, pedir - off);
-      if (w > 0) { off += w; ultimoProgresso = millis(); }
-      else vTaskDelay(pdMS_TO_TICKS(10));
+      if (w > 0) { off += w; downloadEnviado.store((uint32_t)(enviado + off)); ultimoProgresso = millis(); }
+      else { downloadStalls.fetch_add(1); vTaskDelay(pdMS_TO_TICKS(2)); }
     }
     enviado += off;
     vTaskDelay(1);  // cede CPU entre blocos
   }
 
   xSemaphoreTake(sdMutex, portMAX_DELAY);
-  f.close();
+  bool closeOk = f.close();
   downloadAtivo = false;
   xSemaphoreGive(sdMutex);
+  downloadMotivo.store(motivo);
   client.stop();  // incompleto: conexão fecha antes do Content-Length — navegador acusa falha
 
   ultimaAtividade = millis();
-  if (motivo) {
-    Serial.printf("Download %s ABORTADO (%s): %llu/%llu bytes\n", nome.c_str(), motivo, enviado, total);
-  } else {
-    Serial.printf("Download %s concluido: %llu bytes em %lus\n", nome.c_str(), enviado, (millis() - inicio) / 1000);
-  }
+  finalizarDownload(!motivo && closeOk && enviado == total);
 }
 
 void tarefaHotspotHTTP(void*) {
@@ -1167,16 +1333,18 @@ void tarefaHotspotHTTP(void*) {
 void setupHotspot() {
   server.on("/", HTTP_GET, httpRaiz);
   server.on("/download", HTTP_GET, httpDownload);
-  server.onNotFound([]() { server.send(404, "text/plain", "Nao encontrado\n"); });
+  server.onNotFound([]() { webUltimoMs.store(millis()); webOutros.fetch_add(1); server.send(404, "text/plain", "Nao encontrado\n"); });
   server.begin();
   hotspotDisponivel = xTaskCreatePinnedToCore(tarefaHotspotHTTP, "Hotspot_HTTP",
-                                              8192, nullptr, 1, nullptr, 1) == pdPASS;
-  if (!hotspotDisponivel) Serial.println(F("ERRO: falha ao criar tarefa HTTP. Hotspot desabilitado."));
+                                              8192, nullptr, 2, nullptr, 1) == pdPASS;
+  if (!hotspotDisponivel) eventoSerial("ERR", "falha ao criar tarefa HTTP. Hotspot desabilitado.");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 void setup() {
   Serial.begin(115200);
+  setenv("TZ", "UTC0", 1);
+  tzset();
   // RX maior (padrão 256 B ≈ 266 ms @9600) pra não perder NMEA durante flush do SD
   Serial2.setRxBufferSize(1024);
   Serial2.begin(GPS_Serial_Baud, SERIAL_8N1, GPS_RX, GPS_TX);
@@ -1187,28 +1355,29 @@ void setup() {
   bleBuffer  = (char(*)[256])malloc((size_t)BLE_BUFFER_MAX  * 256);
   sdMutex = xSemaphoreCreateMutex();
   if (!logBuffer || !wifiBuffer || !bleBuffer || !sdMutex) {
-    Serial.println(F("ERRO CRITICO: falha ao alocar buffers de log. Travando."));
+    perdidos.fetch_add(!logBuffer + !wifiBuffer + !bleBuffer);
+    eventoSerial("ERR", "Falha ao alocar buffers/mutex; perdidos=%lu", (unsigned long)perdidos.load());
     while (1) delay(1000);
   }
 
   // Inicialização do DHT22
   dht.begin();
 
-  Serial.println(F("\n--- ESP32 GPS Logger v3 com SD, DHT22, MPU6050, WiFi, BLE e hotspot ---"));
-  Serial.printf("Buffer log:%d wifi:%d ble:%d | Cache ssid:%d ble:%d\n",
+  eventoSerial("EVT", "ESP32 GPS Logger v3 serial-2026-10-06-painel2 com SD, DHT22, MPU6050, WiFi, BLE e hotspot ---");
+  eventoSerial("EVT", "Buffer log:%d wifi:%d ble:%d | Cache ssid:%d ble:%d",
                 LOG_BUFFER_MAX, WIFI_BUFFER_MAX, BLE_BUFFER_MAX,
                 SSID_CACHE_MAX, BLE_CACHE_MAX);
 
   // Inicialização do MPU6050 (I2C padrão: SDA=21, SCL=22)
   if (!mpu.begin()) {
-    Serial.println("Aviso: MPU6050 nao encontrado. Dados de IMU desabilitados.");
+    eventoSerial("EVT", "Aviso: MPU6050 nao encontrado. Dados de IMU desabilitados.");
     mpuDisponivel = false;
   } else {
     mpu.setAccelerometerRange(MPU6050_RANGE_16_G);   // ±16G para offroad
     mpu.setGyroRange(MPU6050_RANGE_1000_DEG);        // ±1000 deg/s para offroad
     mpu.setFilterBandwidth(MPU6050_BAND_44_HZ);      // Filtro 44 Hz
     mpuDisponivel = true;
-    Serial.println("MPU6050 inicializado. Range: +-16G / +-1000 deg/s / 44Hz");
+    eventoSerial("EVT", "MPU6050 inicializado. Range: +-16G / +-1000 deg/s / 44Hz");
   }
 
   // Inicialização do SD Card — retry infinito até montar com sucesso.
@@ -1218,29 +1387,29 @@ void setup() {
   int tentativaSD = 0;
   while (!sd.begin(SD_CONFIG)) {
     tentativaSD++;
-    Serial.printf("Falha ao montar o cartao SD (tentativa %d). Tentando novamente...\n", tentativaSD);
+    eventoSerial("ERR", "Falha ao montar o cartao SD (tentativa %d). Tentando novamente...", tentativaSD);
     sd.end();
     delay(500);
   }
 
   uint8_t cardType = sd.card()->type();
-  Serial.print("Cartao SD montado. Tipo: ");
-  if (cardType == SD_CARD_TYPE_SD1)       Serial.println("SDSC");
-  else if (cardType == SD_CARD_TYPE_SD2)  Serial.println("SDSC");
-  else if (cardType == SD_CARD_TYPE_SDHC) Serial.println("SDHC/SDXC");
-  else                                    Serial.println("DESCONHECIDO");
+  eventoSerial("OK ", "SD montado tipo=%u", cardType);
+  if (cardType == SD_CARD_TYPE_SD1)       eventoSerial("EVT", "SDSC");
+  else if (cardType == SD_CARD_TYPE_SD2)  eventoSerial("EVT", "SDSC");
+  else if (cardType == SD_CARD_TYPE_SDHC) eventoSerial("EVT", "SDHC/SDXC");
+  else                                    eventoSerial("EVT", "DESCONHECIDO");
 
   uint64_t cardSize = (uint64_t)sd.card()->sectorCount() * 512ULL / (1024 * 1024);
-  Serial.printf("Tamanho do Cartao: %llu MB\n", cardSize);
+  eventoSerial("EVT", "Tamanho do Cartao: %llu MB", cardSize);
 
   // Cria cabeçalho CSV se o arquivo ainda não existir
   inicializarArquivoLog();
 
   // Verificação dos arquivos de log — só existência, sem abrir/ler (poupa
   // ciclos de leitura do cartão)
-  Serial.printf("Arquivo %s: %s\n", logFileName,  sd.exists(logFileName)  ? "encontrado" : "sera criado na primeira gravacao");
-  Serial.printf("Arquivo %s: %s\n", wifiFileName, sd.exists(wifiFileName) ? "encontrado" : "sera criado na primeira gravacao");
-  Serial.printf("Arquivo %s: %s\n", bleFileName,  sd.exists(bleFileName)  ? "encontrado" : "sera criado na primeira gravacao");
+  eventoSerial("EVT", "Arquivo %s: %s", logFileName,  sd.exists(logFileName)  ? "encontrado" : "sera criado na primeira gravacao");
+  eventoSerial("EVT", "Arquivo %s: %s", wifiFileName, sd.exists(wifiFileName) ? "encontrado" : "sera criado na primeira gravacao");
+  eventoSerial("EVT", "Arquivo %s: %s", bleFileName,  sd.exists(bleFileName)  ? "encontrado" : "sera criado na primeira gravacao");
 
   // Watchdog: se loop() travar por mais de WDT_TIMEOUT_S sem "alimentar"
   // o watchdog, o ESP32 reseta sozinho. Cobre travamentos de qualquer
@@ -1252,24 +1421,27 @@ void setup() {
     .trigger_panic = true
   };
   // Core 3.x já inicia o TWDT (5 s) no boot: init falharia, então reconfigura
-  esp_task_wdt_reconfigure(&wdtConfig);
+  esp_err_t wdtResultado = esp_task_wdt_reconfigure(&wdtConfig);
+  if (wdtResultado == ESP_ERR_INVALID_STATE) wdtResultado = esp_task_wdt_init(&wdtConfig);
 #else
-  esp_task_wdt_init(WDT_TIMEOUT_S, true);
+  esp_err_t wdtResultado = esp_task_wdt_init(WDT_TIMEOUT_S, true);
 #endif
-  esp_task_wdt_add(NULL);
-  Serial.printf("Watchdog ativado: %ds\n", WDT_TIMEOUT_S);
+  esp_err_t wdtRegistro = esp_task_wdt_add(NULL);
+  watchdogAtivo = wdtResultado == ESP_OK && (wdtRegistro == ESP_OK || esp_task_wdt_status(NULL) == ESP_OK);
+  if (watchdogAtivo) eventoSerial("OK ", "Watchdog ativado: %ds", WDT_TIMEOUT_S);
+  else eventoSerial("ERR", "Watchdog config=%d registro=%d", wdtResultado, wdtRegistro);
   int resetReason = (int)esp_reset_reason();
-  Serial.printf("Reset reason: %d\n", resetReason);
+  eventoSerial("EVT", "Reset reason: %d", resetReason);
 
   // Contador de boot (RTC, sobrevive a soft-reset/watchdog) — grava um
   // marcador em log.txt pra diagnosticar reset espúrio no meio de um ciclo
   // sem precisar de captura serial ao vivo.
   bootCount++;
-  Serial.printf("Boot count: %lu\n", (unsigned long)bootCount);
+  eventoSerial("EVT", "Boot count: %lu", (unsigned long)bootCount);
   char bootMarker[64];
   snprintf(bootMarker, sizeof(bootMarker), "# BOOT bootCount=%lu reset_reason=%d\n",
            (unsigned long)bootCount, resetReason);
-  appendFile(logFileName, bootMarker);
+  if (appendFile(logFileName, bootMarker)) eventoSerial("OK ", "Marcador boot gravado");
 
   // BLE inicializado uma única vez no boot (fica pronto, só liga/desliga
   // scan conforme o modo Movimento/Parado); WiFi começa ligado (movimento).
@@ -1277,12 +1449,32 @@ void setup() {
   entrarModoMovimento();
   setupHotspot();  // depois do WiFi.mode(): precisa da pilha de rede iniciada
 
-  Serial.println(F("Aguardando fix do GPS...\n"));
+  eventoSerial("EVT", "Aguardando fix do GPS...");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Hotspot com acesso recente (ou download): a loopTask cede o core e a RAM
+// de rede para a tarefa HTTP. GPS/MPU/SD/painel pausam; o buffer da UART do
+// GPS e descartado pra nao estourar. Dura so enquanto houver atividade.
+#define HOTSPOT_FOCO_MS 8000UL
+bool hotspotEmFoco() {
+  if (!hotspotAberto.load()) return false;
+  if (downloadAtivo) return true;
+  uint32_t ult = webUltimoMs.load();
+  return ult != 0 && millis() - ult < HOTSPOT_FOCO_MS;
+}
+
 void loop() {
-  esp_task_wdt_reset(); // alimenta o watchdog a cada volta do loop
+  if (hotspotEmFoco()) {
+    while (Serial2.available()) Serial2.read();
+    if (watchdogAtivo) esp_task_wdt_reset();
+    vTaskDelay(pdMS_TO_TICKS(50));
+    return;
+  }
+  loopNumero++;
+  loopInicioMs = millis();
+  faseLoop = "GPS/MPU";
+  if (watchdogAtivo) esp_task_wdt_reset(); // alimenta o watchdog a cada volta do loop
 
   bool newData = false;
 
@@ -1293,10 +1485,10 @@ void loop() {
 
   // Analisa dados do GPS por 1 segundo, amostrando o MPU a cada 100ms
   for (unsigned long start = millis(); millis() - start < 1000;) {
-    esp_task_wdt_reset();
+    if (watchdogAtivo) esp_task_wdt_reset();
     while (Serial2.available()) {
       char c = Serial2.read();
-      if (gps.encode(c)) {
+      if (receberGPS(c)) {
         newData = true;
       }
     }
@@ -1329,20 +1521,27 @@ void loop() {
     mediaMPU.gyZ = somaMPU.gyZ / contadorMPU;
   }
 
-  if (newData) {
-    processarDadosGPS(mediaMPU);
-  } else {
-    // Sem fix GPS: exibe dashboard parcial (DHT + MPU visíveis)
-    float umidade = dht.readHumidity();
-    float tempDHT = dht.readTemperature();
-    dashTemp = tempDHT;
-    dashUmid = umidade;
-    WifiStats semWifi = {0, 0, 0};
-    exibirDashboard("---", 0, 0, 0, 0, 0, "---",
-                    umidade, tempDHT, mediaMPU, semWifi, false);
-  }
-
-  // Temporizadores/ciclo de scan independem de fix novo
+  tempoAquisicaoMs = millis() - loopInicioMs;
+  uint32_t etapaInicio = millis();
+  faseLoop = "DADOS";
+  lerDHT();
+  if (newData) processarDadosGPS(mediaMPU);
+  tempoDadosMs = millis() - etapaInicio;
+  etapaInicio = millis();
+  faseLoop = "MODO/RF";
   servicoModo();
+  tempoModoMs = millis() - etapaInicio;
+  faseLoop = "WEB";
+  imprimirAcessosWeb();
+  imprimirDownload();
+  etapaInicio = millis();
+  faseLoop = "SD/RETRY";
+  if (logBufferCount >= LOG_BUFFER_MAX || wifiBufferCount >= WIFI_BUFFER_MAX || bleBufferCount >= BLE_BUFFER_MAX)
+    flushPendente = true;
+  if (flushPendente && !radioCicloAtivo && !scanEmAndamento && !bleScanAtivo && !downloadAtivo &&
+      millis() - ultimoRetryFlush >= 1000) flushBuffers();
+  tempoSDMs = millis() - etapaInicio;
+  faseLoop = "RESUMO";
+  exibirDashboard(mediaMPU);
+  loopAnteriorMs = millis() - loopInicioMs;
 }
-

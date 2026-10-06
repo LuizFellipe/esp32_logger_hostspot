@@ -60,7 +60,7 @@ Incluídas no core (sem instalar): `WiFi`, `WebServer`, `NetworkClient`, `SPI`, 
 Antes de compilar, se mexeu em bibliotecas:
 
 ```sh
-python3 libraries/sync.py --apply   # sincroniza ~/Arduino/libraries <-> libraries/
+python3 libraries/sync.py --apply   # copia projeto -> ~/Arduino/libraries
 python3 libraries/sync.py --check   # só confere
 ```
 
@@ -81,7 +81,7 @@ arduino-cli compile \
 - `--libraries libraries` — usa as bibliotecas do projeto, não as do usuário.
 - Primeira compilação: ~minutos; seguintes: **~14 s** (cache em `~/.cache/arduino/sketches/`).
 
-Saída esperada (v3 com dashboard):
+Referência histórica de tamanho (v3 anterior ao console Serial):
 
 ```text
 Sketch uses 1259762 bytes (60%) of program storage space. Maximum is 2097152 bytes.
@@ -145,9 +145,12 @@ Instalar o core do zero: `arduino-cli core update-index && arduino-cli core inst
 | v3 com dashboard (JS + `/api`, versão descartada) | 1.259.762 B (60%) | 62.416 B (19%) |
 | v3 página HTML5 simples | 1.256.074 B (59%) | 62.416 B (19%) |
 | v3 página HTML5 + CSS embutido (gravada) | 1.258.270 B (59%) | 62.416 B (19%) |
+| v3 console Serial (2026-10-06, compilado; sem upload) | 1.281.137 B (61%) | 63.680 B (19%) |
+| v3 painel Serial 80 colunas (2026-10-06, sem upload) | 1.285.881 B (61%) | 63.800 B (19%) |
+| v3 painel compacto + BLE off no hotspot (2026-10-06, gravada) | 1.285.941 B (61%) | 63.832 B (19%) |
 | Limite (`no_ota`) | 2.097.152 B | 327.680 B |
 
-O painel custou ~3,5 KB de flash e 0 de RAM global (o CSS é um literal na flash, `PAGINA_CSS`). Folga atual: ~839 KB de programa. A placa recebeu 1.265.664 B no upload (imagem do app com preenchimento).
+O painel custou ~3,5 KB de flash e 0 de RAM global (o CSS é um literal na flash, `PAGINA_CSS`). Folga após painel Serial: 811.271 B de programa. A placa recebeu 1.265.664 B no upload (imagem do app com preenchimento).
 
 ## 5. Problemas conhecidos
 
@@ -166,3 +169,9 @@ O painel custou ~3,5 KB de flash e 0 de RAM global (o CSS é um literal na flash
 - Barras via `<progress>` (WiFi, BLE) e `<meter>` (temperatura, umidade); cores via `accent-color`.
 - Abrir a página renova o prazo de 5 min do hotspot (`ultimaAtividade`), como baixar um arquivo.
 - Sem internet no hotspot: nenhuma fonte ou biblioteca externa.
+
+## 7. Console Serial v3
+
+Versão de boot `serial-2026-10-06-painel2`: resumo compacto (3 a 4 linhas) a cada 5 s (30 s com hotspot; mudo em download); eventos imediatos `[EVT]`, `[ERR]`, `[OK ]`. O painel traz modo, velocidade, posição, DHT, ciclo RF, buffers, SD, heap/maior bloco e, com hotspot aberto, clientes e contadores web; a linha final do download traz motivo, heap e maior bloco. HTTP publica estado e métricas atômicas para impressão pela `loopTask`. HTTP permanece na tarefa `Hotspot_HTTP`, core 1; página HTML/CSS com atualização manual, endpoints `/` e `/download`.
+
+Hotspot e downloads validados em placa. Pendente: GPS ausente, troca de modo, hotspot/download e retirada do SD, com captura do log incluindo versão. Lotes SD só são confirmados após tamanho escrito, `sync()` e `close()`; retry de lote incerto pode duplicar linhas.
