@@ -174,7 +174,7 @@ O painel custou ~3,5 KB de flash e 0 de RAM global (o CSS é um literal na flash
 
 ## 7. Console Serial v3
 
-Versão de boot `serial-2026-10-06-painel2`: resumo compacto (3 a 4 linhas) a cada 5 s (30 s com hotspot; mudo em download); eventos imediatos `[EVT]`, `[ERR]`, `[OK ]`. O painel traz modo, velocidade, posição, DHT, ciclo RF, buffers, SD, heap/maior bloco e, com hotspot aberto, clientes e contadores web; a linha final do download traz motivo, heap e maior bloco. HTTP publica estado e métricas atômicas para impressão pela `loopTask`. HTTP permanece na tarefa `Hotspot_HTTP`, core 1; página HTML/CSS com atualização manual, endpoints `/` e `/download`.
+Versão de boot `serial-2026-10-06-painel2`: resumo compacto (3 a 4 linhas) a cada 5 s (30 s com hotspot; mudo em download); eventos imediatos `[EVT]`, `[ERR]`, `[OK ]`. O painel traz modo, velocidade, posição, DHT, ciclo RF, buffers, SD, heap/maior bloco e, com hotspot aberto, clientes e contadores web; a linha final do download traz motivo, heap e maior bloco. HTTP publica estado e métricas atômicas para impressão pela `loopTask`. HTTP permanece na tarefa `Hotspot_HTTP`, core 1; página HTML/CSS com atualização manual, endpoints `/`, `/download` e `POST /apagar`.
 
 Hotspot e downloads validados em placa. Pendente: GPS ausente, troca de modo, hotspot/download e retirada do SD, com captura do log incluindo versão. Lotes SD só são confirmados após tamanho escrito, `sync()` e `close()`; retry de lote incerto pode duplicar linhas.
 

@@ -52,7 +52,7 @@ Buffers: GPS 150×160 bytes; WiFi/BLE 50×256 bytes cada. Cheio descarta linha m
 
 ## Hotspot e prioridade HTTP
 
-Antes do AP, tentativa de flush → drenar fila → desinicializar NimBLE para liberar heap. Próximo scan reinicializa BLE. Página `http://192.168.4.1/` mostra últimos scans/DHT e arquivos; HTML/CSS sem JS/API, enviada em chunks e atualizada manualmente. Abrir/atualizar/baixar renova atividade; só conectar ao AP não renova.
+Antes do AP, tentativa de flush → drenar fila → desinicializar NimBLE para liberar heap. Próximo scan reinicializa BLE. Página `http://192.168.4.1/` mostra últimos scans/DHT e arquivos; HTML/CSS sem JS/API, enviada em chunks e atualizada manualmente. Cada arquivo tem Baixar e Apagar (`POST /apagar`, recria cabeçalho do `log.txt`). Abrir/atualizar/baixar/apagar renova atividade; só conectar ao AP não renova.
 
 **Limitação atual:** download ou HTTP nos últimos 8 s ativa foco: UART GPS descartada, sensores/SD/modos/painel pausados, apenas watchdog e delay. Movimento não é detectado enquanto foco estiver ativo. A descrição de fechamento por velocidade exige que processamento GPS tenha retomado.
 

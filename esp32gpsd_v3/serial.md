@@ -34,7 +34,7 @@ V3 atual: página HTML/CSS com atualização manual, sem `/api`. Decisões manti
 
 ## Compatibilidade e documentação
 
-- Manter HTML/CSS atual, atualização manual, endpoints `/` e `/download`; **não recriar `/api`**.
+- Manter HTML/CSS atual, atualização manual, endpoints `/`, `/download` e `POST /apagar`; **não recriar `/api`**.
 - Preservar colunas CSV, coordenadas em milionésimos, deduplicação SSID/MAC e cadências.
 - HTTP roda na tarefa `Hotspot_HTTP` (core 1), não na `loopTask`. `sdMutex` atual cobre o SD; dashboard continua `volatile`/atômico. Sem mutex novo.
 - Corrigir README e doc de compilação que ainda citam polling/API.

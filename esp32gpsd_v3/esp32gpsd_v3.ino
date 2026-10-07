@@ -1144,7 +1144,8 @@ h2{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mu
 .file b{flex:1;font:600 .95rem ui-monospace,monospace}.file span{color:var(--mut);font-size:.8rem}
 a.btn{padding:8px 14px;border-radius:8px;background:var(--wifi);color:#fff;text-decoration:none;font-weight:600}
 @media(prefers-color-scheme:dark){a.btn{color:#06161a}}
-a.btn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+button.del{padding:8px 14px;border:0;border-radius:8px;background:var(--heat);color:#fff;font:600 1rem system-ui,sans-serif;cursor:pointer}
+a.btn:focus-visible,button.del:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .foot{margin-top:16px;color:var(--mut);font-size:.8rem}
 @media(max-width:380px){.grid{grid-template-columns:1fr}}
 )CSS";
@@ -1200,7 +1201,9 @@ void httpRaiz() {
         f.close();
         achados++;
         html += "<div class=file><b>" + String(nome) + "</b><span>" + tamanhoLegivel(tam) +
-                "</span><a class=btn href='/download?file=" + nome + "' download>Baixar</a></div>";
+                "</span><a class=btn href='/download?file=" + nome + "' download>Baixar</a>"
+                "<form method=post action='/apagar?file=" + nome + "' onsubmit=\"return confirm('Apagar " + nome +
+                "?')\"><button class=del>Apagar</button></form></div>";
       }
     }
     xSemaphoreGive(sdMutex);
@@ -1321,6 +1324,28 @@ void httpDownload() {
   finalizarDownload(!motivo && closeOk && enviado == total);
 }
 
+// POST /apagar?file= — remove o arquivo; log.txt volta só com o cabeçalho CSV.
+void httpApagar() {
+  webUltimoMs.store(millis());
+  const char* path = caminhoPermitido(server.arg("file"));
+  if (!path) { server.send(400, "text/plain", "Arquivo invalido\n"); return; }
+  if (downloadEstado.load() != DOWNLOAD_OCIOSO || downloadAtivo) {
+    server.send(503, "text/plain", "Download em andamento\n");
+    return;
+  }
+  if (xSemaphoreTake(sdMutex, pdMS_TO_TICKS(2000)) != pdTRUE) {
+    server.send(503, "text/plain", "SD ocupado\n");
+    return;
+  }
+  bool ok = sd.fatType() != 0 && (!sd.exists(path) || sd.remove(path));
+  if (ok && path == logFileName) inicializarArquivoLog();
+  xSemaphoreGive(sdMutex);
+  if (!ok) { server.send(503, "text/plain", "Falha ao apagar\n"); return; }
+  eventoSerial("EVT", "Apagado %s", path);
+  server.sendHeader("Location", "/");
+  server.send(303);
+}
+
 void tarefaHotspotHTTP(void*) {
   for (;;) {
     if (hotspotAberto) server.handleClient();
@@ -1333,6 +1358,7 @@ void tarefaHotspotHTTP(void*) {
 void setupHotspot() {
   server.on("/", HTTP_GET, httpRaiz);
   server.on("/download", HTTP_GET, httpDownload);
+  server.on("/apagar", HTTP_POST, httpApagar);
   server.onNotFound([]() { webUltimoMs.store(millis()); webOutros.fetch_add(1); server.send(404, "text/plain", "Nao encontrado\n"); });
   server.begin();
   hotspotDisponivel = xTaskCreatePinnedToCore(tarefaHotspotHTTP, "Hotspot_HTTP",

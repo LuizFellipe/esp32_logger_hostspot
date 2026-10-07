@@ -264,7 +264,7 @@ Parado → 1 ciclo WiFi+BLE → flush → abre o AP. Sem atividade por 5 min →
 
 ### Página e painel
 
-`/` é HTML5 + CSS embutido (`PAGINA_CSS`, flash), **sem JavaScript e sem recursos externos**, enviada em blocos (chunked). Mostra quatro cards — **WiFi** (redes no último scan), **BLE** (dispositivos do ciclo), **temperatura** e **umidade** — e a lista de arquivos. Valores são gravados a cada carga e mudam ao clicar em **Atualizar**. Segue o tema claro/escuro do aparelho.
+`/` é HTML5 + CSS embutido (`PAGINA_CSS`, flash), **sem scripts e sem recursos externos** (só um `confirm()` inline no botão Apagar), enviada em blocos (chunked). Mostra quatro cards — **WiFi** (redes no último scan), **BLE** (dispositivos do ciclo), **temperatura** e **umidade** — e a lista de arquivos, cada um com **Baixar** e **Apagar**. Valores são gravados a cada carga e mudam ao clicar em **Atualizar**. Segue o tema claro/escuro do aparelho.
 
 ### Download (`GET /download?file=...`)
 
@@ -279,6 +279,10 @@ Aceita somente `log.txt`, `wifi.txt` e `ble.txt`. Lê blocos de até 2048 B sob 
 Abortos: 15 s sem progresso (`HTTP_STALL_MS`), desconexão, erro de leitura do SD ou AP fechado; a conexão incompleta deixa o navegador detectar a falha. Sucesso exige todos os bytes enviados e fechamento do arquivo. O log cresce ≈1,3 MB/dia.
 
 ![Validação, streaming e término do download HTTP](docs/diagramas/12-download.png)
+
+### Apagar (`POST /apagar?file=...`)
+
+Botão **Apagar** (com confirmação no navegador) remove o arquivo do SD sob `sdMutex`. Só POST; mesma lista de nomes do download. Nome inválido → 400; download em curso ou SD ocupado/indisponível → 503; sucesso → 303 para `/`. Ao apagar `log.txt`, o cabeçalho CSV é recriado na hora. O flush seguinte recria `wifi.txt`/`ble.txt` (`O_CREAT`, sem cabeçalho) e as linhas ainda nos buffers de RAM vão para o arquivo novo. Renova a janela do hotspot.
 
 ---
 
